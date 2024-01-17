@@ -32,3 +32,6 @@ jobs:
       uses: pypa/gh-action-pypi-publish@master
       with:
         password: ${{ secrets.PYPI_API_TOKEN }}
+
+
+# script from https://medium.com/@VersuS_/automate-pypi-releases-with-github-actions-4c5a9cfe947d
