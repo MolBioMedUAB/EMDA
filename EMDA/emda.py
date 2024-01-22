@@ -115,7 +115,7 @@ class EMDA:
         for ts in tqdm(self.__universe.trajectory[start, end, step], desc='Measuring', unit='Frame'):
             # measures cycle
             for measure in self.measures:
-                
+                pass
 
 
 
