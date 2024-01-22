@@ -3,15 +3,18 @@ from dataclasses import dataclass
 
 # load MDAnalysis' universe class
 from MDAnalysis import Universe
+#from MDAnalysis.core.groups import AtomGroup
 
 # load internal EMDA classes and functions
 from selection import selection
-import adders
+from adders import *
+# adders
 
 # load custom exceptions
 from exceptions import NotAvailableOptionError
 
-
+#from metaclass import add_adders
+#class EMDA(metaclass=add_adders):
 
 class EMDA:
 
@@ -23,6 +26,13 @@ class EMDA:
         print('Trajectory has been loaded!')
         self.measures   = {}
         self.selections = {}
+        
+        # Automatically add all functions from adders.py
+        external_functions = [func for func in globals() if callable(globals()[func]) and func.startswith("add_")]
+        for func_name in external_functions:
+            setattr(EMDA, func_name, globals()[func_name])
+
+        #self.__add_adders()
 
     @dataclass
     class Measure:
@@ -30,32 +40,28 @@ class EMDA:
         type    : str
         sel     : list
         options : dict
-        result  : list = []
+        result  : list
 
     # function for creating selections (AtomGroups) as a dictionary inside EMDA class
     def select(self, name, sel_input, sel_type=None, no_backbone=False, return_atomic_sel_string=False):
         self.selections[name] = selection(self._universe, sel_input, sel_type=sel_type, no_backbone=no_backbone, return_atomic_sel_string=return_atomic_sel_string)
 
 
+    
+    
+
+"""
     # functions for creating Measures classes
     def add_distance(self, name, sel1, sel2, type='min'):
-        """
-        DESCRIPTION 
-            Add a distance measure to be computed
-        """
-        #to_add = adders.distance(name, self.selections[sel1], self.selections[sel2], type=type)
+        to_add = adders.distance(name, self.selections[sel1], self.selections[sel2], type=type)
 
         self.measures[name] = self.Measure(
-            name, type, sel, options = adders.distance(name, self.selections[sel1], self.selections[sel2], type=type)
-        )
-
-        #self.measures[name] = self.Measure(
-        #        name    = to_add['name'],
-        #        type    = to_add['type'],
-        #        sel     = to_add['sel'],
-        #        options = to_add['options'],
-        #        result  = []
-        #    )
+                name    = to_add['name'],
+                type    = to_add['type'],
+                sel     = to_add['sel'],
+                options = to_add['options'],
+                result  = []
+            )
         
 
     def add_angle(self, name, sel1, sel2, sel3, units='deg', domain=360):
@@ -81,10 +87,6 @@ class EMDA:
             )
 
     def add_planar_angle(self, name, sel1, sel2, units='deg', domain=360):
-        """
-        DESCRIPTION 
-            Add a planar angle measure to be computed 
-        """
         to_add = adders.planar_angle(name, self.selections[sel1], self.selections[sel2], units=units, domain=domain)
 
         self.measures[name] = self.Measure(
@@ -97,10 +99,6 @@ class EMDA:
 
 
     def add_contacts(self, name, sel, sel_env, interactions="all", include_WAT=False, out_format='new', measure_distances=True):
-        """
-        DESCRIPTION
-            Add contacts measure to be computed
-        """
 
         to_add = adders.contacts(self._universe, name, sel, sel_env, interactions=interactions, include_WAT=include_WAT, out_format=out_format, measure_distances=measure_distances)
 
@@ -164,14 +162,13 @@ class EMDA:
             for name_ in name:
                 if self.measurements[measurement_index]['name'] == name_:
                     self.measurements.pop(measurement_index)
-
-
-
+"""
 
 emda = EMDA('../example/parameters.prmtop', '../example/trajectory.nc')
 emda.select('first_resids', [1, 2, 3], sel_type='res_num')
 emda.select('second_resids', [4, 5, 6], sel_type='res_num')
 
-emda.add_distance('dist_first_second', 'first_resids', 'second_resids')
+emda.add_distance(name='dist_first_second', sel1='first_resids', sel2='second_resids', type='min')
 
 print(emda.measures)
+print()

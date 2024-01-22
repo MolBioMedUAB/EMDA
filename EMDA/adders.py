@@ -1,4 +1,4 @@
-#from dataclasses import dataclass
+from dataclasses import dataclass
 
 #from emda import Measure
 
@@ -6,6 +6,7 @@ from MDAnalysis.core.groups import AtomGroup
 
 # load custom exceptions
 from exceptions import NotAvailableOptionError, NotSingleAtomSelectionError, NotThreeAtomsSelectionError, NotExistingInteraction
+from selection import convert_selection
 
 #@dataclass
 #class Measure:
@@ -15,7 +16,28 @@ from exceptions import NotAvailableOptionError, NotSingleAtomSelectionError, Not
 #    options : dict
 #    result  : list
 
-def distance(name, sel1, sel2, type='min'):
+
+"""
+HOW TO BUILD AN ADDER:
+
+    - name and sel(s) have to be requested, other options can be added too
+    - Check that all the input data is in accordance with the created calculator
+    - finish the adder by adding the configuration as a Measure data class in the measurers list of the EMDA class like so:
+        
+        self.measures[name] = self.Measure(
+            name    = name,
+            type    = type,
+            sel     = [convert_selection(sel1), convert_selection(sel2)],
+            options = {'type' : type},
+            result  = []
+        )
+
+    - You can use the convert_selection() function from the selection submodule to accept both strings \
+        (that correspond to keys in the EMDA.selections dictionary) or AtomGroups.
+"""
+
+
+def add_distance(self, name, sel1, sel2, type='min'):
     """
     DESCRIPTION:
         This function outputs the minimum measured distance between the two input selections or coordinates or their combination.
@@ -27,23 +49,25 @@ def distance(name, sel1, sel2, type='min'):
 
     OUTPUT:
         - Shorter distance between sel1 and sel2 (in ang) or distances between COMs or COGs.
+
+    
     """
 
     if type.lower() not in ("min", "max", "com", "cog"):
         raise NotAvailableOptionError
     
-    #return {
-    #    'name' : name,
-    #    'type' : "distance",
-    #    'sel'  : [sel1, sel2],
-    #    'options' : {'type' : type},
-    #    'result' : []
-    #}
+    # add the Measure dataclass to the measures list for the EMDA class
+    self.measures[name] = self.Measure(
+        name    = name,
+        type    = type,
+        sel     = [convert_selection(self, sel1), convert_selection(self, sel2)],
+        options = {'type' : type},
+        result  = []
+    )
 
-    return name, 'distance', [sel1, sel2], {'type' : type}
-    
+    return 'Distance added!'
 
-def angle(name, sel1, sel2, sel3, units="deg", domain=360):
+def add_angle(self, name, sel1, sel2, sel3, units="deg", domain=360):
     """
     DESCRIPTION:
         This functions measures the angle between 3 specified atoms and returns the value between 0 and 360 degrees.
@@ -87,7 +111,7 @@ def angle(name, sel1, sel2, sel3, units="deg", domain=360):
         }
     
 
-def dihedral(name, sel1, sel2, sel3, sel4, units="degree", domain=360):
+def add_dihedral(self, name, sel1, sel2, sel3, sel4, units="degree", domain=360):
     """
     DESCRIPTION:
         This functions measures the dihedral angle between 4 specified atoms and returns the dihedral value between 0 and 360 degrees.
@@ -131,7 +155,7 @@ def dihedral(name, sel1, sel2, sel3, sel4, units="degree", domain=360):
         }
     
 
-def planar_angle(name, sel1, sel2, units="deg", domain=360):
+def add_planar_angle(self, name, sel1, sel2, units="deg", domain=360):
     """
     DESCRIPTION:
         This function measures the angle between two planes specified by three atoms each one and returns the angle.
@@ -176,7 +200,7 @@ def planar_angle(name, sel1, sel2, units="deg", domain=360):
 
 
 
-def contacts(universe, name, sel, sel_env=3, interactions="all", include_WAT=False, out_format='new', measure_distances=True):
+def add_contacts(self, name, universe, sel, sel_env=3, interactions="all", include_WAT=False, out_format='new', measure_distances=True):
     """
     DESCRIPTION:
         This function takes a Universe, a selection and a radius and returns the list of residues nearer than the specified radius.
@@ -336,7 +360,7 @@ def contacts(universe, name, sel, sel_env=3, interactions="all", include_WAT=Fal
         
 
 
-def RMSD(universe, name, sel, ref=None, superposition=True):
+def add_RMSD(self, name, universe, sel, ref=None, superposition=True):
     """
     DESCRIPTION:
         This function outputs the RMSD of a selection
@@ -368,7 +392,7 @@ def RMSD(universe, name, sel, ref=None, superposition=True):
     
 
 
-def distWATbridge(universe, name, sel1, sel2, sel1_rad=3, sel2_rad=3):
+def add_distWATbridge(self, name, universe, sel1, sel2, sel1_rad=3, sel2_rad=3):
     """
     DESCRIPTION
         This function takes a Universe, two selections and the size of their environments and returns the nearest bridging water between the two selections and the distance to both of them.
@@ -407,7 +431,7 @@ def distWATbridge(universe, name, sel1, sel2, sel1_rad=3, sel2_rad=3):
         }
 
 
-def pKa(universe, name, excluded_ions=["Na+", "Cl-"], pka_ref='neutral', pdb_folder='.pka', keep_pdb=False, keep_pka=False):
+def add_pKa(self, universe, name, excluded_ions=["Na+", "Cl-"], pka_ref='neutral', pdb_folder='.pka', keep_pdb=False, keep_pka=False):
     """
     DESCRIPTION:
         This function allows the prediction of the pKa using PROpKa3 of the protein for each frame.

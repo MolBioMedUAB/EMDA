@@ -1,4 +1,5 @@
 # from ..exceptions import NotEqualListsLenghtError
+from MDAnalysis.core.groups import AtomGroup
 
 
 def selection(
@@ -84,3 +85,20 @@ def selection(
 
     elif return_atomic_sel_string == True:
         return "index " + " or index ".join(list(u.select_atoms(sel_string).indices))
+
+
+def convert_selection(self, sel):
+    """
+    DESCRIPTION
+        Function for checking if the given selection is a string, so the AtomGroup has to be extracted from EMDA.selections, \
+        or if it is an AtomGroup, so nothing has to be done.
+    """
+    
+    if isinstance(sel, AtomGroup):
+        return sel
+    
+    elif isinstance(sel, str):
+        return self.selections[sel]
+
+
+
