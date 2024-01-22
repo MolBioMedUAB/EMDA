@@ -34,6 +34,7 @@ HOW TO BUILD AN ADDER:
 
     - You can use the convert_selection() function from the selection submodule to accept both strings \
         (that correspond to keys in the EMDA.selections dictionary) or AtomGroups.
+    - Describe the adder by adding a docstring including at least the DESCRIPTION and USAGE sections, please.
 """
 
 
@@ -41,6 +42,9 @@ def add_distance(self, name, sel1, sel2, type='min'):
     """
     DESCRIPTION:
         This function outputs the minimum measured distance between the two input selections or coordinates or their combination.
+
+    USAGE:
+        EMDA.add_distance(name, sel1, sel2, type=['min' | 'cog' | 'com'])
 
     INPUT:
         - Name of the measurement
