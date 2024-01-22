@@ -63,7 +63,7 @@ def add_distance(self, name, sel1, sel2, type='min'):
     # add the Measure dataclass to the measures list for the EMDA class
     self.measures[name] = self.Measure(
         name    = name,
-        type    = type,
+        type    = "distance",
         sel     = [convert_selection(self, sel1), convert_selection(self, sel2)],
         options = {'type' : type},
         result  = []
@@ -107,12 +107,13 @@ def add_angle(self, name, sel1, sel2, sel3, units="deg", domain=360):
     if domain not in (180, "180", 360, "360", "pi", "2pi"):
         domain = "360"
 
-        return {
-            "name": name,
-            "type": "angle",
-            "sel": [sel1, sel2, sel3],
-            "options": {"units": units, "domain": domain},
-        }
+    self.measures[name] = self.Measure(
+        name    = name,
+        type    = 'angle',
+        sel     = [convert_selection(self, sel1), convert_selection(self, sel2), convert_selection(self, sel3)],
+        options = {"units": units, "domain": domain},
+        result  = []
+    )
     
 
 def add_dihedral(self, name, sel1, sel2, sel3, sel4, units="degree", domain=360):
@@ -151,12 +152,13 @@ def add_dihedral(self, name, sel1, sel2, sel3, sel4, units="degree", domain=360)
     if domain not in (180, "180", 360, "360", "pi", "2pi"):
         domain = "360"
 
-    return {
-            "name": name,
-            "type": "dihedral",
-            "sel": [sel1, sel2, sel3, sel4],
-            "options": {"units": units, "domain": domain},
-        }
+    self.measures[name] = self.Measure(
+        name    = name,
+        type    = "dihedral",
+        sel     = [convert_selection(self, sel1), convert_selection(self, sel2), convert_selection(self, sel3), convert_selection(self, sel4)],
+        options = {"units": units, "domain": domain},
+        result  = []
+    )
     
 
 def add_planar_angle(self, name, sel1, sel2, units="deg", domain=360):
@@ -195,16 +197,17 @@ def add_planar_angle(self, name, sel1, sel2, units="deg", domain=360):
     if domain not in (180, "180", 360, "360", "pi", "2pi"):
         domain = "360"
 
-    return {
-            "name": name,
-            "type": "planar_angle",
-            "sel": [sel1, sel2],
-            "options": {"units": units, "domain": domain},
-        }
+    self.measures[name] = self.Measure(
+        name    = name,
+        type    = 'planar_angle',
+        sel     = [convert_selection(self, sel1), convert_selection(self, sel2)],
+        options = {"units": units, "domain": domain},
+        result  = []
+    )
 
 
 
-def add_contacts(self, name, universe, sel, sel_env=3, interactions="all", include_WAT=False, out_format='new', measure_distances=True):
+def add_contacts(self, name, sel, sel_env=3, interactions="all", include_WAT=False, out_format='new', measure_distances=True):
     """
     DESCRIPTION:
         This function takes a Universe, a selection and a radius and returns the list of residues nearer than the specified radius.
@@ -332,7 +335,7 @@ def add_contacts(self, name, universe, sel, sel_env=3, interactions="all", inclu
     if isinstance(sel, AtomGroup):
         mode = 'selection'
 
-        sel_env = universe.select_atoms(
+        sel_env = self.__universe.select_atoms(
             "around %s group select" % str(sel_env), select=sel, updating=True
         )
 
@@ -350,21 +353,21 @@ def add_contacts(self, name, universe, sel, sel_env=3, interactions="all", inclu
             print('The selected out format does not exist. The new format has been selected instead.')
             out_format = 'new'
 
-        return {
-            "name": name,
-            "type" : "contacts",
-            "sel": [sel, sel_env],
-            "options": {
-                "mode"          : mode,
-                "interactions"  : interactions,
-                "measure_dists" : measure_distances,
-                "out_format"    : out_format
+    self.measures[name] = self.Measure(
+        name    = name,
+        type    = "contacts",
+        sel     = [convert_selection(self, sel), sel_env],
+        options = {
+            "mode"          : mode,
+            "interactions"  : interactions,
+            "measure_dists" : measure_distances,
+            "out_format"    : out_format
             },
-        }
-        
+        result  = []
+    )   
 
 
-def add_RMSD(self, name, universe, sel, ref=None, superposition=True):
+def add_RMSD(self, name, sel, ref=None, superposition=True):
     """
     DESCRIPTION:
         This function outputs the RMSD of a selection
@@ -380,23 +383,23 @@ def add_RMSD(self, name, universe, sel, ref=None, superposition=True):
     """
 
     if isinstance(ref, type(None)):
-        universe.trajectory[0]
+        self.__universe.trajectory[0]
         ref = sel.positions - sel.center_of_mass()
 
     elif isinstance(ref, AtomGroup):
         ref = ref.positions - ref.center_of_mass()
 
-    return {
-            "name": name,
-            "type": "rmsd",
-            "sel": sel,
-            "ref": ref,
-            "options": {"superposition": superposition},
-        }
+    self.measures[name] = self.Measure(
+        name    = name,
+        type    = "rmsd",
+        sel     = [convert_selection(self, sel)],
+        options = {"superposition": superposition},
+        result  = []
+    )
     
 
 
-def add_distWATbridge(self, name, universe, sel1, sel2, sel1_rad=3, sel2_rad=3):
+def add_distWATbridge(self, name, sel1, sel2, sel1_rad=3, sel2_rad=3):
     """
     DESCRIPTION
         This function takes a Universe, two selections and the size of their environments and returns the nearest bridging water between the two selections and the distance to both of them.
@@ -415,27 +418,35 @@ def add_distWATbridge(self, name, universe, sel1, sel2, sel1_rad=3, sel2_rad=3):
 
     #sel1_rad, sel2_rad = sel1_env, sel2_env
 
-    sel1_env = universe.select_atoms(
+    sel1_env = self.__universe.select_atoms(
         "resname WAT and around %s group select" % sel1_rad,
         select=sel1,
         updating=True,
     )
 
-    sel2_env = universe.select_atoms(
+    sel2_env = self.__universe.select_atoms(
         "resname WAT and around %s group select" % sel2_rad,
         select=sel2,
         updating=True,
     )
 
-    return {
-            "name": name,
-            "type": "distWATbridge",
-            "sel": [sel1, sel2, sel1_env, sel2_env, sel1_rad, sel2_rad],
-            "options": None,
-        }
+    self.measures[name] = self.Measure(
+        name    = name,
+        type    = "distWATbridge",
+        sel     = [
+            convert_selection(self, sel1), 
+            convert_selection(self, sel2), 
+            convert_selection(self, sel1_env), 
+            convert_selection(self, sel2_env), 
+            convert_selection(self, sel1_rad), 
+            convert_selection(self, sel2_rad)
+            ],
+        options = {},
+        result  = []
+    )
 
 
-def add_pKa(self, universe, name, excluded_ions=["Na+", "Cl-"], pka_ref='neutral', pdb_folder='.pka', keep_pdb=False, keep_pka=False):
+def add_pKa(self, name, excluded_ions=["Na+", "Cl-"], pka_ref='neutral', pdb_folder='.pka', keep_pdb=False, keep_pka=False):
     """
     DESCRIPTION:
         This function allows the prediction of the pKa using PROpKa3 of the protein for each frame.
@@ -451,20 +462,19 @@ def add_pKa(self, universe, name, excluded_ions=["Na+", "Cl-"], pka_ref='neutral
         - Per-frame array of dicts with shape { residue : pKa }
     """
 
-    
-
     excluded_ions = ' or resname '.join(excluded_ions)
 
-    return {
-        "name" : name,
-        "type" : "pka",
-        "sel"  : universe.select_atoms("not (resname WAT or resname HOH or resname " + excluded_ions + ')'),
-        "options" :
-            { 
-                "pka_ref" : pka_ref,
-                "pdb_folder" : pdb_folder,
-                "keep_pdb" : keep_pdb,
-                "keep_pka" : keep_pka
+    sel = self.__universe.select_atoms("not (resname WAT or resname HOH or resname " + excluded_ions + ')')
+
+    self.measures[name] = self.Measure(
+        name    = name,
+        type    = "pka",
+        sel     = [convert_selection(self, sel)],
+        options = { 
+            "pka_ref" : pka_ref,
+            "pdb_folder" : pdb_folder,
+            "keep_pdb" : keep_pdb,
+            "keep_pka" : keep_pka
             },
-        }
-    
+        result  = []
+    )
