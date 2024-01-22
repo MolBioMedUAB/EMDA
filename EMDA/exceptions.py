@@ -85,7 +85,7 @@ class NotAvailableOptionError(Exception):
 
     pass
 
-class EmptyMeasurementsError(Exception):
+class EmptyMeasuresError(Exception):
     """
     Raised when no measurment has been added when executing m.run_measure()
     """
