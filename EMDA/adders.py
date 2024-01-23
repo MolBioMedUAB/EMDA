@@ -114,7 +114,6 @@ def add_angle(self, name, sel1, sel2, sel3, units="deg", domain=360):
         options = {"units": units, "domain": domain},
         result  = []
     )
-    
 
 def add_dihedral(self, name, sel1, sel2, sel3, sel4, units="degree", domain=360):
     """
@@ -160,7 +159,6 @@ def add_dihedral(self, name, sel1, sel2, sel3, sel4, units="degree", domain=360)
         result  = []
     )
     
-
 def add_planar_angle(self, name, sel1, sel2, units="deg", domain=360):
     """
     DESCRIPTION:
@@ -204,8 +202,6 @@ def add_planar_angle(self, name, sel1, sel2, units="deg", domain=360):
         options = {"units": units, "domain": domain},
         result  = []
     )
-
-
 
 def add_contacts(self, name, sel, sel_env=3, interactions="all", include_WAT=False, out_format='new', measure_distances=True):
     """
@@ -366,7 +362,6 @@ def add_contacts(self, name, sel, sel_env=3, interactions="all", include_WAT=Fal
         result  = []
     )   
 
-
 def add_RMSD(self, name, sel, ref=None, superposition=True):
     """
     DESCRIPTION:
@@ -393,12 +388,13 @@ def add_RMSD(self, name, sel, ref=None, superposition=True):
         name    = name,
         type    = "rmsd",
         sel     = [convert_selection(self, sel)],
-        options = {"superposition": superposition},
+        options = {
+            "superposition": superposition,
+            "ref" : ref
+            },
         result  = []
     )
     
-
-
 def add_distWATbridge(self, name, sel1, sel2, sel1_rad=3, sel2_rad=3):
     """
     DESCRIPTION
@@ -444,7 +440,6 @@ def add_distWATbridge(self, name, sel1, sel2, sel1_rad=3, sel2_rad=3):
         options = {},
         result  = []
     )
-
 
 def add_pKa(self, name, excluded_ions=["Na+", "Cl-"], pka_ref='neutral', pdb_folder='.pka', keep_pdb=False, keep_pka=False):
     """
