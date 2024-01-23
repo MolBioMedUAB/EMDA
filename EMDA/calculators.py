@@ -2,6 +2,11 @@ from MDAnalysis.core.groups import AtomGroup
 import MDAnalysis.lib.distances as mdadist
 import MDAnalysis.analysis.rms as rms
 
+from numpy import min as npmin
+#from numpy import max as npmax
+from numpy import array
+
+
 from ..exceptions import (
     NotExistingInteraction,
 )
@@ -18,6 +23,7 @@ DESCRIPTION
     Each function needs to input the selections and the options.
 """
 
+# tools
 def build_plane(
     positions,  # nx3, being n the number of atoms that build the plane
 ):
@@ -39,7 +45,8 @@ def build_plane(
         return [a, b, c, d]
 
 
-def planar_angle(
+# calculators
+def calc_planar_angle(
     plane_A,  # nx3 np array, being n the number of atoms for building the plane (min 3)
     plane_B,  # nx3 np array, being n the number of atoms for building the plane (min 3)
     units,  # [ deg | rad ]
@@ -80,7 +87,7 @@ def planar_angle(
     return ang
 
 
-def distance(
+def calc_distance(
     sel1, # selection containing one or more atoms
     sel2, # selection containing one or more atoms
     type # [min | max | com | cog ]
@@ -111,7 +118,7 @@ def distance(
     return d
 
 
-def dihedral(
+def calc_dihedral(
     sel1,
     sel2,
     sel3,
@@ -151,7 +158,7 @@ def dihedral(
             return d
 
 
-def angle(
+def calc_angle(
     sel1,
     sel2,
     sel3,
@@ -190,7 +197,7 @@ def angle(
             return a
         
 
-def pka(
+def calc_pka(
         sel_protein,            # whole protein AtomGroup for saving PDB
         #sel_pka=None,           # optional selection for checking only the pKa of the selected resids
         pka_ref='neutral',  
@@ -249,7 +256,7 @@ def pka(
     return pkas
 
 
-def contacts_selection(
+def calc_contacts_selection(
         sel,
         sel_env,
         interactions,
@@ -279,7 +286,7 @@ def contacts_selection(
     return contacts
 
 
-def contacts_protein(
+def calc_contacts_protein(
         sel, 
         sel_env,
         interactions,
@@ -300,7 +307,7 @@ def contacts_protein(
 
         residue_env = sel.atoms.select_atoms('around %s group select' % str(sel_env), select=residue.atoms)
 
-        contacts[residue.resname + str(residue.resid)] = contacts_selection(
+        contacts[residue.resname + str(residue.resid)] = calc_contacts_selection(
             sel=residue.atoms,
             sel_env=residue_env,
             interactions=interactions,
@@ -311,5 +318,69 @@ def contacts_protein(
     return contacts
 
 
+def calc_RMSD(
+        sel,
+        ref,
+        superposition
+):
+    
+    if superposition:
+        rmsd = rms.rmsd(
+            sel.positions - sel.center_of_mass(),
+            ref,
+            center=True,
+            superposition=True
+        )
+
+    elif not superposition:
+        rmsd = rms.rmsd(
+            sel.positions - sel.center_of_mass(),
+            ref,
+        )
+
+    return rmsd
 
 
+def calc_distWATbridge(
+        sel1,
+        sel2,
+        sel1_env,
+        sel2_env,
+        sel1_rad,
+        sel2_rad,
+):
+    
+    if ( "WAT" not in sel1_env.resnames or "WAT" not in sel2_env.resnames) or (len(set(sel1_env.resids) & set(sel2_env.resids)) == 0):  
+        # No WAT in one or both selections' environment
+        return [None, None, None]
+
+    else:  # WAT residues in both environments and at least one of them coincident
+        WATs = [set(sel1_env.resids) & set(sel1_env.resids)]
+
+        for wat in WATs:
+            selWAT = sel1_env.select_atoms(f"resid {wat}")
+
+            dist1_ = calc_distance(sel1, selWAT)
+            dist2_ = calc_distance(sel2, selWAT)
+
+            if dist1_ <= sel1_rad and dist2_ <= sel2_rad:
+
+                try:
+                    if (dist1_ + dist2_)/2 < (dist1 + dist2)/2:  
+                        # Closest WAT is the one with the shortest average distance to both of the sels
+                        dist1, dist2 = dist1_, dist2_
+                        closestWAT = wat
+
+                    else:
+                        pass
+
+                except NameError:
+                    dist1, dist2 = dist1_, dist2_
+                    closestWAT = wat
+
+        selWAT = sel1_env.select_atoms(f"resid {closestWAT}")
+
+        return [closestWAT,
+                calc_distance(sel1, selWAT),
+                calc_distance(sel2, selWAT)
+            ]
