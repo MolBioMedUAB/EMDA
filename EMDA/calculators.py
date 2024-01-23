@@ -7,11 +7,9 @@ from numpy import min as npmin
 from numpy import array
 
 
-from ..exceptions import (
-    NotExistingInteraction,
-)
+from .exceptions import (NotExistingInteraction)
 
-from ..snippets import check_folder
+from .tools import check_folder
 
 from subprocess import run as run_command
 from os import remove, chdir

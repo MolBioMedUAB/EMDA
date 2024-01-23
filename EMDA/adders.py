@@ -1,12 +1,10 @@
-from dataclasses import dataclass
-
-#from emda import Measure
+#from dataclasses import dataclass
 
 from MDAnalysis.core.groups import AtomGroup
 
 # load custom exceptions
-from exceptions import NotAvailableOptionError, NotSingleAtomSelectionError, NotThreeAtomsSelectionError, NotExistingInteraction
-from selection import convert_selection
+from .exceptions import NotAvailableOptionError, NotSingleAtomSelectionError, NotThreeAtomsSelectionError, NotExistingInteraction
+from .selection import convert_selection
 
 #@dataclass
 #class Measure:
@@ -331,7 +329,7 @@ def add_contacts(self, name, sel, sel_env=3, interactions="all", include_WAT=Fal
     if isinstance(sel, AtomGroup):
         mode = 'selection'
 
-        sel_env = self.__universe.select_atoms(
+        sel_env = self.universe.select_atoms(
             "around %s group select" % str(sel_env), select=sel, updating=True
         )
 
@@ -378,7 +376,7 @@ def add_RMSD(self, name, sel, ref=None, superposition=True):
     """
 
     if isinstance(ref, type(None)):
-        self.__universe.trajectory[0]
+        self.universe.trajectory[0]
         ref = sel.positions - sel.center_of_mass()
 
     elif isinstance(ref, AtomGroup):
@@ -414,13 +412,13 @@ def add_distWATbridge(self, name, sel1, sel2, sel1_rad=3, sel2_rad=3):
 
     #sel1_rad, sel2_rad = sel1_env, sel2_env
 
-    sel1_env = self.__universe.select_atoms(
+    sel1_env = self.universe.select_atoms(
         "resname WAT and around %s group select" % sel1_rad,
         select=sel1,
         updating=True,
     )
 
-    sel2_env = self.__universe.select_atoms(
+    sel2_env = self.universe.select_atoms(
         "resname WAT and around %s group select" % sel2_rad,
         select=sel2,
         updating=True,
@@ -459,7 +457,7 @@ def add_pKa(self, name, excluded_ions=["Na+", "Cl-"], pka_ref='neutral', pdb_fol
 
     excluded_ions = ' or resname '.join(excluded_ions)
 
-    sel = self.__universe.select_atoms("not (resname WAT or resname HOH or resname " + excluded_ions + ')')
+    sel = self.universe.select_atoms("not (resname WAT or resname HOH or resname " + excluded_ions + ')')
 
     self.measures[name] = self.Measure(
         name    = name,
