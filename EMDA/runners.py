@@ -74,7 +74,7 @@ def run_planar_angle(Measure):
         )
     )
 
-def run_pKa(Measure):
+def run_pka(Measure):
     """ 
     DESCRIPTION:
 
