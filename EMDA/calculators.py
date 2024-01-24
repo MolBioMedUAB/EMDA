@@ -1,13 +1,11 @@
-from MDAnalysis.core.groups import AtomGroup
+#from MDAnalysis.core.groups import AtomGroup
 import MDAnalysis.lib.distances as mdadist
 import MDAnalysis.analysis.rms as rms
 
-from numpy import min as npmin
+#from numpy import min as npmin
 #from numpy import max as npmax
-from numpy import array
+#from numpy import array
 
-
-from .exceptions import (NotExistingInteraction)
 
 from .tools import check_folder
 
@@ -277,7 +275,7 @@ def calc_contacts_selection(
                 
                 elif out_format == 'new':
                     if measure_distances:
-                        contacts[residues[r]['name'] + str(residues[r]['id'])] = distance(sel, sel_env.residues[r].atoms, type='min')
+                        contacts[residues[r]['name'] + str(residues[r]['id'])] = calc_distance(sel, sel_env.residues[r].atoms, type='min')
                     elif not measure_distances:
                         contacts[residues[r]['name'] + str(residues[r]['id'])] = None
 
@@ -298,12 +296,13 @@ def calc_contacts_protein(
                         "ASN", "GLN", "CYS", "SEC", "GLY", "PRO", "ALA", "ILE", "LEU", "MET", "PHE", "TRP", "TYR", "VAL"]
     
 
-    for residue in sel.atoms.select_atoms('protein').residues:
+#    for residue in sel.atoms.select_atoms('protein').residues:
+    for residue in sel.residues:
         #if residue.resname not in protein_residues:
             # if the residue does not belong to the protein, skip it
         #    continue
 
-        residue_env = sel.atoms.select_atoms('around %s group select' % str(sel_env), select=residue.atoms)
+        residue_env = sel.atoms.select_atoms(f"around {sel_env} group select", select=residue.atoms)
 
         contacts[residue.resname + str(residue.resid)] = calc_contacts_selection(
             sel=residue.atoms,
