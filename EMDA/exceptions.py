@@ -53,7 +53,7 @@ class NotExistingMetalError(Exception):
     pass
 
 
-class NotExistingInteraction(Exception):
+class NotExistingInteractionError(Exception):
     """
     Raised when the selected interactions do not exist or are not available.
     """
@@ -63,8 +63,18 @@ class NotExistingInteraction(Exception):
 
     pass
 
+class NotExistingSelectionError(Exception):
+    """
+    Raised when the selected selection do not exist or is not available.
+    """
 
-class OutputFormatNotAvailable(Exception):
+    def __init__(self):
+        Exception.__init__(self, "This selection is not described. Create it and add the measure again.")
+
+    pass
+
+
+class OutputFormatNotAvailableError(Exception):
     """
     Raised when the format of the output file is not available.
     """
