@@ -6,12 +6,12 @@ from MDAnalysis import Universe
 #from MDAnalysis.core.groups import AtomGroup
 
 # load internal EMDA classes and functions
-from selection import selection
-from adders import *
-# adders
+from .selection import selection
+from .adders import *
+from .runners import *
 
 # load custom exceptions
-from exceptions import EmptyMeasuresError
+from .exceptions import EmptyMeasuresError
 
 from tqdm.autonotebook import tqdm
 
@@ -24,7 +24,7 @@ class EMDA:
 
         self.parameters = parameters
         self.trajectory = trajectory
-        self.__universe  = Universe(parameters, trajectory)
+        self.universe  = Universe(parameters, trajectory)
         print('Trajectory has been loaded!')
         self.measures   = {}
         self.selections = {}
@@ -44,12 +44,30 @@ class EMDA:
         options : dict
         result  : list
 
+
+        def __str__(self) -> str:
+            if len(self.result) == 0:
+                status = 'Not calculated'
+            else :
+                status = 'Calculated'
+
+            print_  = f"Measure dataclass with:\n"
+            print_ += f"\tName: {self.name}\n"
+            print_ += f"\tType: {self.type}\n"
+            print_ += f"\tSel: {self.sel}\n"
+            print_ += f"\tStatus: {status}\n"
+
+            return print_
+        
+        def __repr__(self):
+            return self.__str__()
+
     # function for creating selections (AtomGroups) as a dictionary inside EMDA class
     def select(self, name, sel_input, sel_type=None, no_backbone=False, return_atomic_sel_string=False):
-        self.selections[name] = selection(self._universe, sel_input, sel_type=sel_type, no_backbone=no_backbone, return_atomic_sel_string=return_atomic_sel_string)
+        self.selections[name] = selection(self.universe, sel_input, sel_type=sel_type, no_backbone=no_backbone, return_atomic_sel_string=return_atomic_sel_string)
 
 
-    def print_available_adders(self, all_description=False):
+    def print_available_adders(self):
 
         import inspect
         
@@ -97,7 +115,7 @@ class EMDA:
     def run(self, exclude=None, step=1, start=1, end=-1,):
         """ 
         DESCRIPTION:
-            Run all the measurements configured in self.measures. 
+            Run all the measurements configured in self.measures
 
         OPTIONS:
             - exclude:  skip measures with the given name 
@@ -109,33 +127,66 @@ class EMDA:
         if len(self.measures) == 0:
             raise EmptyMeasuresError
         
-        if end == -1: end = len(self.__universe.trajectory) # so if no last frame given, last in trajectory is chosen.
+        if end == -1: end = len(self.universe.trajectory) # so if no last frame given, last in trajectory is chosen.
+
+        if exclude == None: exclude = []
 
         # trajectory cycle
-        for ts in tqdm(self.__universe.trajectory[start, end, step], desc='Measuring', unit='Frame'):
+        for ts in tqdm(self.universe.trajectory[start-1:end:step], desc='Measuring', unit='Frame'):
             # measures cycle
-            for measure in self.measures:
-                pass
 
+            for measure in (set(self.measures.keys()) - set(exclude)):
+                """
+                TO-DO:
+                    Try if there is an automatic way to run the proper runner depending on the type set in the Measure. \
+                    All runners should be named like run_$type_of_measure, so maybe there is a chance to automate it.
 
+                NOTES:
+                    'continue' allows the code to not test all if statements once the executed one is done. Maybe since \
+                    if/elif are used, there is no need to explicitly set continue.
+                """
 
+                if self.measures[measure].type == 'distance':
+                    run_distance(self.measures[measure])
+                    continue
 
+                elif self.measures[measure].type == 'angle':
+                    run_angle(self.measures[measure])
+                    continue
 
+                elif self.measures[measure].type == 'dihedral':
+                    run_dihedral(self.measures[measure])
+                    continue
 
+                elif self.measures[measure].type == 'planar_angle':
+                    run_planar_angle(self.measures[measure])
+                    continue
 
-        pass
+                elif self.measures[measure].type == 'contacts':
+                    run_contacts(self.measures[measure])
+                    continue
+
+                elif self.measures[measure].type == 'RMSD':
+                    run_RMSD(self.measures[measure])
+                    continue
+                
+                elif self.measures[measure].type == 'distWATbridge':
+                    run_distWATbridge(self.measures[measure])
+                    continue
+
+                elif self.measures[measure].type == 'pka':
+                    if len(self.measures[measure].result) == 0:
+                        check_folder(self.measures[measure].options['pdb_folder'])
+
+                    run_pka(self.measures[measure])
+                    continue
+
+                else :
+                    print(f"The {measure} type is not available. If you need, you can create it.")
 
     def analyse():
         pass
 
     
     
-
-emda = EMDA('../example/parameters.prmtop', '../example/trajectory.nc')
-#emda.select('first_resids', [1, 2, 3], sel_type='res_num')
-#emda.select('second_resids', [4, 5, 6], sel_type='res_num')
-
-#emda.add_distance(name='dist_first_second', sel1='first_resids', sel2='second_resids', type='min')
-
-print(emda.print_available_adders())
 
