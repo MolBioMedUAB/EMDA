@@ -1,4 +1,4 @@
-from calculators import *
+from .calculators import *
 
 """ 
 TO-DO:
@@ -109,7 +109,7 @@ def run_contacts(Measure):
 
     elif Measure.options['mode'] == 'protein':
         Measure.result.append(
-            calc_contacts_selection(
+            calc_contacts_protein(
                 Measure.sel[0],
                 Measure.sel[1],
                 Measure.options['interactions'],
