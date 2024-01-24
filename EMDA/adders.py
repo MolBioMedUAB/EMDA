@@ -3,7 +3,12 @@
 from MDAnalysis.core.groups import AtomGroup
 
 # load custom exceptions
-from .exceptions import NotAvailableOptionError, NotSingleAtomSelectionError, NotThreeAtomsSelectionError, NotExistingInteraction
+from .exceptions import NotAvailableOptionError
+from .exceptions import NotSingleAtomSelectionError
+from .exceptions import NotThreeAtomsSelectionError
+from .exceptions import NotExistingInteractionError
+from .exceptions import NotExistingSelectionError
+
 from .selection import convert_selection
 
 #@dataclass
@@ -93,8 +98,12 @@ def add_angle(self, name, sel1, sel2, sel3, units="deg", domain=360):
     """
 
     for sel in (sel1, sel2, sel3):
-        if len(sel) != 1:
-            raise NotSingleAtomSelectionError
+        if isinstance(sel, AtomGroup):
+            if len(sel) != 1:
+                raise NotSingleAtomSelectionError
+        elif isinstance(sel, str):
+            if sel not in self.selections.keys():
+                raise NotExistingSelectionError
 
     units = units.lower()
     domain = str(domain).lower()
@@ -137,8 +146,12 @@ def add_dihedral(self, name, sel1, sel2, sel3, sel4, units="degree", domain=360)
     """
 
     for sel in (sel1, sel2, sel3, sel4):
-        if len(sel) != 1:
-            raise NotSingleAtomSelectionError
+        if isinstance(sel, AtomGroup):
+            if len(sel) != 1:
+                raise NotSingleAtomSelectionError
+        elif isinstance(sel, str):
+            if sel not in self.selections.keys():
+                raise NotExistingSelectionError
 
     units = units.lower()
     domain = str(domain).lower()
@@ -181,8 +194,15 @@ def add_planar_angle(self, name, sel1, sel2, units="deg", domain=360):
     """
 
     for sel in (sel1, sel2):
-        if len(sel) != 3:
-            raise NotThreeAtomsSelectionError
+        if isinstance(sel, AtomGroup):
+            if len(sel) != 3:
+                raise NotSingleAtomSelectionError
+        elif isinstance(sel, str):
+            if sel not in self.selections.keys():
+                raise NotExistingSelectionError
+            else :
+                if len(convert_selection(self, sel)) != 3:
+                    raise NotSingleAtomSelectionError
 
     units = units.lower()
     domain = str(domain).lower()
@@ -222,7 +242,7 @@ def add_contacts(self, name, sel, sel_env=3, interactions="all", include_WAT=Fal
 
     if isinstance(interactions, str):
         if interactions not in ("all", "polar", "nonpolar", "donorHbond", "none"):
-            raise NotExistingInteraction
+            raise NotExistingInteractionError
 
         else:
             if interactions == "all":
@@ -320,17 +340,26 @@ def add_contacts(self, name, sel, sel_env=3, interactions="all", include_WAT=Fal
         pass
 
     else :
-        raise NotExistingInteraction
+        raise NotExistingInteractionError
     
 
     if include_WAT == True:
         interactions += ["WAT", "HOH"]
 
-    if isinstance(sel, AtomGroup):
+    if sel == 'protein':
+        mode = 'protein'
+        self.select('protein', sel, sel_type=None)
+        sel = 'protein'
+        out_format = 'new'
+
+    elif isinstance(sel, AtomGroup) or sel in self.selections.keys():
         mode = 'selection'
 
+        if isinstance(sel, str):
+            sel = convert_selection(self, sel)
+
         sel_env = self.universe.select_atoms(
-            "around %s group select" % str(sel_env), select=sel, updating=True
+            f"around {sel_env} group select", select=sel, updating=True
         )
 
         if str(out_format).lower() in ['0.2', 'old', 'o']:
@@ -346,6 +375,7 @@ def add_contacts(self, name, sel, sel_env=3, interactions="all", include_WAT=Fal
         else :
             print('The selected out format does not exist. The new format has been selected instead.')
             out_format = 'new'
+
 
     self.measures[name] = self.Measure(
         name    = name,
@@ -384,7 +414,7 @@ def add_RMSD(self, name, sel, ref=None, superposition=True):
 
     self.measures[name] = self.Measure(
         name    = name,
-        type    = "rmsd",
+        type    = "RMSD",
         sel     = [convert_selection(self, sel)],
         options = {
             "superposition": superposition,
