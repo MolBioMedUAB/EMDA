@@ -112,30 +112,66 @@ class EMDA:
         print("Use '>>> help(EMDA.add_***)' to get the complete information of an adder.")
 
 
-    def run(self, exclude=None, step=1, start=1, end=-1,):
+    def run(self, exclude=None, run_only=None, recalculate=False, step=1, start=1, end=-1,):
         """ 
         DESCRIPTION:
             Run all the measurements configured in self.measures
 
         OPTIONS:
-            - exclude:  skip measures with the given name 
-            - step:     Frames to jump during the analysis. Default is 1, so all the trajectory will be analysed.
-            - start:    First frame to start the analysis. Default is 0.
-            - end:      Last frame to analyse (included). Default is last frame of trajectory
+            - exclude:      skip measures with the given name. Ignored if used with run_only.
+            - run_only:     run only the measures passed by list of names. If used with exclude, exclude will be ignored.
+            - recalculate:  [True | False | List | str ] True for resetting all precalculated measures, list or str with
+                            the specific measures to recalculate.
+            - step:         Frames to jump during the analysis. Default is 1, so all the trajectory will be analysed.
+            - start:        First frame to start the analysis. Default is 0.
+            - end:          Last frame to analyse (included). Default is last frame of trajectory
         """
         
+        # Check that there is at least one measure set
         if len(self.measures) == 0:
             raise EmptyMeasuresError
         
-        if end == -1: end = len(self.universe.trajectory) # so if no last frame given, last in trajectory is chosen.
+        # If last frame is -1 (the default), last in trajectory is chosen.
+        if end == -1: end = len(self.universe.trajectory)
 
+        # Convert exclude to list to append precalculated measures if recalculate is False.
+        ## If it is True, set measure's result as empty list, so it is overwritten.
+        ## If a measure or list of measures is given, their result list will be reset as [].
         if exclude == None: exclude = []
+
+        if isinstance(recalculate, str):
+                recalculate = [recalculate]
+
+        for measure in list(self.measures.keys()):
+            if len(self.measures[measure].result) > 0:
+                if isinstance(recalculate, bool):
+                    if recalculate:
+                        self.measures[measure].result = []
+                    elif not recalculate:
+                        exclude += [measure]
+
+                elif isinstance(recalculate, list):
+                    if measure in recalculate:
+                        self.measures[measure].result = []
+
+
+        # Check run_only. If run_only is used, the measure set will be the run_only list. Conversely, measures will be set as 
+        ## all measures except exclude (if none, it is converted to empty list in previous codeblock)
+        if run_only != None:
+            if isinstance(run_only, str):
+                measures = set([run_only])
+            elif isinstance(run_only, list):
+                measures = set(run_only)
+        else :
+            measures = (set(self.measures.keys()) - set(exclude))
+
+        print(measures)
 
         # trajectory cycle
         for ts in tqdm(self.universe.trajectory[start-1:end:step], desc='Measuring', unit='Frame'):
+            
             # measures cycle
-
-            for measure in (set(self.measures.keys()) - set(exclude)):
+            for measure in measures:
                 """
                 TO-DO:
                     Try if there is an automatic way to run the proper runner depending on the type set in the Measure. \
