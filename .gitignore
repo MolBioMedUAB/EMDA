@@ -1,1 +1,6 @@
 EMDA/__pycache__/
+build/
+example/.pka/
+example/__init__.py
+example/testing.py
+example/trajectory_analysis_and_frame_extraction_testing.ipynb
