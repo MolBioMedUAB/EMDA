@@ -405,6 +405,8 @@ def add_RMSD(self, name, sel, ref=None, superposition=True):
         - Array of RMSDs of each frame against a reference
     """
 
+    sel = convert_selection(self, sel)
+
     if isinstance(ref, type(None)):
         self.universe.trajectory[0]
         ref = sel.positions - sel.center_of_mass()
@@ -415,7 +417,7 @@ def add_RMSD(self, name, sel, ref=None, superposition=True):
     self.measures[name] = self.Measure(
         name    = name,
         type    = "RMSD",
-        sel     = [convert_selection(self, sel)],
+        sel     = [sel],
         options = {
             "superposition": superposition,
             "ref" : ref
