@@ -3,8 +3,8 @@ from setuptools import setup, find_packages
 with open("README.md", "r") as f:
     long_description = f.read()
 
-#version='0.0.0'
-version='{{VERSION_PLACEHOLDER}}'
+version='0.1.0'
+#version='{{VERSION_PLACEHOLDER}}'
 
 setup(
     name="EMDA",
