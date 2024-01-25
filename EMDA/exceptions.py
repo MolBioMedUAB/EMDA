@@ -104,3 +104,14 @@ class EmptyMeasuresError(Exception):
         Exception.__init__(self, "Add at least one measurement and run again.")
 
     pass
+
+
+class NotCompatibleMeasureForAnalysisError(Exception):
+    """
+    Raised when the measure to analyse is not of an accepted type by the analyser.
+    """
+
+    def __init__(self):
+        Exception.__init__(self, "The input measure is not compatible with the chosen analysis.")
+
+    pass
