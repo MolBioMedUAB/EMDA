@@ -9,6 +9,7 @@ from MDAnalysis import Universe
 from .selection import selection
 from .adders import *
 from .runners import *
+from .analysers import *
 
 # load custom exceptions
 from .exceptions import EmptyMeasuresError
@@ -26,11 +27,18 @@ class EMDA:
         self.trajectory = trajectory
         self.universe  = Universe(parameters, trajectory)
         print('Trajectory has been loaded!')
-        self.measures   = {}
         self.selections = {}
+        self.measures   = {}
+        self.analyses   = {}
+
         
         # Automatically add all imported functions from adders.py as EMDA methods
         external_functions = [func for func in globals() if callable(globals()[func]) and func.startswith("add_")]
+        for func_name in external_functions:
+            setattr(EMDA, func_name, globals()[func_name])
+
+        # Automatically add all imported functions from analysers.py as EMDA methods
+        external_functions = [func for func in globals() if callable(globals()[func]) and func.startswith("analyse_")]
         for func_name in external_functions:
             setattr(EMDA, func_name, globals()[func_name])
 
@@ -55,6 +63,30 @@ class EMDA:
             print_ += f"\tName:   {self.name}\n"
             print_ += f"\tType:   {self.type}\n"
             print_ += f"\tSel:    {self.sel}\n"
+            print_ += f"\tStatus: {status}\n"
+
+            return print_
+        
+        def __repr__(self):
+            return self.__str__()
+        
+    @dataclass
+    class Analysis:
+        name : str
+        type : str
+        measure_name : str
+        result : list
+
+        def __str__(self) -> str:
+            if len(self.result) == 0:
+                status = 'Not calculated'
+            else :
+                status = 'Calculated'
+
+            print_  = f"Analysis dataclass with:\n"
+            print_ += f"\tName:   {self.name}\n"
+            print_ += f"\tType:   {self.type}\n"
+            print_ += f"\tRelated mesure:    {self.measure_name}\n"
             print_ += f"\tStatus: {status}\n"
 
             return print_
