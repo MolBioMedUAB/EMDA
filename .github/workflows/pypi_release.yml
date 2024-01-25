@@ -35,3 +35,13 @@ jobs:
 
 
 # script from https://medium.com/@VersuS_/automate-pypi-releases-with-github-actions-4c5a9cfe947d
+
+### STEPS TO UPLOAD NEW VERSION ###
+# in building branch
+# 1. set version='{{VERSION_PLACEHOLDER}}' # to make the version automatised by tag name through GitHub Actions
+# 2. git commit ... && git push            # to upload everything that could be missing into the building branch
+# 3. git checkout main                     # to move to main branch
+# 4. git merge building                    # to merge all contents from building into main
+# 5. git tag $version                      # to create a tag with the new version's number, which will be used as VERSION_PLACEHOLDER
+# 6. git push origin --tags                # to push merge and tag into GitHub
+
