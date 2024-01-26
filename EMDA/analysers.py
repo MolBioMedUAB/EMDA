@@ -1,4 +1,4 @@
-from .exceptions import NotCompatibleMeasureForAnalysisError,NotAvailableOptionError
+from .exceptions import NotCompatibleMeasureForAnalysisError, NotAvailableOptionError, NotCompatibleContactsFormatError
 from tqdm.autonotebook import tqdm
 
 #from dataclasses import dataclass
@@ -10,6 +10,9 @@ def analyse_value(self, name, measure, val1, val2=0, mode='thres'):
         Analyser for checking if a value in the frame is between to given values. Threshold (a upper and lower (default is 0) limits) \
             and tolerance (val1 is the central value and val2 the +- range). If the value for each frame is within the set limits, \
             True will be returned in the corresponding step.
+
+    OUTPUT:
+        A frame-wise list containing boolean values depending on if the criteria have been satisfied or not.
 
     OPTIONS:
         - val1, val2:   upper and lower limits (if threshold mode) or reference and tolerance values (if tolerance mode)
@@ -31,6 +34,7 @@ def analyse_value(self, name, measure, val1, val2=0, mode='thres'):
         raise NotAvailableOptionError
     
 
+    
     self.analyses[name] = self.Analysis(
         name = name,
         type = 'value',
@@ -45,28 +49,32 @@ def analyse_value(self, name, measure, val1, val2=0, mode='thres'):
 
 
 
-def contacts_frequency(self, name, percentage=False):
+def analyse_contacts_frequency(self, name, measure, percentage=False):
     """
     DESCRIPTION:
-        
+        Analyser for calculating the frequency (in absolute value or %) of the calculated contacts.
+
+        This is a type of analysis that returns a dictiona
+
+    OUTPUT:
+        If the contacts is of the whole protein (so mode is protein), a dictionary in the result attribute of an Analysis class that contains each residue as key and 
+            a dictionary with the residue to which contacts (as key) and the number of times it does or the % of frames (as value) as value.
+        If the contacts is of a selection (so mode is selection), a dictionary containing the residue to which it contacts as key and the number of contacts or the 
+            percentage as value.
+
     """
 
+    if self.measures[measure].type not in ('contacts'):
+        raise NotCompatibleMeasureForAnalysisError
+    
+    if self.measures[measure].options['out_format'] not in ('new'):
+        raise NotCompatibleContactsFormatError
 
-    # identify if selection or whole protein contacts
-    if isinstance(list(self.measurements.results[name][0].values())[0], float):
-        contacts_type = 'sel'
-
-    elif isinstance(list(self.measurements.results[name][0].values())[0], dict):
-        contacts_type = 'prot'
-
-
-    if contacts_type == 'prot':
-        #results = []
-
+    if self.measures[measure].options['mode'] == 'protein':
         # create dict containing the residue name as key and a list as value. In this list, each contact in each frame will be stored
-        total_contacts = {resid : [] for resid in list(self.measurements.results[name][0].keys())}
+        total_contacts = {resid : [] for resid in list(self.measures[measure].result[0].keys())}
 
-        for frame in self.measurements.results[name]:
+        for frame in self.measures[measure].result:
             for resid in list(total_contacts.keys()):
                 total_contacts[resid] += list(frame[resid].keys())
 
@@ -74,10 +82,29 @@ def contacts_frequency(self, name, percentage=False):
         for residue in list(total_contacts.keys()):
 
             if percentage:
-                contacts_freq[residue] = { residue_from_tot : total_contacts[residue].count(residue_from_tot)*100/len(self.measurements.results[name]) for residue_from_tot in list(set(list(total_contacts[residue])))}
+                contacts_freq[residue] = { residue_from_tot : total_contacts[residue].count(residue_from_tot)*100/len(self.measures[measure].result) for residue_from_tot in list(set(list(total_contacts[residue])))}
 
             elif not percentage:
                 contacts_freq[residue] = { residue_from_tot : total_contacts[residue].count(residue_from_tot) for residue_from_tot in list(set(list(total_contacts[residue])))}
 
+    elif self.measures[measure].options['mode'] == 'selection':
+        
+        contacts_freq = {}
+        for frame in self.measures[measure].result:
+            for resid in list(frame.keys()):
+                if resid in contacts_freq.keys():
+                    contacts_freq[resid] += 1
+                elif resid not in contacts_freq.keys():
+                    contacts_freq[resid] = 1
 
-    return contacts_freq
+
+    self.analyses[name] = self.Analysis(
+        name = name,
+        type = 'contacts_frequency',
+        mode = self.measures[measure].options['mode'],
+        measure_name = measure,
+        result = contacts_freq
+    )
+
+
+#def analyse_NACs(self, name, analyses : list, percentage):

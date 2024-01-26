@@ -115,3 +115,15 @@ class NotCompatibleMeasureForAnalysisError(Exception):
         Exception.__init__(self, "The input measure is not compatible with the chosen analysis.")
 
     pass
+
+
+
+class NotCompatibleContactsFormatError(Exception):
+    """
+    Raised when the contacts format is not the new one.
+    """
+
+    def __init__(self):
+        Exception.__init__(self, "The contacts format is not the new. Rerun the measure with the new format.")
+
+    pass
