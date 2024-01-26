@@ -22,14 +22,10 @@ def analyse_value(self, name, measure, val1, val2=0, mode='thres'):
     
 
     if mode.lower() in ('tol', 'tolerance'):
-        min_val = val1-val2
-        max_val = val1+val2
+        min_val, max_val = val1-val2, val1+val2
     
     elif mode.lower() in ('thres', 'threshold'):
-        if val1 > val2:
-            min_val, max_val =  val2, val1
-        elif val1 < val2:
-            min_val, max_val =  val1, val2
+        min_val, max_val = min(val1, val2), max(val1, val2)
 
     else :
         raise NotAvailableOptionError
@@ -48,3 +44,40 @@ def analyse_value(self, name, measure, val1, val2=0, mode='thres'):
         )
 
 
+
+def contacts_frequency(self, name, percentage=False):
+    """
+    DESCRIPTION:
+        
+    """
+
+
+    # identify if selection or whole protein contacts
+    if isinstance(list(self.measurements.results[name][0].values())[0], float):
+        contacts_type = 'sel'
+
+    elif isinstance(list(self.measurements.results[name][0].values())[0], dict):
+        contacts_type = 'prot'
+
+
+    if contacts_type == 'prot':
+        #results = []
+
+        # create dict containing the residue name as key and a list as value. In this list, each contact in each frame will be stored
+        total_contacts = {resid : [] for resid in list(self.measurements.results[name][0].keys())}
+
+        for frame in self.measurements.results[name]:
+            for resid in list(total_contacts.keys()):
+                total_contacts[resid] += list(frame[resid].keys())
+
+        contacts_freq = {}
+        for residue in list(total_contacts.keys()):
+
+            if percentage:
+                contacts_freq[residue] = { residue_from_tot : total_contacts[residue].count(residue_from_tot)*100/len(self.measurements.results[name]) for residue_from_tot in list(set(list(total_contacts[residue])))}
+
+            elif not percentage:
+                contacts_freq[residue] = { residue_from_tot : total_contacts[residue].count(residue_from_tot) for residue_from_tot in list(set(list(total_contacts[residue])))}
+
+
+    return contacts_freq
