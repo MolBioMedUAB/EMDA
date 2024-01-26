@@ -9,6 +9,7 @@ from MDAnalysis import Universe
 from .selection import selection
 from .adders import *
 from .runners import *
+from .analysers import *
 
 # load custom exceptions
 from .exceptions import EmptyMeasuresError
@@ -26,11 +27,18 @@ class EMDA:
         self.trajectory = trajectory
         self.universe  = Universe(parameters, trajectory)
         print('Trajectory has been loaded!')
-        self.measures   = {}
         self.selections = {}
+        self.measures   = {}
+        self.analyses   = {}
+
         
-        # Automatically add all functions from adders.py
+        # Automatically add all imported functions from adders.py as EMDA methods
         external_functions = [func for func in globals() if callable(globals()[func]) and func.startswith("add_")]
+        for func_name in external_functions:
+            setattr(EMDA, func_name, globals()[func_name])
+
+        # Automatically add all imported functions from analysers.py as EMDA methods
+        external_functions = [func for func in globals() if callable(globals()[func]) and func.startswith("analyse_")]
         for func_name in external_functions:
             setattr(EMDA, func_name, globals()[func_name])
 
@@ -52,9 +60,33 @@ class EMDA:
                 status = 'Calculated'
 
             print_  = f"Measure dataclass with:\n"
-            print_ += f"\tName: {self.name}\n"
-            print_ += f"\tType: {self.type}\n"
-            print_ += f"\tSel: {self.sel}\n"
+            print_ += f"\tName:   {self.name}\n"
+            print_ += f"\tType:   {self.type}\n"
+            print_ += f"\tSel:    {self.sel}\n"
+            print_ += f"\tStatus: {status}\n"
+
+            return print_
+        
+        def __repr__(self):
+            return self.__str__()
+        
+    @dataclass
+    class Analysis:
+        name : str
+        type : str
+        measure_name : str
+        result : list
+
+        def __str__(self) -> str:
+            if len(self.result) == 0:
+                status = 'Not calculated'
+            else :
+                status = 'Calculated'
+
+            print_  = f"Analysis dataclass with:\n"
+            print_ += f"\tName:   {self.name}\n"
+            print_ += f"\tType:   {self.type}\n"
+            print_ += f"\tRelated mesure:    {self.measure_name}\n"
             print_ += f"\tStatus: {status}\n"
 
             return print_
@@ -120,11 +152,11 @@ class EMDA:
         OPTIONS:
             - exclude:      skip measures with the given name. Ignored if used with run_only.
             - run_only:     run only the measures passed by list of names. If used with exclude, exclude will be ignored.
-            - recalculate:  [True | False | List | str ] True for resetting all precalculated measures, list or str with
+            - recalculate:  [True | False | (List | str)] True for resetting all precalculated measures, list or str with
                             the specific measures to recalculate.
             - step:         Frames to jump during the analysis. Default is 1, so all the trajectory will be analysed.
             - start:        First frame to start the analysis. Default is 0.
-            - end:          Last frame to analyse (included). Default is last frame of trajectory
+            - end:          Last frame to analyse (included). Default is last frame of trajectory.
         """
         
         # Check that there is at least one measure set
@@ -165,63 +197,52 @@ class EMDA:
         else :
             measures = (set(self.measures.keys()) - set(exclude))
 
-        print(measures)
-
         # trajectory cycle
+        first_cycle = True
         for ts in tqdm(self.universe.trajectory[start-1:end:step], desc='Measuring', unit='Frame'):
             
             # measures cycle
             for measure in measures:
                 """
                 TO-DO:
-                    Try if there is an automatic way to run the proper runner depending on the type set in the Measure. \
-                    All runners should be named like run_$type_of_measure, so maybe there is a chance to automate it.
-
-                NOTES:
-                    'continue' allows the code to not test all if statements once the executed one is done. Maybe since \
-                    if/elif are used, there is no need to explicitly set continue.
+                    Look for an automatic way to run the proper runner depending on the type set in the Measure. \
+                    All runners should be named like run_${type_of_measure}, so maybe there is a chance to automate it.
                 """
 
                 if self.measures[measure].type == 'distance':
                     run_distance(self.measures[measure])
-                    continue
 
                 elif self.measures[measure].type == 'angle':
                     run_angle(self.measures[measure])
-                    continue
 
                 elif self.measures[measure].type == 'dihedral':
                     run_dihedral(self.measures[measure])
-                    continue
 
                 elif self.measures[measure].type == 'planar_angle':
                     run_planar_angle(self.measures[measure])
-                    continue
 
                 elif self.measures[measure].type == 'contacts':
                     run_contacts(self.measures[measure])
-                    continue
 
                 elif self.measures[measure].type == 'RMSD':
                     run_RMSD(self.measures[measure])
-                    continue
                 
                 elif self.measures[measure].type == 'distWATbridge':
                     run_distWATbridge(self.measures[measure])
-                    continue
 
                 elif self.measures[measure].type == 'pka':
-                    if len(self.measures[measure].result) == 0:
+                    if first_cycle:
                         check_folder(self.measures[measure].options['pdb_folder'])
 
                     run_pka(self.measures[measure])
-                    continue
 
                 else :
-                    print(f"The {measure} type is not available. If you need, you can create it.")
+                    if first_cycle:
+                        print(f"The {measure} type is not available. If you need, you can create it.")
 
-    def analyse():
-        pass
+            if first_cycle:
+                first_cycle = False
+
 
     
     
