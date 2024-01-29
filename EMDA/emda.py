@@ -32,17 +32,11 @@ class EMDA:
         self.analyses   = {}
 
         
-        # Automatically add all imported functions from adders.py as EMDA methods
-        external_functions = [func for func in globals() if callable(globals()[func]) and func.startswith("add_")]
+        # Automatically add all imported functions from adders.py and from analysers.py as EMDA methods
+        external_functions  = [func for func in globals() if callable(globals()[func]) and func.startswith("add_")]
+        external_functions += [func for func in globals() if callable(globals()[func]) and func.startswith("analyse_")]
         for func_name in external_functions:
             setattr(EMDA, func_name, globals()[func_name])
-
-        # Automatically add all imported functions from analysers.py as EMDA methods
-        external_functions = [func for func in globals() if callable(globals()[func]) and func.startswith("analyse_")]
-        for func_name in external_functions:
-            setattr(EMDA, func_name, globals()[func_name])
-
-        #self.__add_adders()
 
     @dataclass
     class Measure:
