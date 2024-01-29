@@ -13,3 +13,18 @@ def check_folder(folder):
             chdir(f)
 
     chdir(current_path)
+
+def get_most_frequent(list_):
+    """
+    Copied from https://www.geeksforgeeks.org/python-find-most-frequent-element-in-a-list/
+    """
+    counter = 0
+    num = list_[0]
+     
+    for i in list_:
+        curr_frequency = list_.count(i)
+        if(curr_frequency> counter):
+            counter = curr_frequency
+            num = i
+ 
+    return num

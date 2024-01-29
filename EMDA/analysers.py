@@ -1,7 +1,18 @@
-from .exceptions import NotCompatibleMeasureForAnalysisError, NotAvailableOptionError, NotCompatibleContactsFormatError
+# Load package's functions
+from .exceptions import NotCompatibleMeasureForAnalysisError, NotAvailableOptionError, NotCompatibleContactsFormatError 
+from .exceptions import NotCompatibleAnalysisForAnalysisError, NotEqualLenghtsError, NotEnoughDataError
+from .tools import get_most_frequent
+
 from tqdm.autonotebook import tqdm
 
+
 #from dataclasses import dataclass
+
+"""
+TO BUILD:
+    - [X] NACs
+    - [] Contacts counter (how much contacts are in each frame)
+"""
 
 
 def analyse_value(self, name, measure, val1, val2=0, mode='thres'):
@@ -107,4 +118,57 @@ def analyse_contacts_frequency(self, name, measure, percentage=False):
     )
 
 
-#def analyse_NACs(self, name, analyses : list, percentage):
+
+def analyse_NACs(self, name, analyses : list):
+    """
+    DESCRIPTION:
+        Metaanalyser (analyses two or more analyses) for combining boolean-output Analysis. It reads the boolean value corresponding to each analysis and returns True if all are True.
+
+
+    OPTIONS:
+        - name:         Name of the analysis
+        - analyses:     List of analyses' names to analyse
+    """
+
+    # Check if input analyses are of the proper type
+    if len(analyses) < 2:
+        raise NotEnoughDataError(2)
+    
+    for analysis in analyses:
+        
+        if not isinstance(self.analyses[analysis].result, list):
+            raise NotCompatibleAnalysisForAnalysisError
+        
+        else :
+            if not isinstance(self.analyses[analysis].result, bool):
+                raise NotCompatibleAnalysisForAnalysisError
+    
+    # Check if all analyses have the same number of frames
+    length = get_most_frequent([len(self.analyses[analysis].result) for analysis in analyses])
+#    not_equal = []
+#    for analysis in analyses:
+#        if len(self.analyses[analysis].result) != lenght:
+#            not_equal.append(analysis)
+
+    not_equal = [analysis for analysis in analyses if len(self.analyses[analysis].result) != length]
+    
+    if len(not_equal) != 0:
+        raise NotEqualLenghtsError(list_names=not_equal, lenght=length)
+    
+    self.analyses = self.Analysis(
+        name         = name,
+        type         = 'NACs',
+        measure_name = analyses,
+        result       = []
+    )
+
+
+    for frame in range(len(self.analyses[analyses[0]].result)):
+        result_ = all(self.analyses[analysis].result[frame] for analysis in analyses)
+        self.analyses[name].result.append(result_)
+
+    
+            
+
+
+

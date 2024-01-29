@@ -116,6 +116,16 @@ class NotCompatibleMeasureForAnalysisError(Exception):
 
     pass
 
+class NotCompatibleAnalysisForAnalysisError(Exception):
+    """
+    Raised when the analyses to analyse with a metaanalyser is not of an accepted type by the analyser.
+    """
+
+    def __init__(self):
+        Exception.__init__(self, "The input analyses is not compatible with the chosen analysis.")
+
+    pass
+
 
 
 class NotCompatibleContactsFormatError(Exception):
@@ -125,5 +135,27 @@ class NotCompatibleContactsFormatError(Exception):
 
     def __init__(self):
         Exception.__init__(self, "The contacts format is not the new. Rerun the measure with the new format.")
+
+    pass
+
+
+class NotEqualLenghtsError(Exception):
+    """
+    Raised when lists to compare do not have the same number of frames (so lists' lenghts).
+    """
+
+    def __init__(self, list_names, lenght):
+        #list_names_str = ', '.join(list_names)
+        Exception.__init__(self, f"{', '.join(list_names)} has/have not the same number of frames than the most common number ({lenght}).")
+
+    pass
+
+class NotEnoughDataError(Exception):
+    """
+    Raised when the given data is not enough to perform the measure or analysis.
+    """
+
+    def __init__(self, minimum_data):
+        Exception.__init__(self, f"At least {minimum_data} objects have to be given as input for performing the task.")
 
     pass
