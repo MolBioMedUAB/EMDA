@@ -3,6 +3,7 @@ from .exceptions import NotCompatibleMeasureForAnalysisError, NotAvailableOption
 from .exceptions import NotCompatibleAnalysisForAnalysisError, NotEqualLenghtsError, NotEnoughDataError
 from .tools import get_most_frequent
 
+from numpy import array
 from tqdm.autonotebook import tqdm
 
 
@@ -119,7 +120,10 @@ def analyse_contacts_frequency(self, name, measure, percentage=False):
 
 
 
-def analyse_NACs(self, name, analyses : list):
+#def 
+
+
+def analyse_NACs(self, name, analyses : list, inverse : list = False):
     """
     DESCRIPTION:
         Metaanalyser (analyses two or more analyses) for combining boolean-output Analysis. It reads the boolean value corresponding to each analysis and returns True if all are True.
@@ -140,7 +144,7 @@ def analyse_NACs(self, name, analyses : list):
             raise NotCompatibleAnalysisForAnalysisError
         
         else :
-            if not isinstance(self.analyses[analysis].result, bool):
+            if not isinstance(self.analyses[analysis].result[0], bool):
                 raise NotCompatibleAnalysisForAnalysisError
     
     # Check if all analyses have the same number of frames
@@ -155,7 +159,7 @@ def analyse_NACs(self, name, analyses : list):
     if len(not_equal) != 0:
         raise NotEqualLenghtsError(list_names=not_equal, lenght=length)
     
-    self.analyses = self.Analysis(
+    self.analyses[name] = self.Analysis(
         name         = name,
         type         = 'NACs',
         measure_name = analyses,
@@ -163,12 +167,20 @@ def analyse_NACs(self, name, analyses : list):
     )
 
 
-    for frame in range(len(self.analyses[analyses[0]].result)):
-        result_ = all(self.analyses[analysis].result[frame] for analysis in analyses)
+    for frame in range(length):
+        result_ = True
+        for analysis in analyses:
+            result_ = result_ and self.analyses[analysis].result[frame]
+
+        type(result_)
+
         self.analyses[name].result.append(result_)
 
+        #if isinstance(result_, array):
+        #    self.analyses[name].result.append(
+        #            [arr.item() for arr in result_][0]
+        #        )
+        #else :
+        #    self.analyses[name].result.append(result_)
+
     
-            
-
-
-
