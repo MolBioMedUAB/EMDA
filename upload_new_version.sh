@@ -28,8 +28,8 @@ sed -i "" "s|$ver_cfg_| $version|g" setup.cfg
 
 #exit
 
-git checkout main
-git merge building
+#git checkout main
+#git merge building
 git tag $version
 git push origin --tags
 
