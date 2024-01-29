@@ -7,7 +7,7 @@ version='0.1.0'
 #version='{{VERSION_PLACEHOLDER}}'
 
 setup(
-    name="EMDA",
+    name="EasyMDA",
     vesion=version,
     description="Easy MD Analysis (EMDA) is a Python package created with the aim of providing an easy, yet powerful way to perform analysis of MD simulations.",
     long_description=long_description,

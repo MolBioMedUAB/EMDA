@@ -2,7 +2,7 @@
 
 version="$1"
 
-
+# 
 echo "Is everything commited [Y|n]? (git status will be executed)"
 git status
 read ok
@@ -14,10 +14,19 @@ else
     echo "Proceding with $version version upload to PyPI."
 fi
 
-ver=$(cat setup.py | grep ^version=)
-ver_=${ver#*=}
+ver_py=$(cat setup.py | grep ^version=)
+ver_py_=${ver_py#*=}
 
-sed -i "s/$ver_/'$version'/g" setup.py
+ver_cfg=$(cat setup.cfg | grep '^version')
+ver_cfg_=${ver_cfg#*=}
+
+echo $ver_py_
+echo $ver_cfg_
+
+sed -i "" "s|$ver_py_|\'$version\'|g" setup.py
+sed -i "" "s|$ver_cfg_| $version|g" setup.cfg
+
+#exit
 
 git checkout main
 git merge building
