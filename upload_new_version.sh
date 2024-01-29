@@ -14,22 +14,15 @@ else
     echo "Proceding with $version version upload to PyPI."
 fi
 
-ver_py=$(cat setup.py | grep ^version=)
-ver_py_=${ver_py#*=}
+ver=$(cat EMDA/_version.py | grep ^__version__ =)
+ver_=${ver#*=}
 
-ver_cfg=$(cat setup.cfg | grep '^version')
-ver_cfg_=${ver_cfg#*=}
-
-echo $ver_py_
-echo $ver_cfg_
-
-sed -i "" "s|$ver_py_|\'$version\'|g" setup.py
-sed -i "" "s|$ver_cfg_| $version|g" setup.cfg
+sed -i "" "s|$ver_py_|\'$version\'|g" EMDA/_version.py
 
 #exit
 
-#git checkout main
-#git merge building
+git checkout main
+git merge building
 git tag $version
 git push origin --tags
 
