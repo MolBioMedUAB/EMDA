@@ -132,6 +132,7 @@ def analyse_NACs(self, name, analyses : list, inverse : list = False):
     OPTIONS:
         - name:         Name of the analysis
         - analyses:     List of analyses' names to analyse
+        - inverse:      List of analyses' names which will be treated in the opposite way, so True will be False and viceversa.
     """
 
     # Check if input analyses are of the proper type
@@ -159,6 +160,11 @@ def analyse_NACs(self, name, analyses : list, inverse : list = False):
     if len(not_equal) != 0:
         raise NotEqualLenghtsError(list_names=not_equal, lenght=length)
     
+    if inverse != False:
+        for inverse_ in inverse:
+            if inverse_ not in analyses:
+                print(f"{inverse_} is not in analyses, so it's value will not be inverted.")
+    
     self.analyses[name] = self.Analysis(
         name         = name,
         type         = 'NACs',
@@ -170,17 +176,14 @@ def analyse_NACs(self, name, analyses : list, inverse : list = False):
     for frame in range(length):
         result_ = True
         for analysis in analyses:
-            result_ = result_ and self.analyses[analysis].result[frame]
-
-        type(result_)
+            if inverse != False:
+                if analysis in inverse:
+                    result_ = result_ and not self.analyses[analysis].result[frame]
+                else :
+                    result_ = result_ and self.analyses[analysis].result[frame]
+            else :
+                result_ = result_ and self.analyses[analysis].result[frame]
 
         self.analyses[name].result.append(result_)
-
-        #if isinstance(result_, array):
-        #    self.analyses[name].result.append(
-        #            [arr.item() for arr in result_][0]
-        #        )
-        #else :
-        #    self.analyses[name].result.append(result_)
 
     
