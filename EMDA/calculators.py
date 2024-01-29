@@ -80,7 +80,7 @@ def calc_planar_angle(
         elif domain in (360, "360", "2pi"):
             ang = (rad2deg(ang) + 360) % 360
 
-    return ang
+    return float(ang)
 
 
 def calc_distance(
@@ -111,7 +111,7 @@ def calc_distance(
     elif type == 'cog':
         d = mdadist.distance_array(sel1.center_of_geometry(), sel2.center_of_geometry(), backend='OpenMP')
 
-    return d
+    return float(d)
 
 
 def calc_dihedral(
@@ -139,9 +139,9 @@ def calc_dihedral(
 
         if domain in (360, "360", "2pi"):
             d = ( d + pi ) % pi
-            return d
+            return float(d)
         elif domain in (180, "180", "pi"):
-            return d
+            return float(d)
 
     elif units in ("deg", "degree", "degrees"):
         from numpy import rad2deg
@@ -149,9 +149,9 @@ def calc_dihedral(
         d = rad2deg(d)
         if domain in (360, "360", "2pi"):
             d = ( d + 360 ) % 360
-            return d
+            return float(d)
         elif domain in (180, "180", "pi"):
-            return d
+            return float(d)
 
 
 def calc_angle(
@@ -178,9 +178,9 @@ def calc_angle(
 
         if domain in (360, "360", "2pi"):
             a = ( a + pi ) % pi
-            return a
+            return float(a)
         elif domain in (180, "180", "pi"):
-            return a
+            return float(a)
 
     elif units in ("deg", "degree", "degrees"):
         from numpy import rad2deg
@@ -188,9 +188,9 @@ def calc_angle(
         a = rad2deg(a)
         if domain in (360, "360", "2pi"):
             a = ( a + 360 ) % 360
-            return a
+            return float(a)
         elif domain in (180, "180", "pi"):
-            return a
+            return float(a)
         
 
 def calc_pka(
@@ -335,7 +335,7 @@ def calc_RMSD(
             ref,
         )
 
-    return rmsd
+    return float(rmsd)
 
 
 def calc_distWATbridge(
