@@ -3,16 +3,10 @@ from .exceptions import NotCompatibleMeasureForAnalysisError, NotAvailableOption
 from .exceptions import NotCompatibleAnalysisForAnalysisError, NotEqualLenghtsError, NotEnoughDataError
 from .tools import get_most_frequent
 
-from numpy import array
-from tqdm.autonotebook import tqdm
-
-
-#from dataclasses import dataclass
-
 """
-TO BUILD:
+TO BUILD in 0.2.0:
     - [X] NACs
-    - [] Contacts counter (how much contacts are in each frame)
+    - [X] Contacts counter (how much contacts are in each frame)
 """
 
 
@@ -195,10 +189,6 @@ def analyse_NACs(self, name, analyses : list, inverse : list = False):
     
     # Check if all analyses have the same number of frames
     length = get_most_frequent([len(self.analyses[analysis].result) for analysis in analyses])
-#    not_equal = []
-#    for analysis in analyses:
-#        if len(self.analyses[analysis].result) != lenght:
-#            not_equal.append(analysis)
 
     not_equal = [analysis for analysis in analyses if len(self.analyses[analysis].result) != length]
     
