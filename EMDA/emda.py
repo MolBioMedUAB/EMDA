@@ -1,5 +1,7 @@
 
 from dataclasses import dataclass
+from typing import Union
+from types import NoneType
 
 # load MDAnalysis' universe class
 from MDAnalysis import Universe
@@ -70,6 +72,8 @@ class EMDA:
         type : str
         measure_name : str
         result : list
+        mode : Union[str, NoneType] = None
+
 
         def __str__(self) -> str:
             if len(self.result) == 0:
