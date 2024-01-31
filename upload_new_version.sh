@@ -21,6 +21,7 @@ sed -i "" "s|$ver_py_|\'$version\'|g" EMDA/_version.py
 
 #exit
 
+black EMDA/
 git checkout main
 git merge building
 git tag $version
