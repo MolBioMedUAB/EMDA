@@ -45,8 +45,6 @@ def analyse_value(self, name, measure, val1, val2=0, mode='thres'):
     else :
         raise NotAvailableOptionError
     
-
-    
     self.analyses[name] = self.Analysis(
         name = name,
         type = 'value',
@@ -94,6 +92,7 @@ def analyse_contacts_frequency(self, name, measure, percentage=False):
         for residue in list(total_contacts.keys()):
 
             if percentage:
+                print('Measuring percentage')
                 contacts_freq[residue] = { residue_from_tot : total_contacts[residue].count(residue_from_tot)*100/len(self.measures[measure].result) for residue_from_tot in list(set(list(total_contacts[residue])))}
 
             elif not percentage:
@@ -109,6 +108,10 @@ def analyse_contacts_frequency(self, name, measure, percentage=False):
                 elif resid not in contacts_freq.keys():
                     contacts_freq[resid] = 1
 
+        if percentage:
+            for residue in list(contacts_freq.keys()):
+                contacts_freq[residue] = contacts_freq[residue]*100/len(self.measures[measure].result)
+
 
     self.analyses[name] = self.Analysis(
         name = name,
@@ -119,8 +122,50 @@ def analyse_contacts_frequency(self, name, measure, percentage=False):
     )
 
 
+def analyse_contacts_amount(self, name, measure):
+    """
+    DESCRIPTION:
+        Analyser for calculating how much contacts take place in each frame
 
-#def 
+    OUTPUT:
+        If the contacts mode is protein:
+            A frame-wise list containing a dictionary per frame containing the residue as key and the number of contacts of the residue as value
+
+        If the contacts mode is selection:
+            A frame-wise list containing the number of contacts for each frame.
+    """
+
+
+    if self.measures[measure].type not in ('contacts'):
+        raise NotCompatibleMeasureForAnalysisError
+    
+
+    if self.measures[measure].options['mode'] == 'protein':
+        # create dict containing the residue name as key and a list as value. In this list, each contact in each frame will be stored
+        contacts_amount = []
+        
+
+        for frame in self.measures[measure].result:
+            contacts_amount.append({resid : [] for resid in list(self.measures[measure].result[0].keys())})
+            for resid in list(contacts_amount[-1].keys()):
+                contacts_amount[-1][resid] = len(frame[resid])
+
+
+    elif self.measures[measure].options['mode'] == 'selection':
+        
+        contacts_amount = []
+        for frame in self.measures[measure].result:
+            contacts_amount.append(len(frame))
+
+
+    self.analyses[name] = self.Analysis(
+        name = name,
+        type = 'contacts_amount',
+        mode = self.measures[measure].options['mode'],
+        measure_name = measure,
+        result = contacts_amount
+    )
+
 
 
 def analyse_NACs(self, name, analyses : list, inverse : list = False):
