@@ -72,7 +72,8 @@ class EMDA:
         type : str
         measure_name : str
         result : list
-        mode : Union[str, NoneType] = None
+        options : dict = {}
+        #mode : Union[str, NoneType] = None
 
 
         def __str__(self) -> str:

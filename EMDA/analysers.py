@@ -9,6 +9,14 @@ TO BUILD in 0.2.0:
     - [X] Contacts counter (how much contacts are in each frame)
 """
 
+"""
+AVAILABLE:
+    - analyse_value:
+    - analyse_contacts_frequency:
+    - analyse_contacts_amount:
+    - analyse_NACs:
+"""
+
 
 def analyse_value(self, name, measure, val1, val2=0, mode='thres'):
     """
@@ -51,8 +59,6 @@ def analyse_value(self, name, measure, val1, val2=0, mode='thres'):
             min_val < result < max_val
         )
 
-
-
 def analyse_contacts_frequency(self, name, measure, percentage=False):
     """
     DESCRIPTION:
@@ -66,6 +72,8 @@ def analyse_contacts_frequency(self, name, measure, percentage=False):
         If the contacts is of a selection (so mode is selection), a dictionary containing the residue to which it contacts as key and the number of contacts or the 
             percentage as value.
 
+    OPTIONS:
+        - percentage: Returns the values in percentage
     """
 
     if self.measures[measure].type not in ('contacts'):
@@ -110,7 +118,10 @@ def analyse_contacts_frequency(self, name, measure, percentage=False):
     self.analyses[name] = self.Analysis(
         name = name,
         type = 'contacts_frequency',
-        mode = self.measures[measure].options['mode'],
+        options = {
+            'mode' : self.measures[measure].options['mode'],
+            'percentage' : True
+        }
         measure_name = measure,
         result = contacts_freq
     )
@@ -155,11 +166,12 @@ def analyse_contacts_amount(self, name, measure):
     self.analyses[name] = self.Analysis(
         name = name,
         type = 'contacts_amount',
-        mode = self.measures[measure].options['mode'],
+        options = {
+            'mode' : self.measures[measure].options['mode'],   
+        }
         measure_name = measure,
         result = contacts_amount
     )
-
 
 
 def analyse_NACs(self, name, analyses : list, inverse : list = False):
