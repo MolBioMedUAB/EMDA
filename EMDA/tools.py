@@ -28,3 +28,12 @@ def get_most_frequent(list_):
             num = i
  
     return num
+
+
+def read_analysis(self, analysis_filename, analysis=None):
+    import pickle
+
+    if analysis == None: analysis = '_'.join(analysis_filename.split('.')[:-1])
+
+    with open(analysis_filename, 'rb') as handle:
+        self.analyses[analysis] = pickle.load(handle)
