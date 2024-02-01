@@ -7,6 +7,7 @@ from .tools import get_most_frequent
 TO BUILD in 0.2.0:
     - [X] NACs
     - [X] Contacts counter (how much contacts are in each frame)
+    - [] Contacts checker --> checks if a contact is present in each frame
 """
 
 """
@@ -118,12 +119,12 @@ def analyse_contacts_frequency(self, name, measure, percentage=False):
     self.analyses[name] = self.Analysis(
         name = name,
         type = 'contacts_frequency',
+        measure_name = measure,
+        result = contacts_freq,
         options = {
             'mode' : self.measures[measure].options['mode'],
             'percentage' : True
-        }
-        measure_name = measure,
-        result = contacts_freq
+        },
     )
 
 
@@ -168,7 +169,7 @@ def analyse_contacts_amount(self, name, measure):
         type = 'contacts_amount',
         options = {
             'mode' : self.measures[measure].options['mode'],   
-        }
+        },
         measure_name = measure,
         result = contacts_amount
     )
