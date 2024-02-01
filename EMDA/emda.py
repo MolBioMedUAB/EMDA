@@ -1,7 +1,7 @@
-
-from dataclasses import dataclass
-from typing import Union
-from types import NoneType
+from dataclasses import dataclass, field
+import pickle
+#from typing import Union
+#from types import NoneType
 
 # load MDAnalysis' universe class
 from MDAnalysis import Universe
@@ -20,6 +20,12 @@ from tqdm.autonotebook import tqdm
 
 #from metaclass import add_adders
 #class EMDA(metaclass=add_adders):
+
+"""
+IDEAS:
+    - [] Make parameters and trajectory not only to strings but to dict with mutants and replicas.
+"""
+
 
 class EMDA:
 
@@ -72,7 +78,7 @@ class EMDA:
         type : str
         measure_name : str
         result : list
-        options : dict = {}
+        options : dict = field(default_factory={})
         #mode : Union[str, NoneType] = None
 
 
@@ -241,6 +247,25 @@ class EMDA:
 
             if first_cycle:
                 first_cycle = False
+
+
+    def save_analysis(self, analysis, out_name=None, ):
+        
+        if out_name == None: out_name = analysis + '.pickle'
+        
+        if analysis in list(self.analyses.keys()):
+            with open(out_name, 'wb') as handle:
+                pickle.dump(self.analyses[analysis], handle, protocol=2)
+
+            print(f"{analysis} analysis has been saved as {out_name}!")
+
+    def read_analysis(self, analysis_filename, analysis=None):
+
+        if analysis == None: analysis = '_'.join(analysis_filename.split('.')[:-1])
+
+        with open(analysis_filename, 'rb') as handle:
+            self.analyses[analysis] = pickle.load(handle)
+
 
 
     
