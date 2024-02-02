@@ -17,7 +17,7 @@ def plot_values(self, measure_name, out_name=None):
         pass
 
 
-def ext_plot_contacts_frequencies_differences(contacts_ref, contacts_tgt, threshold=1, testing=False, remove_consequent=False):
+def ext_plot_contacts_frequencies_differences(contacts_ref, contacts_tgt, threshold=1, testing=False, remove_consequent=False, return_results=False):
     """
     DESCRIPTION:
         Plotter that compares two different lists of protein contacts' frequencies and plots only those that are not similar based on a threshold.
@@ -35,6 +35,34 @@ def ext_plot_contacts_frequencies_differences(contacts_ref, contacts_tgt, thresh
         - > 0 --> more in ref
     """
 
+    def calculate_average(contacts_dict):
+        # creates contacts_avg list with all keys and value 0
+        contacts_avg = {}
+        for k in list(contacts_dict[0].keys()):
+            contacts_avg[k] = {}
+            for contacts_dict_ in contacts_dict:
+                for k_ in list(contacts_dict_.keys()):
+                    if k_ not in list(contacts_avg[k]):
+                        contacts_avg[k][k_] = 0
+                
+        # fill contacts_avg
+        for k in list(contacts_avg.keys()):
+            for k_ in contacts_avg[k]:
+                for contacts_dict_ in contacts_dict:
+                    try :
+                        contacts_avg[k][k_] += contacts_dict_[k][k_]/len(contacts_dict)
+                    except KeyError:
+                        contacts_avg[k][k_] += 0
+
+        return contacts_avg
+
+    if isinstance(contacts_ref, list):
+        contacts_ref = calculate_average(contacts_ref)
+
+    if isinstance(contacts_tgt, list):
+        contacts_tgt = calculate_average(contacts_tgt)
+
+
     labels_translator = {}
     contacts_ref_total = {}
     for k in list(contacts_ref.keys()):
@@ -45,7 +73,7 @@ def ext_plot_contacts_frequencies_differences(contacts_ref, contacts_tgt, thresh
     contacts_tgt_total = {}
     for k in list(contacts_tgt.keys()):
         for k_, contacts in contacts_tgt[k].items():
-            contacts_tgt_total[f"{k[3:]}-{k_[3:]}"] = contacts_tgt[k][k_]
+            contacts_tgt_total[f"{k[3:]}-{k_[3:]}"] = contacts
 
     important_contacts = {}
     for contact in list(set(contacts_ref_total.keys()) | set(contacts_tgt_total.keys())):
@@ -69,6 +97,10 @@ def ext_plot_contacts_frequencies_differences(contacts_ref, contacts_tgt, thresh
             elif int(k_[0]) == int(k_[1])-1:
                 del important_contacts[k]
 
+    if len(important_contacts) == 0:
+        print("No contact has been found to be different between the two input sets. Change the threshold for plotting or redo the contacts' measure changing the radius.")
+        return
+
 
     if testing:
         print(f"{len(important_contacts)} contacts have been detected with a threshold of {threshold}.")
@@ -88,5 +120,7 @@ def ext_plot_contacts_frequencies_differences(contacts_ref, contacts_tgt, thresh
     plt.show()
     plt.close()
 
+    if return_results:
+        return important_contacts
 
     
