@@ -7,6 +7,15 @@ TO BUILD:
     - [] 
 """
 
+def plot_values(self, measure_name, out_name=None):
+
+    plt.plot(self.measure[measure_name].result)
+
+    plt.show()
+
+    if out_name != None:
+        pass
+
 
 def ext_plot_contacts_frequencies_differences(contacts_ref, contacts_tgt, threshold=1, testing=False, remove_consequent=False):
     """
@@ -59,8 +68,6 @@ def ext_plot_contacts_frequencies_differences(contacts_ref, contacts_tgt, thresh
                 del important_contacts[k]
             elif int(k_[0]) == int(k_[1])-1:
                 del important_contacts[k]
-
-
 
 
     if testing:
