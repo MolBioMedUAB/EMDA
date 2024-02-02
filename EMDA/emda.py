@@ -13,6 +13,7 @@ from .adders import *
 from .runners import *
 from .analysers import *
 from .plotters import *
+from .tools import in_notebook
 
 # load custom exceptions
 from .exceptions import EmptyMeasuresError
@@ -66,15 +67,28 @@ class EMDA:
             print_ += f"\tType:   {self.type}\n"
             print_ += f"\tSel:    {self.sel}\n"
             print_ += f"\tStatus: {status}\n"
-
+        
             return print_
         
         def __repr__(self):
             return self.__str__()
         
         def plot(self):
-            if self.type in ('distance', 'angle', 'dihedral'):
-                plot_values(self.name)
+            if self.type in ('distance', 'angle', 'dihedral', 'RMSD', 'planar_angle'):
+                units = {
+                    'distance' : '(Å)',
+                    'angle' : '(º)',
+                    'dihedral' : '(º)',
+                    'planar_angle' : '(º)',
+                    'RMSD' : '(Å)',
+                         }
+
+                plt.plot(self.result)
+                plt.ylabel(' '.join(self.type.split('_')).capitalize() + ' ' + units[self.type])
+                plt.xlabel('Frame')
+
+                plt.show()
+                plt.close()
             else :
                 print(f"This method is still not available for {type} measures.")
 
@@ -86,6 +100,7 @@ class EMDA:
         measure_name : str
         result : list
         options : dict = field(default_factory={})
+        #options : dict
         #mode : Union[str, NoneType] = None
 
 
