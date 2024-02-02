@@ -12,6 +12,7 @@ from .selection import selection
 from .adders import *
 from .runners import *
 from .analysers import *
+from .plotters import *
 
 # load custom exceptions
 from .exceptions import EmptyMeasuresError
@@ -54,7 +55,6 @@ class EMDA:
         options : dict
         result  : list
 
-
         def __str__(self) -> str:
             if len(self.result) == 0:
                 status = 'Not calculated'
@@ -71,6 +71,13 @@ class EMDA:
         
         def __repr__(self):
             return self.__str__()
+        
+        def plot(self):
+            if self.type in ('distance', 'angle', 'dihedral'):
+                plot_values(self.name)
+            else :
+                print(f"This method is still not available for {type} measures.")
+
         
     @dataclass
     class Analysis:
