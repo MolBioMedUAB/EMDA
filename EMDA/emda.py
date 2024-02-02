@@ -271,7 +271,7 @@ class EMDA:
                 first_cycle = False
 
 
-    def save_analysis(self, analysis, out_name=None, ):
+    def save_analysis(self, analysis, out_name=None):
         
         if out_name == None: out_name = analysis + '.pickle'
         
@@ -286,10 +286,17 @@ class EMDA:
         if analysis == None: analysis = '_'.join(analysis_filename.split('.')[:-1])
 
         with open(analysis_filename, 'rb') as handle:
-            self.analyses[analysis] = pickle.load(handle)
+            self.analyses[analysis] = self.Analysis(
+                name= analysis,
+                type= 'loaded',
+                measure_name= '',
+                result=pickle.load(handle),
+                options={}
+            )
 
 
 
     
     
+
 

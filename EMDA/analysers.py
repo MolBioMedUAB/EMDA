@@ -100,7 +100,6 @@ def analyse_contacts_frequency(self, name, measure, percentage=False):
         for residue in list(total_contacts.keys()):
 
             if percentage:
-                print('Measuring percentage')
                 contacts_freq[residue] = { residue_from_tot : total_contacts[residue].count(residue_from_tot)*100/len(self.measures[measure].result) for residue_from_tot in list(set(list(total_contacts[residue])))}
 
             elif not percentage:

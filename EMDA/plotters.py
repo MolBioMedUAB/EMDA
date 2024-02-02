@@ -17,7 +17,7 @@ def plot_values(self, measure_name, out_name=None):
         pass
 
 
-def ext_plot_contacts_frequencies_differences(contacts_ref, contacts_tgt, threshold=1, testing=False, remove_consequent=False, return_results=False):
+def ext_plot_contacts_frequencies_differences(contacts_ref, contacts_tgt, threshold=1, testing=False, remove_consequent=False, return_results=False, return_labels=False, width_plot=0.5):
     """
     DESCRIPTION:
         Plotter that compares two different lists of protein contacts' frequencies and plots only those that are not similar based on a threshold.
@@ -63,31 +63,41 @@ def ext_plot_contacts_frequencies_differences(contacts_ref, contacts_tgt, thresh
         contacts_tgt = calculate_average(contacts_tgt)
 
 
+    max_contact = 0
     labels_translator = {}
     contacts_ref_total = {}
     for k in list(contacts_ref.keys()):
+        labels_translator[k[3:]] = k
         for k_, contacts in contacts_ref[k].items():
             contacts_ref_total[f"{k[3:]}-{k_[3:]}"] = contacts
-            labels_translator[f"{k[3:]}-{k_[3:]}"] = f"{k}-{k_}"
+            if max_contact < contacts:
+                max_contact = contacts
+            
 
     contacts_tgt_total = {}
     for k in list(contacts_tgt.keys()):
         for k_, contacts in contacts_tgt[k].items():
             contacts_tgt_total[f"{k[3:]}-{k_[3:]}"] = contacts
+            if max_contact < contacts:
+                max_contact = contacts
 
     important_contacts = {}
+    #print(contacts_tgt_total.keys())
+    #print(list(set(list(contacts_ref_total.keys()) + list(contacts_tgt_total.keys()))))
     for contact in list(set(contacts_ref_total.keys()) | set(contacts_tgt_total.keys())):
-        if (contact not in list(contacts_ref_total.keys()) and contact in list(contacts_tgt_total.keys())) and contacts_tgt_total[contact] > threshold:
-            important_contacts[contact] = -contacts_tgt_total[contact]
+    #for contact in list(set(list(contacts_ref_total.keys()) + list(contacts_tgt_total.keys()))):
+        if (contact not in list(contacts_ref_total.keys()) and contact in list(contacts_tgt_total.keys())):# and contacts_tgt_total[contact] > threshold:
+            if contacts_tgt_total[contact] > threshold:
+                important_contacts[contact] = -contacts_tgt_total[contact]
 
-        elif (contact in list(contacts_ref_total.keys()) and contact not in list(contacts_tgt_total.keys())) and contacts_ref_total[contact] > threshold:
-            important_contacts[contact] = contacts_ref_total[contact]
+        elif (contact in list(contacts_ref_total.keys()) and contact not in list(contacts_tgt_total.keys())):# 
+            if contacts_ref_total[contact] > threshold:
+                important_contacts[contact] = contacts_ref_total[contact]
         
         else :
             if abs(contacts_tgt_total[contact] - contacts_ref_total[contact]) > threshold:
 #                important_contacts[contact] = + contacts_tgt_total[contact] - contacts_ref_total[contact] # if more in tgt, positive
                 important_contacts[contact] = - contacts_tgt_total[contact] + contacts_ref_total[contact] #if more in ref, positive
-
 
     if remove_consequent:
         for k in list(important_contacts.keys()):
@@ -106,21 +116,33 @@ def ext_plot_contacts_frequencies_differences(contacts_ref, contacts_tgt, thresh
         print(f"{len(important_contacts)} contacts have been detected with a threshold of {threshold}.")
         return
 
-
     col = ['red' if value < 0 else 'blue' for value in list(important_contacts.values())]
 
+    #from matplotlib.pyplot import figure
+    plt.figure(figsize=(len(important_contacts)*width_plot, 5))
+
     plt.bar(
-        [labels_translator[k] for k in list(important_contacts.keys())],
+        [f"{labels_translator[k.split('-')[0]]}-{labels_translator[k.split('-')[1]]}" for k in list(important_contacts.keys())],
         list(important_contacts.values()),
         color = col,
     )
     
     plt.xticks(rotation=45, ha='right')
-    
+
+    if max_contact == 100:
+        plt.ylabel('Frequency (%)')
+
+    else :
+        plt.ylabel('Frequency (number of)')
+
     plt.show()
     plt.close()
 
-    if return_results:
+    if return_results and return_labels:
+        return important_contacts, return_labels
+    elif return_results:
         return important_contacts
+    elif return_labels:
+        return return_labels
 
     
