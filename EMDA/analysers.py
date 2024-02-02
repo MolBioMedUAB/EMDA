@@ -48,17 +48,22 @@ def analyse_value(self, name, measure, val1, val2=0, mode='thres'):
     else :
         raise NotAvailableOptionError
     
+    results = []
+
+    for result in self.measures[measure].result:
+        results.append(
+            min_val < result < max_val
+        )
+
     self.analyses[name] = self.Analysis(
         name = name,
         type = 'value',
         measure_name = measure,
-        result = []
+        result = results,
+        #options = {}
     )
 
-    for result in self.measures[measure].result:
-        self.analyses[name].result.append(
-            min_val < result < max_val
-        )
+
 
 def analyse_contacts_frequency(self, name, measure, percentage=False):
     """
@@ -217,7 +222,8 @@ def analyse_NACs(self, name, analyses : list, inverse : list = False):
         name         = name,
         type         = 'NACs',
         measure_name = analyses,
-        result       = []
+        result       = [],
+        #options      = {}
     )
 
 
