@@ -1,5 +1,7 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, is_dataclass
 import pickle
+
+#from typing import Literal
 #from typing import Union
 #from types import NoneType
 
@@ -271,25 +273,54 @@ class EMDA:
                 first_cycle = False
 
 
-    def save_analysis(self, analysis, out_name=None, ):
+    def save_result(self, name, out_name=None, ):
         
-        if out_name == None: out_name = analysis + '.pickle'
+        if out_name == None: out_name = name + '.pickle'
         
-        if analysis in list(self.analyses.keys()):
-            with open(out_name, 'wb') as handle:
-                pickle.dump(self.analyses[analysis], handle, protocol=2)
+        if name in list(self.analyses.keys()):
+            with open('.'.joint(out_name.split('.')[:-1]) + '_analysis' + out_name.split('.')[-1], 'wb') as handle:
+                pickle.dump(self.analyses[name].result, handle, protocol=2)
 
-            print(f"{analysis} analysis has been saved as {out_name}!")
+            print(f"{name} analysis' result has been saved as {out_name}!")
 
-    def read_analysis(self, analysis_filename, analysis=None):
+        elif name in list(self.measures.keys()):
+            with open('.'.joint(out_name.split('.')[:-1]) + '_measure' + out_name.split('.')[-1], 'wb') as handle:
+                pickle.dump(self.measures[name].result, handle, protocol=2)
 
-        if analysis == None: analysis = '_'.join(analysis_filename.split('.')[:-1])
+            print(f"{name} analysis' result has been saved as {out_name}!")
 
-        with open(analysis_filename, 'rb') as handle:
-            self.analyses[analysis] = pickle.load(handle)
+        else :
+            raise KeyError(f"{name} is not an available measure nor analysis.")
 
 
+    def read_result(self, filename, name,  type = "dataclass"):
 
-    
+        if is_dataclass(name) and type.lower() in ["d", "dataclass"]:
+            with open(filename, 'rb') as handle:
+                name.result = pickle.load(handle)
+
+        else :
+            try :
+                if type.lower() in ["m", "measure"]:
+                    with open(filename, 'rb') as handle:
+                        self.measures[name].result = pickle.load(handle)
+
+                if type.lower() in ["a", "analysis"]:
+                    with open(filename, 'rb') as handle:
+                        self.analyses[name].result = pickle.load(handle)
+
+            except KeyError:
+                raise KeyError(f"{name} is not an available measure nor analysis.")
+
+
+#def save_analysis_result(self, out_name):
+#    if out_name == None: out_name = result + '.pickle'
+        
+#    if result in list(self.analyses.keys()):
+#        with open(out_name, 'wb') as handle:
+#            pickle.dump(result, handle, protocol=2)
+
+#        print(f"{analysis} analysis has been saved as {out_name}!")
+
     
 
