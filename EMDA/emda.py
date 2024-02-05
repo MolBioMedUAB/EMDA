@@ -278,13 +278,13 @@ class EMDA:
         if out_name == None: out_name = name + '.pickle'
         
         if name in list(self.analyses.keys()):
-            with open('.'.joint(out_name.split('.')[:-1]) + '_analysis' + out_name.split('.')[-1], 'wb') as handle:
+            with open('.'.join(out_name.split('.')[:-1]) + '_analysis.' + out_name.split('.')[-1], 'wb') as handle:
                 pickle.dump(self.analyses[name].result, handle, protocol=2)
 
             print(f"{name} analysis' result has been saved as {out_name}!")
 
         elif name in list(self.measures.keys()):
-            with open('.'.joint(out_name.split('.')[:-1]) + '_measure' + out_name.split('.')[-1], 'wb') as handle:
+            with open('.'.join(out_name.split('.')[:-1]) + '_measure.' + out_name.split('.')[-1], 'wb') as handle:
                 pickle.dump(self.measures[name].result, handle, protocol=2)
 
             print(f"{name} analysis' result has been saved as {out_name}!")
