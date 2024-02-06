@@ -35,33 +35,31 @@ def ext_plot_contacts_frequencies_differences(contacts_ref, contacts_tgt, thresh
         - > 0 --> more in ref
     """
 
-    def calculate_average(contacts_dict):
+    def calculate_average(contacts_dicts):
         # creates contacts_avg list with all keys and value 0
         contacts_avg = {}
-        for k in list(contacts_dict[0].keys()):
-            contacts_avg[k] = {}
-            for contacts_dict_ in contacts_dict:
-                for k_ in list(contacts_dict_.keys()):
-                    if k_ not in list(contacts_avg[k]):
-                        contacts_avg[k][k_] = 0
-                
-        # fill contacts_avg
-        for k in list(contacts_avg.keys()):
-            for k_ in contacts_avg[k]:
-                for contacts_dict_ in contacts_dict:
-                    try :
-                        contacts_avg[k][k_] += contacts_dict_[k][k_]/len(contacts_dict)
-                    except KeyError:
-                        contacts_avg[k][k_] += 0
+
+        for contacts_dict in contacts_dicts:
+            for k, value in contacts_dict.items():
+                for k_, value_ in value.items():
+                    if k in list(contacts_avg.keys()):
+                        if k_ in list(contacts_avg[k].keys()):
+                            contacts_avg[k][k_] += value_/len(contacts_dicts)
+                        else :
+                            contacts_avg[k][k_] =  value_/len(contacts_dicts)
+                    else :
+                        contacts_avg[k] = {}
+                        contacts_avg[k][k_] =  value_/len(contacts_dicts)
+
 
         return contacts_avg
 
+    # calculate averages if more than one result is given as input
     if isinstance(contacts_ref, list):
         contacts_ref = calculate_average(contacts_ref)
 
     if isinstance(contacts_tgt, list):
         contacts_tgt = calculate_average(contacts_tgt)
-
 
     max_contact = 0
     labels_translator = {}
@@ -82,10 +80,7 @@ def ext_plot_contacts_frequencies_differences(contacts_ref, contacts_tgt, thresh
                 max_contact = contacts
 
     important_contacts = {}
-    #print(contacts_tgt_total.keys())
-    #print(list(set(list(contacts_ref_total.keys()) + list(contacts_tgt_total.keys()))))
     for contact in list(set(contacts_ref_total.keys()) | set(contacts_tgt_total.keys())):
-    #for contact in list(set(list(contacts_ref_total.keys()) + list(contacts_tgt_total.keys()))):
         if (contact not in list(contacts_ref_total.keys()) and contact in list(contacts_tgt_total.keys())):# and contacts_tgt_total[contact] > threshold:
             if contacts_tgt_total[contact] > threshold:
                 important_contacts[contact] = -contacts_tgt_total[contact]
@@ -118,7 +113,7 @@ def ext_plot_contacts_frequencies_differences(contacts_ref, contacts_tgt, thresh
 
     col = ['red' if value < 0 else 'blue' for value in list(important_contacts.values())]
 
-    #from matplotlib.pyplot import figure
+
     plt.figure(figsize=(len(important_contacts)*width_plot, 5))
 
     plt.bar(
