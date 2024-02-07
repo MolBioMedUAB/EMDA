@@ -36,7 +36,21 @@ class EMDA:
     def __init__(self, parameters, trajectory):
         """
         DESCRIPTION:
-            Function to initialise the EMDA class by loading the parameters and trajectory as a MDAnalysis universe.
+            Function to initialise the EMDA class by loading the parameters and trajectory as a MDAnalysis universe and loading adders, analysers and plotters as internal methods.
+
+        ATTRIBUTES:
+            - parameters:   name of the parameters and topology file
+            - trajectory:   name or list of names of the trajectory file(s)
+            - universe:     MDAnalysis Universe object containing the parameters and trajectory set as input of the class
+            - selections:   Dictionary containing as key the name (ID) of a selection and the MDAnalysis AtomGroup object as value
+            - measures:     Dictionary containing as key the name (ID) of a measure and the EMDA's Measure object as value
+            - analyses:     Dictionary containing as key the name (ID) of an analysis and the EMDA's Analysis object as value
+
+
+        METHODS:
+            - add_*:        Adders loaded from adders.py file. The available adders and their description and usage can be printed using the print_available_adders EMDA's method
+            - analyse_*:    Analysers loaded from analysers.py file.
+            - plot_*:       Analysers loaded from plotters.py file. External plotter (indicated by using ext_ as function's name prefix) are not loaded.
         """
 
         self.parameters = parameters
@@ -63,6 +77,16 @@ class EMDA:
         """
         DESCRIPTION:
             Dataclass that stores calculated measures and related attributes.
+
+        ATTRIBUTES:
+            - name:     Name (ID) of the measure
+            - type:     Type of the measure (distance, angle, dihedral, planar_angle, RMSD, and contacts are currently available)
+            - sel:      Selections related to the measure as AtomGroups
+            - options:  Empty dictionary containing different options to set the measure calculation
+            - result:   List containing the measured results.
+
+        METHODS:
+            - plot:     Creates a simple plot of the calculated measures. Only available for distance, angle, dihedral, planar_angle, and RMSD types
         """
 
         name    : str
@@ -91,7 +115,7 @@ class EMDA:
         def plot(self):
             """
             DESCRIPTION:
-                Measure's method to plot the stored values in the result attribute for distance, angle, dihedral, RMSD and planar_angle types
+                Measure's method to plot the stored values in the result attribute for distance, angle, dihedral, RMSD and planar_angle types.
             """
 
 
@@ -116,6 +140,20 @@ class EMDA:
         
     @dataclass
     class Analysis:
+        """
+        DESCRIPTION:
+            Dataclass that stores calculated analyses and related attributes.
+
+        ATTRIBUTES:
+            - name:             Name (ID) of the measure
+            - type:             Type of the measure (distance, angle, dihedral, planar_angle, RMSD, and contacts are currently available)
+            - measure_name:     Selections related to the measure as AtomGroups
+            - options:          Empty dictionary containing different options to set the measure calculation
+            - result:           List containing the measured results.
+
+        METHODS:
+            - plot:     Creates a simple plot of the calculated measures. Only available for distance, angle, dihedral, planar_angle, and RMSD types
+        """
         name : str
         type : str
         measure_name : str
@@ -144,6 +182,11 @@ class EMDA:
 
     # function for creating selections (AtomGroups) as a dictionary inside EMDA class
     def select(self, name, sel_input, sel_type=None, no_backbone=False, return_atomic_sel_string=False):
+        """
+        DESCRIPTION:
+            Method for creating selections inside the selections attribute of EMDA's class.
+        """
+
         self.selections[name] = selection(self.universe, sel_input, sel_type=sel_type, no_backbone=no_backbone, return_atomic_sel_string=return_atomic_sel_string)
 
 
@@ -223,6 +266,7 @@ class EMDA:
         ## If it is True, set measure's result as empty list, so it is overwritten.
         ## If a measure or list of measures is given, their result list will be reset as [].
         if exclude == None: exclude = []
+        elif isinstance(exclude, str): exclude = [exclude]
 
         if isinstance(recalculate, str):
                 recalculate = [recalculate]
@@ -233,7 +277,7 @@ class EMDA:
                     if recalculate:
                         self.measures[measure].result = []
                     elif not recalculate:
-                        exclude += [measure]
+                        exclude.append(measure)
 
                 elif isinstance(recalculate, list):
                     if measure in recalculate:
@@ -247,8 +291,10 @@ class EMDA:
                 measures = set([run_only])
             elif isinstance(run_only, list):
                 measures = set(run_only)
-        else :
-            measures = (set(self.measures.keys()) - set(exclude))
+        elif run_only == None:
+            print(set(self.measures.keys()))
+            measures = set(set(self.measures.keys()) - set(exclude))
+            print(measures)
 
         # trajectory cycle
         first_cycle = True
