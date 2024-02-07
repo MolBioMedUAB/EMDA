@@ -15,7 +15,7 @@ from .adders import *
 from .runners import *
 from .analysers import *
 from .plotters import *
-from .tools import in_notebook
+#from .tools import in_notebook
 
 # load custom exceptions
 from .exceptions import EmptyMeasuresError
@@ -34,6 +34,10 @@ IDEAS:
 class EMDA:
 
     def __init__(self, parameters, trajectory):
+        """
+        DESCRIPTION:
+            Function to initialise the EMDA class by loading the parameters and trajectory as a MDAnalysis universe.
+        """
 
         self.parameters = parameters
         self.trajectory = trajectory
@@ -47,11 +51,20 @@ class EMDA:
         # Automatically add all imported functions from adders.py and from analysers.py as EMDA methods
         external_functions  = [func for func in globals() if callable(globals()[func]) and func.startswith("add_")]
         external_functions += [func for func in globals() if callable(globals()[func]) and func.startswith("analyse_")]
+        external_functions += [func for func in globals() if callable(globals()[func]) and func.startswith("plot_")]
+
         for func_name in external_functions:
             setattr(EMDA, func_name, globals()[func_name])
 
+
+
     @dataclass
     class Measure:
+        """
+        DESCRIPTION:
+            Dataclass that stores calculated measures and related attributes.
+        """
+
         name    : str
         type    : str
         sel     : list
@@ -76,6 +89,12 @@ class EMDA:
             return self.__str__()
         
         def plot(self):
+            """
+            DESCRIPTION:
+                Measure's method to plot the stored values in the result attribute for distance, angle, dihedral, RMSD and planar_angle types
+            """
+
+
             if self.type in ('distance', 'angle', 'dihedral', 'RMSD', 'planar_angle'):
                 units = {
                     'distance' : '(Å)',
@@ -129,6 +148,11 @@ class EMDA:
 
 
     def print_available_adders(self):
+        """
+        DESCRIPTION:
+            Prints the DESCRIPTION and USAGE sections of the available adders
+        """
+
 
         import inspect
         
@@ -311,17 +335,4 @@ class EMDA:
 
             except KeyError:
                 raise KeyError(f"{name} is not an available measure nor analysis.")
-
-
-#def save_analysis_result(self, out_name):
-#    if out_name == None: out_name = result + '.pickle'
-        
-#    if result in list(self.analyses.keys()):
-#        with open(out_name, 'wb') as handle:
-#            pickle.dump(result, handle, protocol=2)
-
-#        print(f"{analysis} analysis has been saved as {out_name}!")
-
-    
-
 

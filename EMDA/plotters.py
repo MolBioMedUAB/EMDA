@@ -8,6 +8,12 @@ TO BUILD:
 """
 
 def plot_values(self, measure_name, out_name=None):
+    """
+    DESCRIPTION:
+        P
+
+    """
+
 
     plt.plot(self.measure[measure_name].result)
 
@@ -24,11 +30,12 @@ def ext_plot_contacts_frequencies_differences(contacts_ref, contacts_tgt, thresh
 
 
     OPTIONS:
-        - threshold: sets the minimum difference that has to be between the reference and the target.
-
-        
-    TO-DO:
-        - [x] add option to only print z
+        - threshold:            sets the minimum difference that has to be between the reference and the target.
+        - testing:              returns only the number of obtained contacts instead of the plot.
+        - remove_consequent:    removes contacts between a residue and its following and previous.
+        - return_results:       returns the dictionary with the compared results.
+        - return_labels:        returns the list of labels of the obtained results.
+        - width_plot:           sets the width per bar of the output plot.
 
     BUILDING NOTES:
         - < 0 --> more in tgt
