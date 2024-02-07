@@ -28,8 +28,9 @@ sed -i "" "s|$ver_|\'$version\'|g" EMDA/_version.py
 
 #exit
 
-black EMDA/
+git commit EMDA/_version.py -m "Update to version $version"
 
+black EMDA/
 branch=$(git rev-parse --abbrev-ref HEAD)
 
 if [[ "$branch" != 'main' ]];
