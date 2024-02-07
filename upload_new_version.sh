@@ -2,6 +2,12 @@
 
 version="$1"
 
+if [[ "$version" == '' ]];
+then
+    echo "Please, add the version as an argument"
+    exit
+fi
+
 # 
 echo "Is everything commited [Y|n]? (git status will be executed)"
 git status
@@ -14,16 +20,24 @@ else
     exit
 fi
 
-ver=$(cat EMDA/_version.py | grep ^__version__ =)
+ver=$(cat EMDA/_version.py | grep '^__version__ =')
 ver_=${ver#*=}
+echo $ver_
 
-sed -i "" "s|$ver_py_|\'$version\'|g" EMDA/_version.py
+sed -i "" "s|$ver_|\'$version\'|g" EMDA/_version.py
 
 #exit
 
 black EMDA/
-git checkout main
-git merge building
+
+branch=$(git rev-parse --abbrev-ref HEAD)
+
+if [[ "$branch" != 'main' ]];
+then
+    git checkout main
+    git merge building
+fi
+
 git tag $version
 git push origin --tags
 
