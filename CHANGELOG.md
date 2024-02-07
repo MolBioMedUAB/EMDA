@@ -3,6 +3,11 @@
 ## 0.2.0
 - analyse_NACs analyser has been created to combine 2 or more analyse_value results. get_most_frequent function has been added to tools.py. NotEqualLenghtsError and NotEnoughDataError exceptions have been created for the analyser.
 - analyse_contacts_amount has been created to calculate the number of contacts in each frame.
+- save_result and read_result methods of EMDA class have been added to store data from measures or analysis. 
+- plot method of Measure class has been added to plot frame-wise results such as distance, angle, dihedral, RMSD and planar_angle.
+- ext_plot_contacts_frequencies_differences plotter has been created. It takes two (or two sets of) frequency of contacts' analysis result and returns a bar graph showing the contacts that are the most different between the two input lists depending on the given threshold.
+- 
+
 
 
 ## 0.1.0
