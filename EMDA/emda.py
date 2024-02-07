@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field, is_dataclass
 import pickle
 
-#from typing import Literal
+from typing import Literal
 #from typing import Union
 #from types import NoneType
 
@@ -297,7 +297,11 @@ class EMDA:
                 first_cycle = False
 
 
-    def save_result(self, name, out_name=None, ):
+    def save_result(self, name, out_name=None):
+        """
+        DESCRIPTION:
+            EMDA's method for saving into a pickle file the result attribute of a Measure class or an Analysis class.
+        """
         
         if out_name == None: out_name = name + '.pickle'
         
@@ -317,7 +321,12 @@ class EMDA:
             raise KeyError(f"{name} is not an available measure nor analysis.")
 
 
-    def read_result(self, filename, name,  type = "dataclass"):
+
+    def read_result(self, filename, name,  type : Literal['d', 'dataclass', 'a', 'analysis', 'm', 'measure'] = "dataclass"):
+        """
+        DESCRIPTION:
+            EMDA's method for reading a pickle file containing the result attribute of a precreated Measure class or an Analysis class.
+        """
 
         if is_dataclass(name) and type.lower() in ["d", "dataclass"]:
             with open(filename, 'rb') as handle:
