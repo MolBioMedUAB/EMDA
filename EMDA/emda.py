@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field, is_dataclass
 import pickle
 
-#from typing import Literal
+from typing import Literal
 #from typing import Union
 #from types import NoneType
 
@@ -15,7 +15,7 @@ from .adders import *
 from .runners import *
 from .analysers import *
 from .plotters import *
-from .tools import in_notebook
+#from .tools import in_notebook
 
 # load custom exceptions
 from .exceptions import EmptyMeasuresError
@@ -34,6 +34,24 @@ IDEAS:
 class EMDA:
 
     def __init__(self, parameters, trajectory):
+        """
+        DESCRIPTION:
+            Function to initialise the EMDA class by loading the parameters and trajectory as a MDAnalysis universe and loading adders, analysers and plotters as internal methods.
+
+        ATTRIBUTES:
+            - parameters:   name of the parameters and topology file
+            - trajectory:   name or list of names of the trajectory file(s)
+            - universe:     MDAnalysis Universe object containing the parameters and trajectory set as input of the class
+            - selections:   Dictionary containing as key the name (ID) of a selection and the MDAnalysis AtomGroup object as value
+            - measures:     Dictionary containing as key the name (ID) of a measure and the EMDA's Measure object as value
+            - analyses:     Dictionary containing as key the name (ID) of an analysis and the EMDA's Analysis object as value
+
+
+        METHODS:
+            - add_*:        Adders loaded from adders.py file. The available adders and their description and usage can be printed using the print_available_adders EMDA's method
+            - analyse_*:    Analysers loaded from analysers.py file.
+            - plot_*:       Analysers loaded from plotters.py file. External plotter (indicated by using ext_ as function's name prefix) are not loaded.
+        """
 
         self.parameters = parameters
         self.trajectory = trajectory
@@ -47,11 +65,30 @@ class EMDA:
         # Automatically add all imported functions from adders.py and from analysers.py as EMDA methods
         external_functions  = [func for func in globals() if callable(globals()[func]) and func.startswith("add_")]
         external_functions += [func for func in globals() if callable(globals()[func]) and func.startswith("analyse_")]
+        external_functions += [func for func in globals() if callable(globals()[func]) and func.startswith("plot_")]
+
         for func_name in external_functions:
             setattr(EMDA, func_name, globals()[func_name])
 
+
+
     @dataclass
     class Measure:
+        """
+        DESCRIPTION:
+            Dataclass that stores calculated measures and related attributes.
+
+        ATTRIBUTES:
+            - name:     Name (ID) of the measure
+            - type:     Type of the measure (distance, angle, dihedral, planar_angle, RMSD, and contacts are currently available)
+            - sel:      Selections related to the measure as AtomGroups
+            - options:  Empty dictionary containing different options to set the measure calculation
+            - result:   List containing the measured results.
+
+        METHODS:
+            - plot:     Creates a simple plot of the calculated measures. Only available for distance, angle, dihedral, planar_angle, and RMSD types
+        """
+
         name    : str
         type    : str
         sel     : list
@@ -76,6 +113,12 @@ class EMDA:
             return self.__str__()
         
         def plot(self):
+            """
+            DESCRIPTION:
+                Measure's method to plot the stored values in the result attribute for distance, angle, dihedral, RMSD and planar_angle types.
+            """
+
+
             if self.type in ('distance', 'angle', 'dihedral', 'RMSD', 'planar_angle'):
                 units = {
                     'distance' : '(Å)',
@@ -97,6 +140,20 @@ class EMDA:
         
     @dataclass
     class Analysis:
+        """
+        DESCRIPTION:
+            Dataclass that stores calculated analyses and related attributes.
+
+        ATTRIBUTES:
+            - name:             Name (ID) of the measure
+            - type:             Type of the measure (distance, angle, dihedral, planar_angle, RMSD, and contacts are currently available)
+            - measure_name:     Selections related to the measure as AtomGroups
+            - options:          Empty dictionary containing different options to set the measure calculation
+            - result:           List containing the measured results.
+
+        METHODS:
+            - plot:     Creates a simple plot of the calculated measures. Only available for distance, angle, dihedral, planar_angle, and RMSD types
+        """
         name : str
         type : str
         measure_name : str
@@ -125,10 +182,20 @@ class EMDA:
 
     # function for creating selections (AtomGroups) as a dictionary inside EMDA class
     def select(self, name, sel_input, sel_type=None, no_backbone=False, return_atomic_sel_string=False):
+        """
+        DESCRIPTION:
+            Method for creating selections inside the selections attribute of EMDA's class.
+        """
+
         self.selections[name] = selection(self.universe, sel_input, sel_type=sel_type, no_backbone=no_backbone, return_atomic_sel_string=return_atomic_sel_string)
 
 
     def print_available_adders(self):
+        """
+        DESCRIPTION:
+            Prints the DESCRIPTION and USAGE sections of the available adders
+        """
+
 
         import inspect
         
@@ -199,6 +266,7 @@ class EMDA:
         ## If it is True, set measure's result as empty list, so it is overwritten.
         ## If a measure or list of measures is given, their result list will be reset as [].
         if exclude == None: exclude = []
+        elif isinstance(exclude, str): exclude = [exclude]
 
         if isinstance(recalculate, str):
                 recalculate = [recalculate]
@@ -209,7 +277,7 @@ class EMDA:
                     if recalculate:
                         self.measures[measure].result = []
                     elif not recalculate:
-                        exclude += [measure]
+                        exclude.append(measure)
 
                 elif isinstance(recalculate, list):
                     if measure in recalculate:
@@ -223,8 +291,10 @@ class EMDA:
                 measures = set([run_only])
             elif isinstance(run_only, list):
                 measures = set(run_only)
-        else :
-            measures = (set(self.measures.keys()) - set(exclude))
+        elif run_only == None:
+            print(set(self.measures.keys()))
+            measures = set(set(self.measures.keys()) - set(exclude))
+            print(measures)
 
         # trajectory cycle
         first_cycle = True
@@ -273,7 +343,11 @@ class EMDA:
                 first_cycle = False
 
 
-    def save_result(self, name, out_name=None, ):
+    def save_result(self, name, out_name=None):
+        """
+        DESCRIPTION:
+            EMDA's method for saving into a pickle file the result attribute of a Measure class or an Analysis class.
+        """
         
         if out_name == None: out_name = name + '.pickle'
         
@@ -293,7 +367,12 @@ class EMDA:
             raise KeyError(f"{name} is not an available measure nor analysis.")
 
 
-    def read_result(self, filename, name,  type = "dataclass"):
+
+    def read_result(self, filename, name,  type : Literal['d', 'dataclass', 'a', 'analysis', 'm', 'measure'] = "dataclass"):
+        """
+        DESCRIPTION:
+            EMDA's method for reading a pickle file containing the result attribute of a precreated Measure class or an Analysis class.
+        """
 
         if is_dataclass(name) and type.lower() in ["d", "dataclass"]:
             with open(filename, 'rb') as handle:
@@ -311,17 +390,4 @@ class EMDA:
 
             except KeyError:
                 raise KeyError(f"{name} is not an available measure nor analysis.")
-
-
-#def save_analysis_result(self, out_name):
-#    if out_name == None: out_name = result + '.pickle'
-        
-#    if result in list(self.analyses.keys()):
-#        with open(out_name, 'wb') as handle:
-#            pickle.dump(result, handle, protocol=2)
-
-#        print(f"{analysis} analysis has been saved as {out_name}!")
-
-    
-
 

@@ -1,6 +1,10 @@
 from os import path, mkdir, chdir
 
 def check_folder(folder):
+    """
+    DESCRIPTION:
+        Function to check if a requested folder exists and move to it. If it does not exist, it is created and then the directory is changed.
+    """
 
     folder = folder.split("/")
     current_path = path.abspath(".")
@@ -16,7 +20,11 @@ def check_folder(folder):
 
 def get_most_frequent(list_):
     """
-    Copied from https://www.geeksforgeeks.org/python-find-most-frequent-element-in-a-list/
+    DESCRIPTION:
+        Function to obtain the most frequent value in a list and return it.
+    
+    SOURCE:
+        Copied from https://www.geeksforgeeks.org/python-find-most-frequent-element-in-a-list/
     """
     counter = 0
     num = list_[0]
@@ -30,18 +38,21 @@ def get_most_frequent(list_):
     return num
 
 
-def read_analysis(self, analysis_filename, analysis=None):
-    import pickle
+#def read_analysis(self, analysis_filename, analysis=None):
+#    import pickle
 
-    if analysis == None: analysis = '_'.join(analysis_filename.split('.')[:-1])
+#    if analysis == None: analysis = '_'.join(analysis_filename.split('.')[:-1])
 
-    with open(analysis_filename, 'rb') as handle:
-        self.analyses[analysis] = pickle.load(handle)
+#    with open(analysis_filename, 'rb') as handle:
+#        self.analyses[analysis] = pickle.load(handle)
 
 
 def in_notebook() -> bool:
     """
-    Source : 
+    DESCRIPTION:
+        Function for checking if the code is being executed within a Jupyter Notebook/IPython env. The returned value is of bool type.
+
+    SOURCE 
         https://stackoverflow.com/questions/15411967/how-can-i-check-if-code-is-executed-in-the-ipython-notebook
     """
 
