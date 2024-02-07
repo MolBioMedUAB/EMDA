@@ -1,4 +1,4 @@
-#from dataclasses import dataclass
+# from dataclasses import dataclass
 
 from MDAnalysis.core.groups import AtomGroup
 
@@ -11,8 +11,8 @@ from .exceptions import NotExistingSelectionError
 
 from .selection import convert_selection
 
-#@dataclass
-#class Measure:
+# @dataclass
+# class Measure:
 #    name    : str
 #    type    : str
 #    sel     : list
@@ -41,7 +41,7 @@ HOW TO BUILD AN ADDER:
 """
 
 
-def add_distance(self, name, sel1, sel2, type='min'):
+def add_distance(self, name, sel1, sel2, type="min"):
     """
     DESCRIPTION:
         This function outputs the minimum measured distance between the two input selections or coordinates or their combination.
@@ -57,22 +57,23 @@ def add_distance(self, name, sel1, sel2, type='min'):
     OUTPUT:
         - Shorter distance between sel1 and sel2 (in ang) or distances between COMs or COGs.
 
-    
+
     """
 
     if type.lower() not in ("min", "max", "com", "cog"):
         raise NotAvailableOptionError
-    
+
     # add the Measure dataclass to the measures list for the EMDA class
     self.measures[name] = self.Measure(
-        name    = name,
-        type    = "distance",
-        sel     = [convert_selection(self, sel1), convert_selection(self, sel2)],
-        options = {'type' : type},
-        result  = []
+        name=name,
+        type="distance",
+        sel=[convert_selection(self, sel1), convert_selection(self, sel2)],
+        options={"type": type},
+        result=[],
     )
 
-    return 'Distance added!'
+    return "Distance added!"
+
 
 def add_angle(self, name, sel1, sel2, sel3, units="deg", domain=360):
     """
@@ -115,12 +116,17 @@ def add_angle(self, name, sel1, sel2, sel3, units="deg", domain=360):
         domain = "360"
 
     self.measures[name] = self.Measure(
-        name    = name,
-        type    = 'angle',
-        sel     = [convert_selection(self, sel1), convert_selection(self, sel2), convert_selection(self, sel3)],
-        options = {"units": units, "domain": domain},
-        result  = []
+        name=name,
+        type="angle",
+        sel=[
+            convert_selection(self, sel1),
+            convert_selection(self, sel2),
+            convert_selection(self, sel3),
+        ],
+        options={"units": units, "domain": domain},
+        result=[],
     )
+
 
 def add_dihedral(self, name, sel1, sel2, sel3, sel4, units="degree", domain=360):
     """
@@ -163,13 +169,19 @@ def add_dihedral(self, name, sel1, sel2, sel3, sel4, units="degree", domain=360)
         domain = "360"
 
     self.measures[name] = self.Measure(
-        name    = name,
-        type    = "dihedral",
-        sel     = [convert_selection(self, sel1), convert_selection(self, sel2), convert_selection(self, sel3), convert_selection(self, sel4)],
-        options = {"units": units, "domain": domain},
-        result  = []
+        name=name,
+        type="dihedral",
+        sel=[
+            convert_selection(self, sel1),
+            convert_selection(self, sel2),
+            convert_selection(self, sel3),
+            convert_selection(self, sel4),
+        ],
+        options={"units": units, "domain": domain},
+        result=[],
     )
-    
+
+
 def add_planar_angle(self, name, sel1, sel2, units="deg", domain=360):
     """
     DESCRIPTION:
@@ -200,7 +212,7 @@ def add_planar_angle(self, name, sel1, sel2, units="deg", domain=360):
         elif isinstance(sel, str):
             if sel not in self.selections.keys():
                 raise NotExistingSelectionError
-            else :
+            else:
                 if len(convert_selection(self, sel)) != 3:
                     raise NotSingleAtomSelectionError
 
@@ -214,21 +226,31 @@ def add_planar_angle(self, name, sel1, sel2, units="deg", domain=360):
         domain = "360"
 
     self.measures[name] = self.Measure(
-        name    = name,
-        type    = 'planar_angle',
-        sel     = [convert_selection(self, sel1), convert_selection(self, sel2)],
-        options = {"units": units, "domain": domain},
-        result  = []
+        name=name,
+        type="planar_angle",
+        sel=[convert_selection(self, sel1), convert_selection(self, sel2)],
+        options={"units": units, "domain": domain},
+        result=[],
     )
 
-def add_contacts(self, name, sel, sel_env=3, interactions="all", include_WAT=False, out_format='new', measure_distances=True):
+
+def add_contacts(
+    self,
+    name,
+    sel,
+    sel_env=3,
+    interactions="all",
+    include_WAT=False,
+    out_format="new",
+    measure_distances=True,
+):
     """
     DESCRIPTION:
         This function takes a Universe, a selection and a radius and returns the list of residues nearer than the specified radius.
 
     INPUT:
         - Name of the measurement
-        - sel          -> selection of central atoms. It has to be an AtomGroup (only option for old engine) or the 'protein' string for 
+        - sel          -> selection of central atoms. It has to be an AtomGroup (only option for old engine) or the 'protein' string for
                             measuring distances between all contacting residues
         - sel_env      -> radius (in ang)
         - interactions -> type of interactions to be considered (all, polar, nonpolar, donorHbond, none). Custom
@@ -339,21 +361,20 @@ def add_contacts(self, name, sel, sel_env=3, interactions="all", include_WAT=Fal
 
         pass
 
-    else :
+    else:
         raise NotExistingInteractionError
-    
 
     if include_WAT == True:
         interactions += ["WAT", "HOH"]
 
-    if sel == 'protein':
-        mode = 'protein'
-        self.select('protein', sel, sel_type=None)
-        sel = 'protein'
-        out_format = 'new'
+    if sel == "protein":
+        mode = "protein"
+        self.select("protein", sel, sel_type=None)
+        sel = "protein"
+        out_format = "new"
 
     elif isinstance(sel, AtomGroup) or sel in self.selections.keys():
-        mode = 'selection'
+        mode = "selection"
 
         if isinstance(sel, str):
             sel = convert_selection(self, sel)
@@ -362,33 +383,37 @@ def add_contacts(self, name, sel, sel_env=3, interactions="all", include_WAT=Fal
             f"around {sel_env} group select", select=sel, updating=True
         )
 
-        if str(out_format).lower() in ['0.2', 'old', 'o']:
-            out_format = 'old'
+        if str(out_format).lower() in ["0.2", "old", "o"]:
+            out_format = "old"
             if measure_distances:
-                print("Distances can not been calculated using the old output format. \
-                        'measure_distances' has been set to False.")
-                out_format = 'new'
-                
-        elif str(out_format).lower() in ['0.3', 'new', 'n']:
-            out_format = 'new'
+                print(
+                    "Distances can not been calculated using the old output format. \
+                        'measure_distances' has been set to False."
+                )
+                out_format = "new"
 
-        else :
-            print('The selected out format does not exist. The new format has been selected instead.')
-            out_format = 'new'
+        elif str(out_format).lower() in ["0.3", "new", "n"]:
+            out_format = "new"
 
+        else:
+            print(
+                "The selected out format does not exist. The new format has been selected instead."
+            )
+            out_format = "new"
 
     self.measures[name] = self.Measure(
-        name    = name,
-        type    = "contacts",
-        sel     = [convert_selection(self, sel), sel_env],
-        options = {
-            "mode"          : mode,
-            "interactions"  : interactions,
-            "measure_dists" : measure_distances,
-            "out_format"    : out_format
-            },
-        result  = []
-    )   
+        name=name,
+        type="contacts",
+        sel=[convert_selection(self, sel), sel_env],
+        options={
+            "mode": mode,
+            "interactions": interactions,
+            "measure_dists": measure_distances,
+            "out_format": out_format,
+        },
+        result=[],
+    )
+
 
 def add_RMSD(self, name, sel, ref=None, superposition=True):
     """
@@ -415,16 +440,14 @@ def add_RMSD(self, name, sel, ref=None, superposition=True):
         ref = ref.positions - ref.center_of_mass()
 
     self.measures[name] = self.Measure(
-        name    = name,
-        type    = "RMSD",
-        sel     = [sel],
-        options = {
-            "superposition": superposition,
-            "ref" : ref
-            },
-        result  = []
+        name=name,
+        type="RMSD",
+        sel=[sel],
+        options={"superposition": superposition, "ref": ref},
+        result=[],
     )
-    
+
+
 def add_distWATbridge(self, name, sel1, sel2, sel1_rad=3, sel2_rad=3):
     """
     DESCRIPTION
@@ -442,7 +465,7 @@ def add_distWATbridge(self, name, sel1, sel2, sel1_rad=3, sel2_rad=3):
         - List of dictionaries containing the number of the bridging water and the smallest distance to each of the selection sets.
     """
 
-    #sel1_rad, sel2_rad = sel1_env, sel2_env
+    # sel1_rad, sel2_rad = sel1_env, sel2_env
 
     sel1_env = self.universe.select_atoms(
         "resname WAT and around %s group select" % sel1_rad,
@@ -457,21 +480,30 @@ def add_distWATbridge(self, name, sel1, sel2, sel1_rad=3, sel2_rad=3):
     )
 
     self.measures[name] = self.Measure(
-        name    = name,
-        type    = "distWATbridge",
-        sel     = [
-            convert_selection(self, sel1), 
-            convert_selection(self, sel2), 
-            convert_selection(self, sel1_env), 
-            convert_selection(self, sel2_env), 
-            convert_selection(self, sel1_rad), 
-            convert_selection(self, sel2_rad)
-            ],
-        options = {},
-        result  = []
+        name=name,
+        type="distWATbridge",
+        sel=[
+            convert_selection(self, sel1),
+            convert_selection(self, sel2),
+            convert_selection(self, sel1_env),
+            convert_selection(self, sel2_env),
+            convert_selection(self, sel1_rad),
+            convert_selection(self, sel2_rad),
+        ],
+        options={},
+        result=[],
     )
 
-def add_pKa(self, name, excluded_ions=["Na+", "Cl-"], pka_ref='neutral', pdb_folder='.pka', keep_pdb=False, keep_pka=False):
+
+def add_pKa(
+    self,
+    name,
+    excluded_ions=["Na+", "Cl-"],
+    pka_ref="neutral",
+    pdb_folder=".pka",
+    keep_pdb=False,
+    keep_pka=False,
+):
     """
     DESCRIPTION:
         This function allows the prediction of the pKa using PROpKa3 of the protein for each frame.
@@ -487,19 +519,21 @@ def add_pKa(self, name, excluded_ions=["Na+", "Cl-"], pka_ref='neutral', pdb_fol
         - Per-frame array of dicts with shape { residue : pKa }
     """
 
-    excluded_ions = ' or resname '.join(excluded_ions)
+    excluded_ions = " or resname ".join(excluded_ions)
 
-    sel = self.universe.select_atoms("not (resname WAT or resname HOH or resname " + excluded_ions + ')')
+    sel = self.universe.select_atoms(
+        "not (resname WAT or resname HOH or resname " + excluded_ions + ")"
+    )
 
     self.measures[name] = self.Measure(
-        name    = name,
-        type    = "pka",
-        sel     = [convert_selection(self, sel)],
-        options = { 
-            "pka_ref" : pka_ref,
-            "pdb_folder" : pdb_folder,
-            "keep_pdb" : keep_pdb,
-            "keep_pka" : keep_pka
-            },
-        result  = []
+        name=name,
+        type="pka",
+        sel=[convert_selection(self, sel)],
+        options={
+            "pka_ref": pka_ref,
+            "pdb_folder": pdb_folder,
+            "keep_pdb": keep_pdb,
+            "keep_pka": keep_pka,
+        },
+        result=[],
     )

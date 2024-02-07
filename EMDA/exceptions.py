@@ -59,9 +59,13 @@ class NotExistingInteractionError(Exception):
     """
 
     def __init__(self):
-        Exception.__init__(self, "This type of interaction is not described. Available interactions are: 'all', 'polar', 'nonpolar', 'donorHbond' and 'none'. You can also add a custom list by inputing a list of residue names (in the three-letters coding)")
+        Exception.__init__(
+            self,
+            "This type of interaction is not described. Available interactions are: 'all', 'polar', 'nonpolar', 'donorHbond' and 'none'. You can also add a custom list by inputing a list of residue names (in the three-letters coding)",
+        )
 
     pass
+
 
 class NotExistingSelectionError(Exception):
     """
@@ -69,7 +73,10 @@ class NotExistingSelectionError(Exception):
     """
 
     def __init__(self):
-        Exception.__init__(self, "This selection is not described. Create it and add the measure again.")
+        Exception.__init__(
+            self,
+            "This selection is not described. Create it and add the measure again.",
+        )
 
     pass
 
@@ -80,7 +87,10 @@ class OutputFormatNotAvailableError(Exception):
     """
 
     def __init__(self):
-        Exception.__init__(self, "The output format is not available. Use JSON (.json or .jsn) or YAML (.yaml or .yml) instead.")
+        Exception.__init__(
+            self,
+            "The output format is not available. Use JSON (.json or .jsn) or YAML (.yaml or .yml) instead.",
+        )
 
     pass
 
@@ -91,9 +101,13 @@ class NotAvailableOptionError(Exception):
     """
 
     def __init__(self):
-        Exception.__init__(self, "One of the input options is not available. Revise the documentation of the function")
+        Exception.__init__(
+            self,
+            "One of the input options is not available. Revise the documentation of the function",
+        )
 
     pass
+
 
 class EmptyMeasuresError(Exception):
     """
@@ -112,9 +126,12 @@ class NotCompatibleMeasureForAnalysisError(Exception):
     """
 
     def __init__(self):
-        Exception.__init__(self, "The input measure is not compatible with the chosen analysis.")
+        Exception.__init__(
+            self, "The input measure is not compatible with the chosen analysis."
+        )
 
     pass
+
 
 class NotCompatibleAnalysisForAnalysisError(Exception):
     """
@@ -122,10 +139,11 @@ class NotCompatibleAnalysisForAnalysisError(Exception):
     """
 
     def __init__(self):
-        Exception.__init__(self, "The input analyses is not compatible with the chosen analysis.")
+        Exception.__init__(
+            self, "The input analyses is not compatible with the chosen analysis."
+        )
 
     pass
-
 
 
 class NotCompatibleContactsFormatError(Exception):
@@ -134,7 +152,10 @@ class NotCompatibleContactsFormatError(Exception):
     """
 
     def __init__(self):
-        Exception.__init__(self, "The contacts format is not the new. Rerun the measure with the new format.")
+        Exception.__init__(
+            self,
+            "The contacts format is not the new. Rerun the measure with the new format.",
+        )
 
     pass
 
@@ -145,10 +166,14 @@ class NotEqualLenghtsError(Exception):
     """
 
     def __init__(self, list_names, lenght):
-        #list_names_str = ', '.join(list_names)
-        Exception.__init__(self, f"{', '.join(list_names)} has/have not the same number of frames than the most common number ({lenght}).")
+        # list_names_str = ', '.join(list_names)
+        Exception.__init__(
+            self,
+            f"{', '.join(list_names)} has/have not the same number of frames than the most common number ({lenght}).",
+        )
 
     pass
+
 
 class NotEnoughDataError(Exception):
     """
@@ -156,6 +181,9 @@ class NotEnoughDataError(Exception):
     """
 
     def __init__(self, minimum_data):
-        Exception.__init__(self, f"At least {minimum_data} objects have to be given as input for performing the task.")
+        Exception.__init__(
+            self,
+            f"At least {minimum_data} objects have to be given as input for performing the task.",
+        )
 
     pass

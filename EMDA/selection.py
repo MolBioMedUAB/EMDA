@@ -93,12 +93,9 @@ def convert_selection(self, sel):
         Function for checking if the given selection is a string, so the AtomGroup has to be extracted from EMDA.selections, \
         or if it is an AtomGroup, so nothing has to be done.
     """
-    
+
     if isinstance(sel, AtomGroup):
         return sel
-    
+
     elif isinstance(sel, str):
         return self.selections[sel]
-
-
-

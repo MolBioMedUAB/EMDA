@@ -1,0 +1,23 @@
+Metadata-Version: 2.1
+Name: EasyMDA
+Version: 0.2.0
+Summary: Easy MD Analysis (EMDA) is a Python package created with the aim of providing an easy, yet powerful way to perform analysis of MD simulations.
+Home-page: https://github.com/MolBioMedUAB/EMDA
+Download-URL: https://github.com/MolBioMedUAB/EMDA/archive/refs/tags/0.2.0.tar.gz
+Author: Miquel Canyelles Niño
+Author-email: mcanyellesnino@gmail.com
+License: MIT
+Keywords: biochemistry,simulations,MDAnalysis,molecular dynamics
+Classifier: Programming Language :: Python :: 3
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: numpy
+Requires-Dist: pyyaml
+Requires-Dist: MDAnalysis
+Requires-Dist: tqdm
+
+# Easy MD Analysis (EMDA)
+
+## Description
+
+Easy MD Analysis (EMDA) is a Python package based on [MDAnalysis](http://mdanalysis.org) created with the aim of providing an easy, yet powerful way to perform analysis of MD simulations. 
