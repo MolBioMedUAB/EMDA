@@ -7,11 +7,11 @@ echo "Is everything commited [Y|n]? (git status will be executed)"
 git status
 read ok
 
-if [[ "$ok" == 'n' || "$ok" == 'N' || "$ok" == 'No' || "$ok" == 'NO' ]]; 
+if [[ "$ok" == 'y' || "$ok" == 'Y' || "$ok" == 'Yes' || "$ok" == 'YES' || "$ok" == '' ]]; 
 then
-    exit
-else
     echo "Proceding with $version version upload to PyPI."
+else
+    exit
 fi
 
 ver=$(cat EMDA/_version.py | grep ^__version__ =)
