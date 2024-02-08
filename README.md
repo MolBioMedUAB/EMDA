@@ -11,13 +11,32 @@ Easy MD Analysis (EMDA) is a Python package based on [MDAnalysis](http://mdanaly
 Several kinds of measures have been implemented in EMDA. Each of them has its own adder function and calculator function. Adder functions are the functions through which the user is able to request a certain kind of measure, while calculators are the engines that perform the measure when the run function is executed. 
 
 The available measures are listed below:
-- Distance
-- Angle
-- Dihedral
-- Planar angle
-- Distance of bridging waters between two sets of atoms
-- RMSD
-- Contacts, both of a group of atoms and of a whole protein
+- __Distance__: measures the distance between two sets of atoms
+- __Angle__: measures the angle between three atoms
+- __Dihedral__: measures the dihedral angle between four atoms
+- __Planar angle__: measures the angle between the closest planes to two sets of at least three atoms
+- __Distance of bridging waters between two sets of atoms__: identifies the closest water that is bridging between two sets of atoms and measures the distances to each
+- __RMSD__: measures the RMSD of a set of atoms (or the whole system) in reference of a frame of the structure
+- __Contacts__, both of a group of atoms and of a whole protein: identifies the contacts stablished by a selection in a given radius or the contacts of each residue.
+
+### Analysers
+
+Some analysis can be performed from previous measures and they are stored as Analysis classes. In this case, each analysis has its own analyser. In opposition with measures, analysis are executed when requested. All the analysers functions' names start with the 'analyse_' string.
+
+The available analyis are listed below:
+- __value__: analyses the value of a frame-wise measure (like distance, for instance) and returns frame-wise list containing True if the value is between the given values or False if it is not.
+- __contacts_frequency__: analyses the contacts and returns a dictionary containing the contacts that take place and how many times it takes place (in an absolute or relative number).
+- __contacts_amounts__: analyses the contacts and returns a frame-wise list containing how many contacts a selection (or a residue) stablishes in each frame.
+- __NACs__ (near-attack conformations): analyses two or more analysed values (so a frame-wise boolean list) and returns the combination of all the values as a boolean frame-wise list.
+
+
+### Plotters
+
+Some analysis or measures can be plotted. The plotters functions (named with the plot_ prefix) take the analysis or measures' result and returns a plot depending on the type of data.
+
+The available plotters are listed below:
+- __values__: plots a float-containing frame-wise list. A similar method has been implemented inside the Measure class.
+- __contacts_frequencies_diff__: external plotter (so it is not a method of the EMDA class). It takes two contacts_frequency (analyser) results (or two lists of), compares them so a bar plot is returned containing the contacts that are the most different between the two sets.
 
 ## Installation
 
