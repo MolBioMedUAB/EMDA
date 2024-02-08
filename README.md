@@ -4,6 +4,14 @@
 
 Easy MD Analysis (EMDA) is a Python package based on [MDAnalysis](http://mdanalysis.org) created with the aim of providing an easy, yet powerful way to perform analysis of MD simulations. 
 
+## Table of contents
+
+- [Features](#features)
+- [Installation](#installation)
+- [How to use EMDA](#how-to-use-emda)
+- [Future implementations](#future-implementations)
+- [Changelog](#changelog)
+
 ## Features
 
 ### Measurers
@@ -66,6 +74,17 @@ pip install .
 
 ## How to use EMDA
 
-EMDA has been design to perform analysis of MD trajectories in three steps: measure, analyse, and plot. Nonetheless, measuring is the most time-consuming task in an analysis. Thus, the code has been structured in such a way that all the requested measures are firstly added using the adders and the ran with the run method. On the other hand, analysis of the measures and plotting tasks are executed at the moment. An example Jupyter notebook showing how to perform an analysis of a sample trajectory can be found (here)[https://github.com/MolBioMedUAB/EMDA/blob/main/example/example.ipynb].
+EMDA has been design to perform analysis of MD trajectories in three steps: measure, analyse, and plot. Nonetheless, measuring is the most time-consuming task in an analysis. Thus, the code has been structured in such a way that all the requested measures are firstly added using the adders and the ran with the run method. On the other hand, analysis of the measures and plotting tasks are executed at the moment. 
+
+An example Jupyter notebook showing how to perform an analysis of a sample trajectory can be found [here](https://github.com/MolBioMedUAB/EMDA/blob/main/example/example.ipynb).
 
 
+
+## Future implementations
+
+Future features that will be added in the future can be found in the [TO-DO](https://github.com/MolBioMedUAB/EMDA/blob/main/TO-DO.md) file
+
+
+## Changelog
+
+Additions or fixed bugs in each version can be found in the [CHANGELOG](https://github.com/MolBioMedUAB/EMDA/blob/main/CHANGELOG.md) file.
