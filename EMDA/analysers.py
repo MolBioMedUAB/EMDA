@@ -70,7 +70,7 @@ def analyse_value(self, name, measure, val1, val2=0, mode="thres"):
         type="value",
         measure_name=measure,
         result=results,
-        # options = {}
+        options = {}
     )
 
 
@@ -223,11 +223,7 @@ def analyse_NACs(self, name, analyses: list, inverse: list = False):
         [len(self.analyses[analysis].result) for analysis in analyses]
     )
 
-    not_equal = [
-        analysis
-        for analysis in analyses
-        if len(self.analyses[analysis].result) != length
-    ]
+    not_equal = [analysis for analysis in analyses if len(self.analyses[analysis].result) != length]
 
     if len(not_equal) != 0:
         raise NotEqualLenghtsError(list_names=not_equal, lenght=length)
@@ -244,7 +240,7 @@ def analyse_NACs(self, name, analyses: list, inverse: list = False):
         type="NACs",
         measure_name=analyses,
         result=[],
-        # options      = {}
+        options      = {}
     )
 
     for frame in range(length):

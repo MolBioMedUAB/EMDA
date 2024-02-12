@@ -36,7 +36,7 @@ IDEAS:
 
 class EMDA:
 
-    def __init__(self, parameters, trajectory):
+    def __init__(self, parameters, trajectory=None):
         """
         DESCRIPTION:
             Function to initialise the EMDA class by loading the parameters and trajectory as a MDAnalysis universe and loading adders, analysers and plotters as internal methods.
@@ -58,7 +58,10 @@ class EMDA:
 
         self.parameters = parameters
         self.trajectory = trajectory
-        self.universe = Universe(parameters, trajectory)
+        if self.trajectory == None:
+            self.universe = Universe(parameters)
+        else :
+            self.universe = Universe(parameters, trajectory)
         print("Trajectory has been loaded!")
         self.selections = {}
         self.measures = {}
