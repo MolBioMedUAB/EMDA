@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 0.2.1
+- Now only parameters are mandatory, so multiframe PDBs are accepted.
+
 ## 0.2.0
 - analyse_NACs analyser has been created to combine 2 or more analyse_value results. get_most_frequent function has been added to tools.py. NotEqualLenghtsError and NotEnoughDataError exceptions have been created for the analyser.
 - analyse_contacts_amount has been created to calculate the number of contacts in each frame.
