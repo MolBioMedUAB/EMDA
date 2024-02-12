@@ -331,9 +331,7 @@ class EMDA:
             elif isinstance(run_only, list):
                 measures = set(run_only)
         elif run_only == None:
-            print(set(self.measures.keys()))
             measures = set(set(self.measures.keys()) - set(exclude))
-            print(measures)
 
         # trajectory cycle
         first_cycle = True
