@@ -26,7 +26,7 @@ echo "Building version was: $ver_"
 
 sed -i "s|$ver_|\'$version\'|g" EMDA/_version.py
 
-exit
+#exit
 
 git commit EMDA/_version.py -m "Update to version $version"
 
