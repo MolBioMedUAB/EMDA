@@ -11,6 +11,8 @@ from .exceptions import (
 )
 from .tools import get_most_frequent
 
+#from numpy import maximum as max
+
 """
 TO BUILD in 0.2.0:
     - [X] NACs
@@ -74,7 +76,7 @@ def analyse_value(self, name, measure, val1, val2=0, mode="thres"):
     )
 
 
-def analyse_contacts_frequency(self, name, measure, percentage=False):
+def analyse_contacts_frequency(self, name, measure, percentage=False, normalise_to_most_frequent=False):
     """
     DESCRIPTION:
         Analyser for calculating the frequency (in absolute value or %) of the calculated contacts.
@@ -134,11 +136,24 @@ def analyse_contacts_frequency(self, name, measure, percentage=False):
                 elif resid not in contacts_freq.keys():
                     contacts_freq[resid] = 1
 
-        if percentage:
+        if percentage and not normalise_to_most_frequent:
             for residue in list(contacts_freq.keys()):
                 contacts_freq[residue] = (
                     contacts_freq[residue] * 100 / len(self.measures[measure].result)
                 )
+
+        elif not percentage and normalise_to_most_frequent:
+            for residue in list(contacts_freq.keys()):
+                contacts_freq[residue] = (
+                    contacts_freq[residue] / max(contacts_freq.values())
+                )
+
+        elif percentage and normalise_to_most_frequent:
+            for residue in list(contacts_freq.keys()):
+                contacts_freq[residue] = (
+                    contacts_freq[residue] * 100/ max(contacts_freq.values())
+                )
+        
 
     self.analyses[name] = self.Analysis(
         name=name,
