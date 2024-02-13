@@ -23,7 +23,7 @@ def plot_values(self, measure_name, out_name=None):
         pass
 
 
-def plot_contacts_frequency(self, analysis_name, out_name=None):
+def plot_contacts_frequency(self, analysis_name, out_name=None, fill_empty=False, width_plot=0.5):
     """
     DESCRIPTION:
         Plotter that takes the result of a contacts_frequency analysis and plots each interaction as a bar plot
@@ -33,12 +33,39 @@ def plot_contacts_frequency(self, analysis_name, out_name=None):
         #raise 
         pass
 
-    plt.bar(
-        list(self.analyses[analysis_name].result.keys()),
-        list(self.analyses[analysis_name].result.values())
-    )
+    if fill_empty:
+        all_protein = self.universe.select_atoms('protein')
+        for resname, resid in zip(list(all_protein.residues.resnames), list(all_protein.residues.resids)):
+            if f"{str(resname)}{str(resid)}" not in list(self.analyses[analysis_name].result.keys()):
+                self.analyses[analysis_name].result[f"{str(resname)}{str(resid)}"] = 0
 
-    plt.xticks(rotation=45, ha="right")
+        plt.figure(figsize=(len(self.analyses[analysis_name].result) * width_plot, 5))
+
+        plt.bar(
+            [int(res[3:]) for res in list(self.analyses[analysis_name].result.keys())],
+            #list(self.analyses[analysis_name].result.keys()),
+            [self.analyses[analysis_name].result[res] for res in list(self.analyses[analysis_name].result.keys())]
+            #list(self.analyses[analysis_name].result.values())
+        )
+    
+        plt.xticks(
+        [int(res[3:]) for res in list(self.analyses[analysis_name].result.keys()) if self.analyses[analysis_name].result[res] != 0],
+        [res for res in list(self.analyses[analysis_name].result.keys()) if self.analyses[analysis_name].result[res] != 0],
+        rotation=90
+        )
+
+    elif not fill_empty:
+        plt.figure(figsize=(len(self.analyses[analysis_name].result) * width_plot, 5))
+
+        plt.bar(
+            list(self.analyses[analysis_name].result.keys()),
+            list(self.analyses[analysis_name].result.values())
+        )
+
+
+        plt.xticks(rotation=45, ha="right")
+
+    
 
     plt.show()
     plt.close()
