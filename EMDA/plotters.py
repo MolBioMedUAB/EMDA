@@ -23,6 +23,29 @@ def plot_values(self, measure_name, out_name=None):
         pass
 
 
+def plot_contacts_frequency(self, analysis_name, out_name=None):
+    """
+    DESCRIPTION:
+        Plotter that takes the result of a contacts_frequency analysis and plots each interaction as a bar plot
+    """
+
+    if self.analyses[analysis_name].type != "contacts_frequency":
+        #raise 
+        pass
+
+    plt.bar(
+        list(self.analyses[analysis_name].result.keys()),
+        list(self.analyses[analysis_name].result.values())
+    )
+
+    plt.xticks(rotation=45, ha="right")
+
+    plt.show()
+    plt.close()
+
+
+
+
 def ext_plot_contacts_frequencies_differences(
     contacts_ref,
     contacts_tgt,
