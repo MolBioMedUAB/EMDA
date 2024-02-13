@@ -22,15 +22,16 @@ fi
 
 ver=$(cat EMDA/_version.py | grep '^__version__ =')
 ver_=${ver#*=}
-echo $ver_
+echo "Building version was: $ver_"
 
-sed -i "" "s|$ver_|\'$version\'|g" EMDA/_version.py
+sed -i "s|$ver_|\'$version\'|g" EMDA/_version.py
 
-#exit
+exit
 
 git commit EMDA/_version.py -m "Update to version $version"
 
 black EMDA/
+git commit * -m "Blacked"
 branch=$(git rev-parse --abbrev-ref HEAD)
 
 if [[ "$branch" != 'main' ]];
