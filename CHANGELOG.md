@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 0.4.0
+
+
 ## 0.3.0
 - Now only parameters are mandatory, so multiframe PDBs are accepted.
 - Plotter for plotting a contacts_frequency has been added. 
