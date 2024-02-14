@@ -187,3 +187,15 @@ class NotEnoughDataError(Exception):
         )
 
     pass
+
+class NotAvailableVariantError(Exception):
+    """
+    Raised when a variant is accessed but not available.
+    """
+
+    def __init__(self, variant):
+        Exception.__init__(
+            self, 
+            f"{variant} is not available as universe. Use load_variant with the corresponding parameters and trajectory."
+        )
+
