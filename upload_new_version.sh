@@ -32,12 +32,13 @@ git commit EMDA/_version.py -m "Update to version $version"
 
 black EMDA/
 git commit * -m "Blacked"
+
 branch=$(git rev-parse --abbrev-ref HEAD)
 
 if [[ "$branch" != 'main' ]];
 then
     git checkout main
-    git merge building
+    git merge $branch
 fi
 
 git tag $version

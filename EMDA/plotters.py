@@ -177,6 +177,13 @@ def ext_plot_contacts_frequencies_differences(
             elif int(k_[0]) == int(k_[1]) - 1:
                 del important_contacts[k]
 
+
+    # Remove redundant
+    for k in list(important_contacts.keys()):
+        for k_ in list(important_contacts.keys()):
+            if k.split('-')[0] == k_.split('-')[1] and k.split('-')[1] == k_.split('-')[0]:
+                del important_contacts[k]
+
     if len(important_contacts) == 0:
         print(
             "No contact has been found to be different between the two input sets. Change the threshold for plotting or redo the contacts' measure changing the radius."
