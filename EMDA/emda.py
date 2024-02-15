@@ -18,7 +18,7 @@ from .runners import *
 from .analysers import *
 from .plotters import *
 
-# from .tools import in_notebook
+#from .tools import get_dictionary_structure
 
 # load custom exceptions
 from .exceptions import EmptyMeasuresError, NotAvailableVariantError
