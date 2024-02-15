@@ -9,7 +9,10 @@ from .exceptions import NotThreeAtomsSelectionError
 from .exceptions import NotExistingInteractionError
 from .exceptions import NotExistingSelectionError
 
-from .selection import convert_selection
+from .selection import convert_selection, selection_length
+
+from .tools import get_dictionary_structure
+
 
 # @dataclass
 # class Measure:
@@ -67,9 +70,9 @@ def add_distance(self, name, sel1, sel2, type="min"):
     self.measures[name] = self.Measure(
         name=name,
         type="distance",
-        sel=[convert_selection(self, sel1), convert_selection(self, sel2)],
+        sel=[sel1, sel2],
         options={"type": type},
-        result=[],
+        result=get_dictionary_structure(self.universe, []),
     )
 
     return "Distance added!"
@@ -99,12 +102,12 @@ def add_angle(self, name, sel1, sel2, sel3, units="deg", domain=360):
     """
 
     for sel in (sel1, sel2, sel3):
-        if isinstance(sel, AtomGroup):
-            if len(sel) != 1:
-                raise NotSingleAtomSelectionError
-        elif isinstance(sel, str):
-            if sel not in self.selections.keys():
-                raise NotExistingSelectionError
+        if sel not in self.selections.keys():
+            raise NotExistingSelectionError
+        
+        if selection_length(sel) != 1:
+            raise NotSingleAtomSelectionError
+        
 
     units = units.lower()
     domain = str(domain).lower()
@@ -118,13 +121,9 @@ def add_angle(self, name, sel1, sel2, sel3, units="deg", domain=360):
     self.measures[name] = self.Measure(
         name=name,
         type="angle",
-        sel=[
-            convert_selection(self, sel1),
-            convert_selection(self, sel2),
-            convert_selection(self, sel3),
-        ],
+        sel=[sel1, sel2, sel3,],
         options={"units": units, "domain": domain},
-        result=[],
+        result=get_dictionary_structure(self.universe, []),
     )
 
 
@@ -152,12 +151,11 @@ def add_dihedral(self, name, sel1, sel2, sel3, sel4, units="degree", domain=360)
     """
 
     for sel in (sel1, sel2, sel3, sel4):
-        if isinstance(sel, AtomGroup):
-            if len(sel) != 1:
-                raise NotSingleAtomSelectionError
-        elif isinstance(sel, str):
-            if sel not in self.selections.keys():
-                raise NotExistingSelectionError
+        if sel not in self.selections.keys():
+            raise NotExistingSelectionError
+        
+        if selection_length(sel) != 1:
+            raise NotSingleAtomSelectionError
 
     units = units.lower()
     domain = str(domain).lower()
@@ -171,14 +169,9 @@ def add_dihedral(self, name, sel1, sel2, sel3, sel4, units="degree", domain=360)
     self.measures[name] = self.Measure(
         name=name,
         type="dihedral",
-        sel=[
-            convert_selection(self, sel1),
-            convert_selection(self, sel2),
-            convert_selection(self, sel3),
-            convert_selection(self, sel4),
-        ],
+        sel=[sel1, sel2, sel3, sel4],
         options={"units": units, "domain": domain},
-        result=[],
+        result=get_dictionary_structure(self.universe, []),
     )
 
 
@@ -206,15 +199,11 @@ def add_planar_angle(self, name, sel1, sel2, units="deg", domain=360):
     """
 
     for sel in (sel1, sel2):
-        if isinstance(sel, AtomGroup):
-            if len(sel) != 3:
-                raise NotSingleAtomSelectionError
-        elif isinstance(sel, str):
-            if sel not in self.selections.keys():
-                raise NotExistingSelectionError
-            else:
-                if len(convert_selection(self, sel)) != 3:
-                    raise NotSingleAtomSelectionError
+        if sel not in self.selections.keys():
+            raise NotExistingSelectionError
+        
+        if selection_length(sel) != 3:
+            raise NotSingleAtomSelectionError
 
     units = units.lower()
     domain = str(domain).lower()
@@ -228,9 +217,9 @@ def add_planar_angle(self, name, sel1, sel2, units="deg", domain=360):
     self.measures[name] = self.Measure(
         name=name,
         type="planar_angle",
-        sel=[convert_selection(self, sel1), convert_selection(self, sel2)],
+        sel=[sel1, sel2],
         options={"units": units, "domain": domain},
-        result=[],
+        result=get_dictionary_structure(self.universe, []),
     )
 
 
@@ -269,89 +258,31 @@ def add_contacts(
         else:
             if interactions == "all":
                 interactions = [
-                    "ARG",
-                    "HIS",
-                    "HID",
-                    "HIE",
-                    "HIP",
-                    "LYS",
-                    "ASP",
-                    "ASH",
-                    "GLU",
-                    "GLH",
-                    "SER",
-                    "THR",
-                    "ASN",
-                    "GLN",
-                    "CYS",
-                    "SEC",
-                    "GLY",
-                    "PRO",
-                    "ALA",
-                    "ILE",
-                    "LEU",
-                    "MET",
-                    "PHE",
-                    "TRP",
-                    "TYR",
-                    "VAL",
+                    "ARG","HIS","HID","HIE","HIP","LYS",
+                    "ASP","ASH","GLU","GLH","SER","THR",
+                    "ASN","GLN","CYS","SEC","GLY","PRO",
+                    "ALA","ILE","LEU","MET","PHE","TRP",
+                    "TYR","VAL",
                 ]
 
             elif interactions == "polar":
                 interactions = [
-                    "ARG",
-                    "HIS",
-                    "HID",
-                    "HIE",
-                    "HIP",
-                    "LYS",
-                    "ASP",
-                    "ASH",
-                    "GLU",
-                    "GLH",
-                    "SER",
-                    "THR",
-                    "ASN",
-                    "GLN",
-                    "CYS",
-                    "SEC",
-                    "TYR",
+                    "ARG","HIS","HID","HIE","HIP","LYS",
+                    "ASP","ASH","GLU","GLH","SER","THR",
+                    "ASN","GLN","CYS","SEC","TYR",
                 ]
 
             elif interactions == "nonpolar":
                 interactions = [
-                    "CYS",
-                    "SEC",
-                    "GLY",
-                    "PRO",
-                    "ALA",
-                    "ILE",
-                    "LEU",
-                    "MET",
-                    "PHE",
-                    "TRP",
-                    "TYR",
-                    "VAL",
+                    "CYS","SEC","GLY","PRO","ALA","ILE",
+                    "LEU","MET","PHE","TRP","TYR","VAL",
                 ]
 
             elif interactions == "donorHbond":
                 interactions = [
-                    "ARG",
-                    "HID",
-                    "HIE",
-                    "HIP",
-                    "LYS",
-                    "ASH",
-                    "GLH",
-                    "SER",
-                    "THR",
-                    "ASN",
-                    "GLN",
-                    "CYS",
-                    "SEC",
-                    "GLY",
-                    "PRO",
-                    "TYR",
+                    "ARG","HID","HIE","HIP","LYS","ASH",
+                    "GLH","SER","THR","ASN","GLN","CYS",
+                    "SEC","GLY","PRO","TYR",
                 ]
 
             elif interactions == "none":
@@ -367,11 +298,11 @@ def add_contacts(
     if include_WAT == True:
         interactions += ["WAT", "HOH"]
 
-    if sel == "protein":
-        mode = "protein"
-        self.select("protein", sel, sel_type=None)
-        sel = "protein"
-        out_format = "new"
+#    if sel == "protein":
+#        mode = "protein"
+#        self.select("protein", sel, sel_type=None)
+#        sel = "protein"
+#        out_format = "new"
 
     elif isinstance(sel, AtomGroup) or sel in self.selections.keys():
         mode = "selection"
@@ -411,7 +342,7 @@ def add_contacts(
             "measure_dists": measure_distances,
             "out_format": out_format,
         },
-        result=[],
+        result=get_dictionary_structure(self.universe, []),
     )
 
 
@@ -467,31 +398,28 @@ def add_distWATbridge(self, name, sel1, sel2, sel1_rad=3, sel2_rad=3):
 
     # sel1_rad, sel2_rad = sel1_env, sel2_env
 
-    sel1_env = self.universe.select_atoms(
-        "resname WAT and around %s group select" % sel1_rad,
-        select=sel1,
-        updating=True,
-    )
+    #sel1_env = self.universe.select_atoms(
+    #    "resname WAT and around %s group select" % sel1_rad,
+    #    select=sel1,
+    #    updating=True,
+    #)
 
-    sel2_env = self.universe.select_atoms(
-        "resname WAT and around %s group select" % sel2_rad,
-        select=sel2,
-        updating=True,
-    )
+    #sel2_env = self.universe.select_atoms(
+    #    "resname WAT and around %s group select" % sel2_rad,
+    #    select=sel2,
+    #    updating=True,
+    #)
 
     self.measures[name] = self.Measure(
         name=name,
         type="distWATbridge",
         sel=[
-            convert_selection(self, sel1),
-            convert_selection(self, sel2),
-            convert_selection(self, sel1_env),
-            convert_selection(self, sel2_env),
-            convert_selection(self, sel1_rad),
-            convert_selection(self, sel2_rad),
+            sel1, sel2,
+            #sel1_env, sel2_env,
+            sel1_rad, sel2_rad,
         ],
         options={},
-        result=[],
+        result=get_dictionary_structure(self.universe, []),
     )
 
 
@@ -535,5 +463,5 @@ def add_pKa(
             "keep_pdb": keep_pdb,
             "keep_pka": keep_pka,
         },
-        result=[],
+        result=get_dictionary_structure(self.universe, []),
     )
