@@ -281,7 +281,6 @@ class EMDA:
                     self.selections[variant_][name] = parse_selection(sel_input=sel_input, sel_type=sel_type, no_backbone=no_backbone)
                 except KeyError:
                     self.selections[variant_] = {}
-                    print(self.selections[variant_])
                     self.selections[variant_][name] = parse_selection(sel_input=sel_input, sel_type=sel_type, no_backbone=no_backbone)
 
         else :
