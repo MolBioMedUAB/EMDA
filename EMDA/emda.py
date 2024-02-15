@@ -226,11 +226,13 @@ class EMDA:
 
         if name == None:
             new_variant  = f"V{self.__variants}"
+        else :
+            new_variant = name
 
         self.universe[new_variant]   = {"R1" : Universe(parameters, trajectory)}
         self.parameters[new_variant] = parameters
 
-        print(f"{name} variant has been loaded!")
+        print(f"{new_variant} variant has been loaded!")
 
 
     def load_trajectory(self, trajectory, variant_name='last'):
@@ -276,24 +278,17 @@ class EMDA:
         if variant == None:
             for variant_ in list(self.universe.keys()):
                 try :
-                    self.selections[variant][name] = parse_selection(sel_input=sel_input, sel_type=sel_type, no_backbone=no_backbone)
+                    self.selections[variant_][name] = parse_selection(sel_input=sel_input, sel_type=sel_type, no_backbone=no_backbone)
                 except KeyError:
                     self.selections[variant_] = {}
+                    print(self.selections[variant_])
                     self.selections[variant_][name] = parse_selection(sel_input=sel_input, sel_type=sel_type, no_backbone=no_backbone)
 
         else :
             if variant in list(self.universe.keys()):
                 self.selections[variant][name] = parse_selection(sel_input=sel_input, sel_type=sel_type, no_backbone=no_backbone)
             else :
-                raise NotAvailableVariantError
-
-            
-
-        #self.selections[name] = parse_selection(
-        #    sel_input,
-        #    sel_type=sel_type,
-        #    no_backbone=no_backbone,
-        #)
+                raise NotAvailableVariantError(variant)
 
     def print_available_adders(self):
         """
