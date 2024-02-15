@@ -166,7 +166,7 @@ def parse_selection(sel_input, sel_type=None, no_backbone=False):
 
 
 
-def convert_selection(self, sel):
+def convert_selection(self, sel, variant=None, replica=None):
     """
     DESCRIPTION
         Function for checking if the given selection is a string, so the AtomGroup has to be extracted from EMDA.selections, \
@@ -177,4 +177,14 @@ def convert_selection(self, sel):
         return sel
 
     elif isinstance(sel, str):
-        return self.selections[sel]
+        if variant == None:
+            variant = self.universe.keys()[0]
+            if replica == None:
+                replica = self.universe.keys()[0][0]
+
+        else :
+            if replica == None:
+                replica = self.universe.keys()[variant][0]
+
+        return self.universe[variant][replica].select_atoms(self.selection[variant][replica])
+
