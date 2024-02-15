@@ -17,7 +17,6 @@ from .tools import get_most_frequent
 TO BUILD in 0.2.0:
     - [X] NACs
     - [X] Contacts counter (how much contacts are in each frame)
-    - [] Contacts checker --> checks if a contact is present in each frame
 """
 
 """
