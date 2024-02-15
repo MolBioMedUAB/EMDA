@@ -37,7 +37,7 @@ branch=$(git rev-parse --abbrev-ref HEAD)
 if [[ "$branch" != 'main' ]];
 then
     git checkout main
-    git merge building
+    git merge $branch
 fi
 
 git tag $version
