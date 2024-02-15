@@ -82,6 +82,7 @@ def ext_plot_contacts_frequencies_differences(
     return_results=False,
     return_labels=False,
     width_plot=0.5,
+    save_plot=False,
 ):
     """
     DESCRIPTION:
@@ -95,6 +96,8 @@ def ext_plot_contacts_frequencies_differences(
         - return_results:       returns the dictionary with the compared results.
         - return_labels:        returns the list of labels of the obtained results.
         - width_plot:           sets the width per bar of the output plot.
+        - save_plot:            pseudoboolean value to save the generated plot. If True, it will be stored as 'contacts_frequencies_diffs.png'. 
+                                If a string is given, it will be used as the file name's with the .png extension.
 
     BUILDING NOTES:
         - < 0 --> more in tgt
@@ -220,6 +223,15 @@ def ext_plot_contacts_frequencies_differences(
         plt.ylabel("Frequency (number of)")
 
     plt.show()
+
+    if save_plot:
+        plt.savefig('contacts_frequencies_diffs.png', dpi=300, bbox_inches='tight')
+
+    elif isinstance(save_plot, str):
+        plt.savefig(save_plot + '.png', dpi=300, bbox_inches='tight')
+
+        
+
     plt.close()
 
     if return_results and return_labels:
@@ -228,3 +240,4 @@ def ext_plot_contacts_frequencies_differences(
         return important_contacts
     elif return_labels:
         return return_labels
+
