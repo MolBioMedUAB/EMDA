@@ -28,6 +28,7 @@ def get_most_frequent(list_):
     SOURCE:
         Copied from https://www.geeksforgeeks.org/python-find-most-frequent-element-in-a-list/
     """
+
     counter = 0
     num = list_[0]
 
@@ -38,6 +39,23 @@ def get_most_frequent(list_):
             num = i
 
     return num
+
+def get_dictionary_structure(dict_in, value_out):
+    """
+    DESCRIPTION:
+        Function for building a dictionary with the same structure as the one in input but with the given input.
+
+    UTILITY:
+        To create measures and analysis result attrs, so they can keep the same structure as the universe
+    """
+
+    dict_out = {}
+    for k in list(dict_in.keys()):
+        dict_out[k] = {}
+        for k_ in list(dict_in[k].keys()):
+            dict_out[k][k_] = value_out
+
+    return dict_out
 
 
 # def read_analysis(self, analysis_filename, analysis=None):
