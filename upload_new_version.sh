@@ -32,6 +32,7 @@ git commit EMDA/_version.py -m "Update to version $version"
 
 black EMDA/
 git commit * -m "Blacked"
+
 branch=$(git rev-parse --abbrev-ref HEAD)
 
 if [[ "$branch" != 'main' ]];
