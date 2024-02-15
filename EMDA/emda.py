@@ -12,7 +12,7 @@ from MDAnalysis import Universe
 # from MDAnalysis.core.groups import AtomGroup
 
 # load internal EMDA classes and functions
-from .selection import selection
+from .selection import selection, parse_selection
 from .adders import *
 from .runners import *
 from .analysers import *
@@ -21,7 +21,7 @@ from .plotters import *
 # from .tools import in_notebook
 
 # load custom exceptions
-from .exceptions import EmptyMeasuresError
+from .exceptions import EmptyMeasuresError, NotAvailableVariantError
 
 from tqdm.autonotebook import tqdm
 
@@ -36,14 +36,14 @@ IDEAS:
 
 class EMDA:
 
-    def __init__(self, parameters, trajectory=None):
+    def __init__(self, parameters, trajectory=None, variant_name=None):
         """
         DESCRIPTION:
             Function to initialise the EMDA class by loading the parameters and trajectory as a MDAnalysis universe and loading adders, analysers and plotters as internal methods.
 
         ATTRIBUTES:
-            - parameters:   name of the parameters and topology file
-            - trajectory:   name or list of names of the trajectory file(s)
+            - parameters:   name of the parameters and topology file as a dict containing the name of variant(s) and replica(s) 
+          X - trajectory:   name or list of names of the trajectory file(s)
             - universe:     MDAnalysis Universe object containing the parameters and trajectory set as input of the class
             - selections:   Dictionary containing as key the name (ID) of a selection and the MDAnalysis AtomGroup object as value
             - measures:     Dictionary containing as key the name (ID) of a measure and the EMDA's Measure object as value
@@ -56,13 +56,31 @@ class EMDA:
             - plot_*:       Analysers loaded from plotters.py file. External plotter (indicated by using ext_ as function's name prefix) are not loaded.
         """
 
-        self.parameters = parameters
-        self.trajectory = trajectory
-        if self.trajectory == None:
-            self.universe = Universe(parameters)
-        else :
-            self.universe = Universe(parameters, trajectory)
+        #self.parameters = parameters
+        #self.trajectory = trajectory
+
+        # Check structure of variant(s) and trajectory(ies)
+        if variant_name == None:
+            variant_name = "V1"
+
+        if isinstance(parameters, str) and trajectory == None:
+            self.universe = { variant_name : 
+                             { "R1" : Universe(parameters, trajectory) }
+                            }
+            self.parameters = { variant_name : parameters } 
+            self.__variants = 1
+            self.__replicas = 1
+
+        elif isinstance(parameters, str) and isinstance(trajectory, (str, list)):
+            self.universe = { variant_name : 
+                             { "R1" : Universe(parameters, trajectory) }
+                            }
+            self.parameters = { variant_name : parameters } 
+            self.__variants = 1
+            self.__replicas = 1
+        
         print("Trajectory has been loaded!")
+
         self.selections = {}
         self.measures = {}
         self.analyses = {}
@@ -86,6 +104,7 @@ class EMDA:
 
         for func_name in external_functions:
             setattr(EMDA, func_name, globals()[func_name])
+
 
     @dataclass
     class Measure:
@@ -195,26 +214,87 @@ class EMDA:
         def __repr__(self):
             return self.__str__()
 
+
+    def load_variant(self, parameters, trajectory, name=None):
+        """
+        DESCRIPTION:
+            Method that allows adding one new variant to the EMDA class. Its key in the EMDA's universe attr's dictionary is automatically given as "V" and the number of variant in __variants attr.
+        """
+
+        self.__variants += 1
+        self.__replicas += 1
+
+        if name == None:
+            new_variant  = f"V{self.__variants}"
+
+        self.universe[new_variant]   = {"R1" : Universe(parameters, trajectory)}
+        self.parameters[new_variant] = parameters
+
+        print(f"{name} variant has been loaded!")
+
+
+    def load_trajectory(self, trajectory, variant_name='last'):
+        """
+        DESCRIPTION:
+            Method that allows adding one more replica to a pre-existing variant in th EMDA class.
+        """
+
+        if variant_name == 'last':
+            variant_name = list(self.universe.keys())[-1]
+
+        else :
+            if variant_name not in list(self.parameters.keys()):
+                raise NotAvailableVariantError
+
+
+        new_replica = int(max(list(self.universe[variant_name].keys()))[1:]) + 1
+
+        self.universe[variant_name][f"R{new_replica}"] = Universe(self.parameters[variant_name], trajectory)
+
+        
+        print(f"A new replica has been loaded to variant {variant_name}!")
+
+
     # function for creating selections (AtomGroups) as a dictionary inside EMDA class
     def select(
         self,
         name,
-        sel_input,
+        sel_input=None,
         sel_type=None,
         no_backbone=False,
-        return_atomic_sel_string=False,
+        variant=None
     ):
         """
         DESCRIPTION:
             Method for creating selections inside the selections attribute of EMDA's class.
         """
 
-        self.selections[name] = selection(
-            self.universe,
+        if sel_input == None:
+            sel_input = name
+
+        # Creates the selection for all variants
+        if variant == None:
+            for variant_ in list(self.universe.keys()):
+                try :
+                    self.selections[variant][name] = parse_selection(sel_input=sel_input, sel_type=sel_type, no_backbone=no_backbone)
+                except KeyError:
+                    self.selections[variant_] = {}
+                    self.selections[variant][name] = parse_selection(sel_input=sel_input, sel_type=sel_type, no_backbone=no_backbone)
+
+        else :
+            if variant in list(self.universe.keys()):
+                self.selections[variant][name] = parse_selection(sel_input=sel_input, sel_type=sel_type, no_backbone=no_backbone)
+            else :
+                raise NotAvailableVariantError
+
+            
+
+        
+
+        self.selections[name] = parse_selection(
             sel_input,
             sel_type=sel_type,
             no_backbone=no_backbone,
-            return_atomic_sel_string=return_atomic_sel_string,
         )
 
     def print_available_adders(self):
@@ -277,7 +357,7 @@ class EMDA:
         step=1,
         start=1,
         end=-1,
-    ):
+    ): 
         """
         DESCRIPTION:
             Run all the measurements configured in self.measures
@@ -307,7 +387,9 @@ class EMDA:
             exclude = []
         elif isinstance(exclude, str):
             exclude = [exclude]
-
+        ###
+            
+        # Checks if there is contents in results and resets the list 
         if isinstance(recalculate, str):
             recalculate = [recalculate]
 
