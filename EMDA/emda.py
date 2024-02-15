@@ -279,7 +279,7 @@ class EMDA:
                     self.selections[variant][name] = parse_selection(sel_input=sel_input, sel_type=sel_type, no_backbone=no_backbone)
                 except KeyError:
                     self.selections[variant_] = {}
-                    self.selections[variant][name] = parse_selection(sel_input=sel_input, sel_type=sel_type, no_backbone=no_backbone)
+                    self.selections[variant_][name] = parse_selection(sel_input=sel_input, sel_type=sel_type, no_backbone=no_backbone)
 
         else :
             if variant in list(self.universe.keys()):
@@ -289,13 +289,11 @@ class EMDA:
 
             
 
-        
-
-        self.selections[name] = parse_selection(
-            sel_input,
-            sel_type=sel_type,
-            no_backbone=no_backbone,
-        )
+        #self.selections[name] = parse_selection(
+        #    sel_input,
+        #    sel_type=sel_type,
+        #    no_backbone=no_backbone,
+        #)
 
     def print_available_adders(self):
         """
