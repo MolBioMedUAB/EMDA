@@ -188,3 +188,10 @@ def convert_selection(self, sel, variant=None, replica=None):
 
         return self.universe[variant][replica].select_atoms(self.selection[variant][replica])
 
+def selection_length(self, sel):
+    """
+    DESCRIPTION:
+        Function for checking how long a selection is.
+    """
+
+    return len(convert_selection(sel).indices)
