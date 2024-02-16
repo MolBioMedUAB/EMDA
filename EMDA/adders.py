@@ -230,7 +230,6 @@ def add_contacts(
     sel_env=3,
     interactions="all",
     include_WAT=False,
-    out_format="new",
     measure_distances=True,
 ):
     """
@@ -244,8 +243,7 @@ def add_contacts(
         - sel_env      -> radius (in ang)
         - interactions -> type of interactions to be considered (all, polar, nonpolar, donorHbond, none). Custom
                             interactions can be also analysed by passing a list of residues names
-        - out_format   -> [ '0.3'/'new'/'n' | '0.2'/'old'/'o' ] Format of the output. 'old' corresponds to the old logics (versions 0.0 to 0.2)
-                            and is kept for compatibility reasons.
+
 
     OUTPUT:
         - List of dictionaries containing the name and number of all interacting residues
@@ -289,7 +287,6 @@ def add_contacts(
                 interactions = []
 
     elif isinstance(interactions, list):
-
         pass
 
     else:
@@ -304,46 +301,52 @@ def add_contacts(
 #        sel = "protein"
 #        out_format = "new"
 
-    elif isinstance(sel, AtomGroup) or sel in self.selections.keys():
-        mode = "selection"
-
-        if isinstance(sel, str):
-            sel = convert_selection(self, sel)
-
-        sel_env = self.universe.select_atoms(
-            f"around {sel_env} group select", select=sel, updating=True
-        )
-
-        if str(out_format).lower() in ["0.2", "old", "o"]:
-            out_format = "old"
-            if measure_distances:
-                print(
-                    "Distances can not been calculated using the old output format. \
-                        'measure_distances' has been set to False."
-                )
-                out_format = "new"
-
-        elif str(out_format).lower() in ["0.3", "new", "n"]:
-            out_format = "new"
-
-        else:
-            print(
-                "The selected out format does not exist. The new format has been selected instead."
-            )
-            out_format = "new"
-
     self.measures[name] = self.Measure(
         name=name,
         type="contacts",
         sel=[convert_selection(self, sel), sel_env],
         options={
-            "mode": mode,
             "interactions": interactions,
             "measure_dists": measure_distances,
-            "out_format": out_format,
         },
         result=get_dictionary_structure(self.universe, []),
     )
+
+def add_protein_contacts(
+    self,
+    name,
+    sel_env=3,
+    include_WAT=False,
+    measure_distances=False
+):
+    """
+    DESCRIPTION:
+        This function takes a adds the measure of the contacts of all residues in a protein
+
+    INPUT:
+        - Name of the measurement
+        - sel_env      -> radius (in ang) around each residue
+        - 
+        - interactions -> type of interactions to be considered (all, polar, nonpolar, donorHbond, none). Custom
+                            interactions can be also analysed by passing a list of residues names
+
+
+    OUTPUT:
+        - List of dictionaries containing the name and number of all interacting residues
+    """
+    self.measures[name] = self.Measure(
+        name=name,
+        type="contacts",
+        sel=['protein', sel_env],
+        options={
+            "measure_dists": measure_distances,
+            "include_WAT" : include_WAT,
+        },
+        result=get_dictionary_structure(self.universe, []),
+    )
+    
+
+
 
 
 def add_RMSD(self, name, sel, ref=None, superposition=True):
