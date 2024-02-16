@@ -253,7 +253,6 @@ def calc_contacts_selection(
     sel_env,
     interactions,
     measure_distances=False,
-    out_format="new",
 ):
 
     residues = []
@@ -264,61 +263,35 @@ def calc_contacts_selection(
     contacts = {}
 
     for r in range(len(residues)):
-        if (
-            residues[r]["id"] not in sel.residues.resindices
-        ):  # residue[1] is the residue's number
+        if (residues[r]["id"] not in sel.residues.resindices):
+            # residue[1] is the residue's number
             if residues[r]["name"] in interactions:
-                if out_format == "old":
-                    contacts[residues[r]["id"]] = residues[r]["name"]
-
-                elif out_format == "new":
-                    if measure_distances:
-                        contacts[residues[r]["name"] + str(residues[r]["id"])] = (
-                            calc_distance(sel, sel_env.residues[r].atoms, type="min")
-                        )
-                    elif not measure_distances:
-                        contacts[residues[r]["name"] + str(residues[r]["id"])] = None
+                if measure_distances:
+                    contacts[residues[r]["name"] + str(residues[r]["id"])] = (
+                        calc_distance(sel, sel_env.residues[r].atoms, type="min")
+                    )
+                elif not measure_distances:
+                    contacts[residues[r]["name"] + str(residues[r]["id"])] = None
 
     return contacts
 
 
 def calc_contacts_protein(
-    sel, sel_env, interactions, measure_distances=False, out_format="new"
+    sel, sel_env, interactions, measure_distances=False, include_WAT=False,
 ):
 
     contacts = {}
 
     protein_residues = [
-        "ARG",
-        "HIS",
-        "HID",
-        "HIE",
-        "HIP",
-        "HSD",
-        "HSE",
-        "HSP",
-        "LYS",
-        "ASP",
-        "ASH",
-        "GLU",
-        "GLH",
-        "SER",
-        "THR",
-        "ASN",
-        "GLN",
-        "CYS",
-        "SEC",
-        "GLY",
-        "PRO",
-        "ALA",
-        "ILE",
-        "LEU",
-        "MET",
-        "PHE",
-        "TRP",
-        "TYR",
-        "VAL",
+        "ARG","HIS","HID","HIE","HIP","HSD",
+        "HSE","HSP","LYS","ASP","ASH","GLU",
+        "GLH","SER","THR","ASN","GLN","CYS",
+        "SEC","GLY","PRO","ALA","ILE","LEU",
+        "MET","PHE","TRP","TYR","VAL",
     ]
+
+    if include_WAT:
+        protein_residues += ['WAT', 'HOH']
 
     #    for residue in sel.atoms.select_atoms('protein').residues:
     for residue in sel.residues:
@@ -335,7 +308,6 @@ def calc_contacts_protein(
             sel_env=residue_env,
             interactions=interactions,
             measure_distances=measure_distances,
-            out_format=out_format,
         )
 
     return contacts
