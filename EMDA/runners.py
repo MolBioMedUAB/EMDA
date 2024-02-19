@@ -13,77 +13,80 @@ TO-DO:
 """
 
 
-def run_distance(Measure):
+def run_distance(self, Measure, variant, replica):
     """
     DESCRIPTION:
 
     """
 
-    Measure.result.append(
-        calc_distance(Measure.sel[0], Measure.sel[1], Measure.options["type"])
+    Measure.result[variant][replica].append(
+        calc_distance(
+            self.universe[variant][replica].select_atoms(self.selections(Measure.sel[0])),
+            self.universe[variant][replica].select_atoms(self.selections(Measure.sel[1])),
+            Measure.options["type"])
     )
 
 
-def run_angle(Measure):
+def run_angle(self, Measure, variant, replica):
     """
     DESCRIPTION:
 
     """
 
-    Measure.result.append(
+    Measure.result[variant][replica].append(
         calc_angle(
-            Measure.sel[0],
-            Measure.sel[1],
-            Measure.sel[2],
+            self.universe[variant][replica].select_atoms(self.selections(Measure.sel[0])),
+            self.universe[variant][replica].select_atoms(self.selections(Measure.sel[1])),
+            self.universe[variant][replica].select_atoms(self.selections(Measure.sel[2])),
             Measure.options["units"],
             Measure.options["domain"],
         )
     )
 
 
-def run_dihedral(Measure):
+def run_dihedral(self, Measure, variant, replica):
     """
     DESCRIPTION:
 
     """
 
-    Measure.result.append(
+    Measure.result[variant][replica].append(
         calc_dihedral(
-            Measure.sel[0],
-            Measure.sel[1],
-            Measure.sel[2],
-            Measure.sel[3],
+            self.universe[variant][replica].select_atoms(self.selections(Measure.sel[0])),
+            self.universe[variant][replica].select_atoms(self.selections(Measure.sel[1])),
+            self.universe[variant][replica].select_atoms(self.selections(Measure.sel[2])),
+            self.universe[variant][replica].select_atoms(self.selections(Measure.sel[3])),
             Measure.options["units"],
             Measure.options["domain"],
         )
     )
 
 
-def run_planar_angle(Measure):
+def run_planar_angle(self, Measure, variant, replica):
     """
     DESCRIPTION:
 
     """
 
-    Measure.result.append(
+    Measure.result[variant][replica].append(
         calc_planar_angle(
-            Measure.sel[0],
-            Measure.sel[1],
+            self.universe[variant][replica].select_atoms(self.selections(Measure.sel[0])),
+            self.universe[variant][replica].select_atoms(self.selections(Measure.sel[1])),
             Measure.options["units"],
             Measure.options["domain"],
         )
     )
 
 
-def run_pka(Measure):
+def run_pka(self, Measure, variant, replica):
     """
     DESCRIPTION:
 
     """
 
-    Measure.result.append(
+    Measure.result[variant][replica].append(
         calc_pka(
-            Measure.sel[0],
+            self.universe[variant][replica].select_atoms(self.selections(Measure.sel[0])),
             Measure.options["pka_ref"],
             Measure.options["pdb_folder"],
             Measure.options["keep_pdb"],
@@ -92,61 +95,67 @@ def run_pka(Measure):
     )
 
 
-def run_contacts(Measure):
+def run_contacts(self, Measure, variant, replica):
     """
     DESCRIPTION:
 
     """
 
-    if Measure.options["mode"] == "selection":
-        Measure.result.append(
-            calc_contacts_selection(
-                Measure.sel[0],
-                Measure.sel[1],
-                Measure.options["interactions"],
-                Measure.options["measure_dists"],
-                Measure.options["out_format"],
-            )
-        )
-
-    elif Measure.options["mode"] == "protein":
-        Measure.result.append(
-            calc_contacts_protein(
-                Measure.sel[0],
-                Measure.sel[1],
-                Measure.options["interactions"],
-                Measure.options["measure_dists"],
-                Measure.options["out_format"],
+    Measure.result[variant][replica].append(
+        calc_contacts_selection(
+            self.universe[variant][replica].select_atoms(self.selections(Measure.sel[0])),
+            self.universe[variant][replica].select_atoms(Measure.sel[0]),
+            Measure.options["interactions"],
+            Measure.options["measure_dists"],
+            Measure.options["out_format"],
             )
         )
 
 
-def run_RMSD(Measure):
+def run_protein_contacts(self, Measure, variant, replica):
     """
     DESCRIPTION:
 
     """
-
-    Measure.result.append(
-        calc_RMSD(
-            Measure.sel[0], Measure.options["ref"], Measure.options["superposition"]
+    
+    Measure.result[variant][replica].append(
+        calc_contacts_protein(
+            self.universe[variant][replica].select_atoms(Measure.sel[0]),
+            self.universe[variant][replica].select_atoms(Measure.sel[1]),
+            Measure.options["interactions"],
+            Measure.options["measure_dists"],
+            Measure.options["out_format"],
         )
     )
 
 
-def run_distWATbridge(Measure):
+def run_RMSD(self, Measure, variant, replica):
     """
     DESCRIPTION:
 
     """
 
-    Measure.result.append(
+    Measure.result[variant][replica].append(
+        calc_RMSD(
+            self.universe[variant][replica].select_atoms(Measure.sel[0]),
+            Measure.options["ref"], 
+            Measure.options["superposition"]
+        )
+    )
+
+
+def run_distWATbridge(self, Measure, variant, replica):
+    """
+    DESCRIPTION:
+
+    """
+
+    Measure.result[variant][replica].append(
         calc_distWATbridge(
-            Measure.sel[0],
-            Measure.sel[1],
-            Measure.sel[2],
-            Measure.sel[3],
-            Measure.sel[4],
-            Measure.sel[5],
+            self.universe[variant][replica],
+            self.universe[variant][replica].select_atoms(Measure.sel[0]),
+            self.universe[variant][replica].select_atoms(Measure.sel[1]),
+            self.universe[variant][replica].select_atoms(Measure.sel[2]),
+            self.universe[variant][replica].select_atoms(Measure.sel[3]),
         )
     )

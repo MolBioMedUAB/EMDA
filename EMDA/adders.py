@@ -50,7 +50,7 @@ def add_distance(self, name, sel1, sel2, type="min"):
         This function outputs the minimum measured distance between the two input selections or coordinates or their combination.
 
     USAGE:
-        EMDA.add_distance(name, sel1, sel2, type=['min' | 'cog' | 'com'])
+        EMDA.add_distance(name, sel1, sel2, type=['min' | 'max' | 'cog' | 'com'])
 
     INPUT:
         - Name of the measurement
@@ -64,7 +64,7 @@ def add_distance(self, name, sel1, sel2, type="min"):
     """
 
     if type.lower() not in ("min", "max", "com", "cog"):
-        raise NotAvailableOptionError
+        raise NotAvailableOptionError(type)
 
     # add the Measure dataclass to the measures list for the EMDA class
     self.measures[name] = self.Measure(
@@ -102,21 +102,25 @@ def add_angle(self, name, sel1, sel2, sel3, units="deg", domain=360):
     """
 
     for sel in (sel1, sel2, sel3):
-        if sel not in self.selections.keys():
+        print(self.selections)
+        print(sel)
+        if sel not in self.selections:
             raise NotExistingSelectionError
         
-        if selection_length(sel) != 1:
+        if selection_length(self, sel) != 1:
             raise NotSingleAtomSelectionError
         
 
     units = units.lower()
     domain = str(domain).lower()
 
-    if units not in ("deg", "degree", "degrees", "rad", "radian", "radians"):
-        units = "degree"
+    if units not in ("deg", "degree", "degrees", "rad", "radian", "radians", "r", "d"):
+        raise NotAvailableOptionError(units)
+        #units = "degree"
 
     if domain not in (180, "180", 360, "360", "pi", "2pi"):
-        domain = "360"
+        raise NotAvailableOptionError(domain)
+        #domain = "360"
 
     self.measures[name] = self.Measure(
         name=name,
@@ -151,20 +155,22 @@ def add_dihedral(self, name, sel1, sel2, sel3, sel4, units="degree", domain=360)
     """
 
     for sel in (sel1, sel2, sel3, sel4):
-        if sel not in self.selections.keys():
+        if sel not in self.selections:
             raise NotExistingSelectionError
         
-        if selection_length(sel) != 1:
+        if selection_length(self, sel) != 1:
             raise NotSingleAtomSelectionError
 
     units = units.lower()
     domain = str(domain).lower()
 
-    if units not in ("deg", "degree", "degrees", "rad", "radian", "radians"):
-        units = "degree"
+    if units not in ("deg", "degree", "degrees", "rad", "radian", "radians", "r", "d"):
+        raise NotAvailableOptionError(units)
+        #units = "degree"
 
     if domain not in (180, "180", 360, "360", "pi", "2pi"):
-        domain = "360"
+        raise NotAvailableOptionError(domain)
+        #domain = "360"
 
     self.measures[name] = self.Measure(
         name=name,
@@ -199,20 +205,22 @@ def add_planar_angle(self, name, sel1, sel2, units="deg", domain=360):
     """
 
     for sel in (sel1, sel2):
-        if sel not in self.selections.keys():
+        if sel not in self.selections:
             raise NotExistingSelectionError
         
-        if selection_length(sel) != 3:
+        if selection_length(self, sel) != 3:
             raise NotSingleAtomSelectionError
 
     units = units.lower()
     domain = str(domain).lower()
 
-    if units not in ("deg", "degree", "degrees", "rad", "radian", "radians"):
-        units = "degree"
+    if units not in ("deg", "degree", "degrees", "rad", "radian", "radians", "r", "d"):
+        raise NotAvailableOptionError(units)
+        #units = "degree"
 
     if domain not in (180, "180", 360, "360", "pi", "2pi"):
-        domain = "360"
+        raise NotAvailableOptionError(domain)
+        #domain = "360"
 
     self.measures[name] = self.Measure(
         name=name,
@@ -304,7 +312,7 @@ def add_contacts(
     self.measures[name] = self.Measure(
         name=name,
         type="contacts",
-        sel=[convert_selection(self, sel), sel_env],
+        sel=[sel, sel_env],
         options={
             "interactions": interactions,
             "measure_dists": measure_distances,
@@ -346,39 +354,48 @@ def add_protein_contacts(
     )
     
 
-
-
-
-def add_RMSD(self, name, sel, ref=None, superposition=True):
+def add_RMSD(self, name, sel, ref=0, center : bool = True, superposition : bool = True, weights = None ):
     """
     DESCRIPTION:
         This function outputs the RMSD of a selection
 
     INPUT:
-        - Name of the measurement
-        - Selection
-        - ref: selection of the reference universe. If not provided, the first frame will be used as the reference.
-        - superposition [bool]: compute the RMSD of aligned
+        - name:     name of the measurement
+        - sel:      selection as EMDA.selection key
+        - ref:      reference universe. If not provided, the first frame will be used as the reference.
+        - center:   substracts the COM of the selection
+        - superposition [bool]: superimposes the coordinates 
 
     OUTPUT:
         - Array of RMSDs of each frame against a reference
+
+    
     """
 
-    sel = convert_selection(self, sel)
+    if weights == None:
+        pass
 
-    if isinstance(ref, type(None)):
-        self.universe.trajectory[0]
-        ref = sel.positions - sel.center_of_mass()
+    elif weights.lower() ==  'mass':
+        weights = get_dictionary_structure(self.universe, None)
+        for k in list(self.universe.keys()):
+            for k_ in list(self.universe[k].keys()):
+                weights[k][k_] = self.universe[k][k_].select_atoms(self.selections[sel]).masses
 
-    elif isinstance(ref, AtomGroup):
-        ref = ref.positions - ref.center_of_mass()
+    else :
+        raise NotAvailableOptionError
+    
 
     self.measures[name] = self.Measure(
         name=name,
         type="RMSD",
         sel=[sel],
-        options={"superposition": superposition, "ref": ref},
-        result=[],
+        options={
+            "center" : center,
+            "superposition": superposition,
+            "ref": ref,
+            "weights" : weights
+        },
+        result=get_dictionary_structure(self.universe, []),
     )
 
 
@@ -429,6 +446,7 @@ def add_distWATbridge(self, name, sel1, sel2, sel1_rad=3, sel2_rad=3):
 def add_pKa(
     self,
     name,
+    sel='protein',
     excluded_ions=["Na+", "Cl-"],
     pka_ref="neutral",
     pdb_folder=".pka",
@@ -442,7 +460,7 @@ def add_pKa(
     INPUT:
         - name:             name of the measurement
         - excluded_ions:    list of solvent ions names that belong to solvent. Default are Na+ and Cl-.
-        - pka_ref:          reference to calculate pKa. Default is neutral. [ neutral | low-pH]
+        - pka_ref:          reference to calculate pKa. Default is neutral. [ neutral | low-pH ]
         - keep_pdb:         trigger for keeping generated pdbs. Default is False. [ True | False ]
         - keep_pka:         trigger for keeping generated .pka file. Default is False. [ True | False ]
 
@@ -450,16 +468,17 @@ def add_pKa(
         - Per-frame array of dicts with shape { residue : pKa }
     """
 
-    excluded_ions = " or resname ".join(excluded_ions)
+    if sel.lower() == 'protein':
+        sel == 'protein'
 
-    sel = self.universe.select_atoms(
-        "not (resname WAT or resname HOH or resname " + excluded_ions + ")"
-    )
+    else :
+        excluded_ions = " or resname ".join(excluded_ions)
+        sel =  "not (resname WAT or resname HOH or resname " + excluded_ions + ")"
 
     self.measures[name] = self.Measure(
         name=name,
         type="pka",
-        sel=[convert_selection(self, sel)],
+        sel=[sel],
         options={
             "pka_ref": pka_ref,
             "pdb_folder": pdb_folder,

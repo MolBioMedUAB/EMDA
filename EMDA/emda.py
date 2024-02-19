@@ -81,7 +81,7 @@ class EMDA:
         
         print("Trajectory has been loaded!")
 
-        self.selections = {}
+        self.selections = { 'all' : [] }
         self.measures = {}
         self.analyses = {}
 
@@ -264,7 +264,7 @@ class EMDA:
         sel_input=None,
         sel_type=None,
         no_backbone=False,
-        variant=None
+        #variant=None
     ):
         """
         DESCRIPTION:
@@ -275,19 +275,27 @@ class EMDA:
             sel_input = name
 
         # Creates the selection for all variants
-        if variant == None:
-            for variant_ in list(self.universe.keys()):
-                try :
-                    self.selections[variant_][name] = parse_selection(sel_input=sel_input, sel_type=sel_type, no_backbone=no_backbone)
-                except KeyError:
-                    self.selections[variant_] = {}
-                    self.selections[variant_][name] = parse_selection(sel_input=sel_input, sel_type=sel_type, no_backbone=no_backbone)
+        
+        self.selections[name] = parse_selection(sel_input=sel_input, sel_type=sel_type, no_backbone=no_backbone)
 
-        else :
-            if variant in list(self.universe.keys()):
-                self.selections[variant][name] = parse_selection(sel_input=sel_input, sel_type=sel_type, no_backbone=no_backbone)
-            else :
-                raise NotAvailableVariantError(variant)
+        
+        # Creates selection for each variant
+        #if variant == None:
+        #    for variant_ in list(self.universe.keys()):
+        #        try :
+        #            self.selections[variant_][name] = parse_selection(sel_input=sel_input, sel_type=sel_type, no_backbone=no_backbone)
+        #        except KeyError:
+        #            self.selections[variant_] = {}
+        #            self.selections[variant_][name] = parse_selection(sel_input=sel_input, sel_type=sel_type, no_backbone=no_backbone)
+        #
+        #else :
+        #    if variant in list(self.universe.keys()):
+        #        self.selections[variant][name] = parse_selection(sel_input=sel_input, sel_type=sel_type, no_backbone=no_backbone)
+        #    else :
+        #        raise NotAvailableVariantError(variant)
+        #    
+        #self.selections['all'].append(name)
+
 
     def print_available_adders(self):
         """
