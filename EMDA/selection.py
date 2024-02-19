@@ -178,15 +178,16 @@ def convert_selection(self, sel, variant=None, replica=None):
 
     elif isinstance(sel, str):
         if variant == None:
-            variant = self.universe.keys()[0]
+            variant = list(self.universe.keys())[0]
             if replica == None:
-                replica = self.universe.keys()[0][0]
+                replica = list(self.universe[variant].keys())[0]
 
         else :
             if replica == None:
-                replica = self.universe.keys()[variant][0]
+                replica = list(self.universe[variant].keys())[0]
 
-        return self.universe[variant][replica].select_atoms(self.selection[variant][replica])
+
+        return self.universe[variant][replica].select_atoms(self.selections[variant][sel])
 
 def selection_length(self, sel):
     """
@@ -194,4 +195,7 @@ def selection_length(self, sel):
         Function for checking how long a selection is.
     """
 
-    return len(convert_selection(sel).indices)
+    first_variant = list(self.universe.keys())[0]
+    first_replica = list(self.universe[first_variant].keys())[0]
+
+    return len(self.universe[first_variant][first_replica].select_atoms(self.selections[sel]))
