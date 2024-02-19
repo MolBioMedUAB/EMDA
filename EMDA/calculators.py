@@ -330,13 +330,23 @@ def calc_RMSD(sel, ref, superposition):
 
 
 def calc_distWATbridge(
+    universe,
     sel1,
     sel2,
-    sel1_env,
-    sel2_env,
     sel1_rad,
     sel2_rad,
 ):
+
+    sel1_env = universe.select_atoms(
+        "resname WAT and around %s group select" % sel1_rad,
+        select=sel1,
+    )
+
+    sel2_env = universe.select_atoms(
+        "resname WAT and around %s group select" % sel2_rad,
+        select=sel2,
+
+    )
 
     if ("WAT" not in sel1_env.resnames or "WAT" not in sel2_env.resnames) or (
         len(set(sel1_env.resids) & set(sel2_env.resids)) == 0
