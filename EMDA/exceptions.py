@@ -100,10 +100,10 @@ class NotAvailableOptionError(Exception):
     Raised when an input option is not available.
     """
 
-    def __init__(self):
+    def __init__(self, option='One of the given options'):
         Exception.__init__(
             self,
-            "One of the input options is not available. Revise the documentation of the function",
+            f"{option} is not available as an input option. Revise the documentation of the function",
         )
 
     pass
