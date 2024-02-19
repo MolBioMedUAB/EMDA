@@ -3,6 +3,7 @@
 ## 1.0.0
 - selections are now parsed to strings instead of AtomGroups using the parse_selection function in selection.py in order to be used with different variants
 - EMDA select method now accepts only the selection name as input and uses it to create the selection string and as selection name.
+- RMSD now can use mass weights
 
 
 ## 0.3.0
