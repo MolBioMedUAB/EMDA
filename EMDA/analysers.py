@@ -2,7 +2,6 @@
 from .exceptions import (
     NotCompatibleMeasureForAnalysisError,
     NotAvailableOptionError,
-    NotCompatibleContactsFormatError,
 )
 from .exceptions import (
     NotCompatibleAnalysisForAnalysisError,
@@ -61,7 +60,7 @@ def analyse_value(self, name, measure, val1, val2=0, mode="thres"):
     else:
         raise NotAvailableOptionError
     
-    results = get_dictionary_structure(self.measures[measure], [])
+    results = get_dictionary_structure(self.measures[measure].result, [])
     for variant in list(self.measures[measure].result.keys()):
         for replica in list(self.measures[measure].result[variant].keys()):
             for result in self.measures[measure].result[variant][replica]:
