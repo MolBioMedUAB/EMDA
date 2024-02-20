@@ -10,6 +10,13 @@
 ## RMSD ADDER AND CALCULATOR
 - [ ] Add the option to set the average structure as reference
 
+## ANALYSE_CONTACTS_FREQUENCY
+- [ ] Allow normalisation by variant and not only by variant & replica.
+- [ ] Allow global normalisation by variant & replica, or variant.
+
+
+
+-----------------------------------------------------------
 
 # DONE
 - [X] Add some code previous to the running cycle in the run method to extend selections to these variants/replicas that have been added after the selection
