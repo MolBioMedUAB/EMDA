@@ -1,14 +1,8 @@
 from dataclasses import dataclass, field, is_dataclass
 import pickle
 
-from typing import Literal
-
-# from typing import Union
-# from types import NoneType
-
 # load MDAnalysis' universe class
 from MDAnalysis import Universe
-
 # from MDAnalysis.core.groups import AtomGroup
 
 # load internal EMDA classes and functions
@@ -24,9 +18,7 @@ from .plotters import *
 from .exceptions import EmptyMeasuresError, NotAvailableVariantError
 
 from tqdm.autonotebook import tqdm
-
-# from metaclass import add_adders
-# class EMDA(metaclass=add_adders):
+from time import sleep
 
 """
 IDEAS:
@@ -275,7 +267,6 @@ class EMDA:
             sel_input = name
 
         # Creates the selection for all variants
-        
         self.selections[name] = parse_selection(sel_input=sel_input, sel_type=sel_type, no_backbone=no_backbone)
 
 
@@ -357,6 +348,7 @@ class EMDA:
         step=1,
         start=1,
         end=-1,
+        sleep_time=0,
     ): 
         """
         DESCRIPTION:
@@ -432,61 +424,90 @@ class EMDA:
                 for k_ in list(self.universe[k].keys()):
                     measures[k][k_] = set(set(self.measures.keys()) - set(excludes[k][k_]))
 
-        print('excludes', excludes)
-        print('recalculates', recalculates)
-        print('measures', measures)
 
-        # trajectory cycle
-        first_cycle = True
-        for ts in tqdm(
-            self.universe.trajectory[start - 1 : end : step],
-            desc="Measuring",
-            unit="Frame",
-        ):
+        def run_measures(self, measures, variant, replica):
 
-            # measures cycle
-            for measure in measures:
-                """
-                TO-DO:
-                    Look for an automatic way to run the proper runner depending on the type set in the Measure. \
-                    All runners should be named like run_${type_of_measure}, so maybe there is a chance to automate it.
-                """
+            u = self.universe[variant][replica]
 
-                if self.measures[measure].type == "distance":
-                    run_distance(self.measures[measure])
+            # trajectory cycle
+            first_cycle = True
+            for ts in tqdm(u.trajectory[starts[variant][replica] : ends[variant][replica] : steps[variant][replica]],
+                           desc=f"Measuring variant {variant}, replica {replica}",
+                           unit="Frame"
+                        ):
 
-                elif self.measures[measure].type == "angle":
-                    run_angle(self.measures[measure])
+                # measures cycle
+                for measure in measures[variant][replica]:
+                    """
+                    TO-DO:
+                        Look for an automatic way to run the proper runner depending on the type set in the Measure. \
+                        All runners should be named like run_${type_of_measure}, so maybe there is a chance to automate it.
+                    """
 
-                elif self.measures[measure].type == "dihedral":
-                    run_dihedral(self.measures[measure])
+                    if self.measures[measure].type == "distance":
+                        run_distance(self, self.measures[measure], variant=variant, replica=replica)
 
-                elif self.measures[measure].type == "planar_angle":
-                    run_planar_angle(self.measures[measure])
+                    elif self.measures[measure].type == "angle":
+                        run_angle(self, self.measures[measure], variant=variant, replica=replica)
 
-                elif self.measures[measure].type == "contacts":
-                    run_contacts(self.measures[measure])
+                    elif self.measures[measure].type == "dihedral":
+                        run_dihedral(self, self.measures[measure], variant=variant, replica=replica)
 
-                elif self.measures[measure].type == "RMSD":
-                    run_RMSD(self.measures[measure])
+                    elif self.measures[measure].type == "planar_angle":
+                        run_planar_angle(self, self.measures[measure], variant=variant, replica=replica)
 
-                elif self.measures[measure].type == "distWATbridge":
-                    run_distWATbridge(self.measures[measure])
+                    elif self.measures[measure].type == "contacts":
+                        run_contacts(self, self.measures[measure], variant=variant, replica=replica)
 
-                elif self.measures[measure].type == "pka":
-                    if first_cycle:
-                        check_folder(self.measures[measure].options["pdb_folder"])
+                    elif self.measures[measure].type == "protein_contacts":
+                        run_contacts(self, self.measures[measure], variant=variant, replica=replica)
 
-                    run_pka(self.measures[measure])
+                    elif self.measures[measure].type == "RMSD":
+                        run_RMSD(self, self.measures[measure], variant=variant, replica=replica)
 
-                else:
-                    if first_cycle:
-                        print(
-                            f"The {measure} type is not available. If you need, you can create it."
-                        )
+                    elif self.measures[measure].type == "distWATbridge":
+                        run_distWATbridge(self, self.measures[measure], variant=variant, replica=replica)
 
-            if first_cycle:
-                first_cycle = False
+                    elif self.measures[measure].type == "pka":
+                        if first_cycle:
+                            check_folder(self.measures[measure].options["pdb_folder"])
+
+                        run_pka(self, self.measures[measure], variant=variant, replica=replica)
+
+                    else:
+                        if first_cycle:
+                            print(
+                                f"The {measure} type is not available. If you need, you can create it."
+                            )
+
+                if first_cycle:
+                    first_cycle = False
+
+                sleep(sleep_time)
+
+
+        if len(self.universe) == 1:
+            variant = list(self.universe.keys())[0]
+            if len(self.universe[variant]) == 1:
+                replica = list(self.universe[variant].keys())[0]
+                run_measures(self, measures=measures, variant=variant, replica=replica)
+            else :
+                for replica in tqdm(list(self.universe[variant].keys()),
+                                    desc="Replica",
+                                    unit="rep"
+                                ):
+                    run_measures(self, measures=measures, variant=variant, replica=replica)
+
+        else :
+            # variants cycle
+            for variant in tqdm(list(self.universe.keys()), desc='Variants', unit='var'):
+                # replicas cycle
+                for replica in list(self.universe[variant].keys()):
+                    run_measures(self, measures=measures, variant=variant, replica=replica)
+
+
+
+
 
     #def save_result(self, name, out_name=None):
     #    """
