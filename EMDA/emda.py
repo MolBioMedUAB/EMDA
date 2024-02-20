@@ -19,6 +19,7 @@ from .exceptions import EmptyMeasuresError, NotAvailableVariantError
 
 from tools import in_notebook
 
+#from tqdm.autonotebook import tqdm
 if in_notebook:
     from tqdm.notebook import tqdm
 
@@ -510,7 +511,6 @@ class EMDA:
                 # replicas cycle
                 for replica in list(self.universe[variant].keys()):
                     run_measures(self, measures=measures, variant=variant, replica=replica)
-
 
 
 
