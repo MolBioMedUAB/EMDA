@@ -1,4 +1,5 @@
 from os import path, mkdir, chdir
+from copy import deepcopy
 
 
 def check_folder(folder):
@@ -53,7 +54,7 @@ def get_dictionary_structure(dict_in, value_out):
     for k in list(dict_in.keys()):
         dict_out[k] = {}
         for k_ in list(dict_in[k].keys()):
-            dict_out[k][k_] = value_out
+            dict_out[k][k_] = deepcopy(value_out)
 
     return dict_out
 
