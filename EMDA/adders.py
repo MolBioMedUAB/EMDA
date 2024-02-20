@@ -474,13 +474,20 @@ def add_pKa(
         excluded_ions = " or resname ".join(excluded_ions)
         sel =  "not (resname WAT or resname HOH or resname " + excluded_ions + ")"
 
+
+    # create 
+    pdb_folders = get_dictionary_structure(self.universe, pdb_folder)
+    for variant in list(pdb_folders.keys()):
+        for replica in list(pdb_folders[variant].keys()):
+            pdb_folders[variant][replica] += f"/{variant}/{replica}/"
+
     self.measures[name] = self.Measure(
         name=name,
         type="pka",
         sel=[sel],
         options={
             "pka_ref": pka_ref,
-            "pdb_folder": pdb_folder,
+            "pdb_folder": pdb_folders,
             "keep_pdb": keep_pdb,
             "keep_pka": keep_pka,
         },
