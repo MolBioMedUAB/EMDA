@@ -132,10 +132,10 @@ class EMDA:
             for variant in list(self.result.keys()):
                 for replica in list(self.result[variant]):
                     if len(self.result[variant][replica]) > 0:
-                        print_ += f"\t\t{variant}, {replica}: Calculated"
+                        print_ += f"\t\t{variant}, {replica}: Calculated\n"
                         #status[variant][replica] = "Calculated"
                     else :
-                        print_ += f"\t\t{variant}, {replica}: Not calculated"
+                        print_ += f"\t\t{variant}, {replica}: Not calculated\n"
                         #status[variant][replica] = "Not calculated"
  
             return print_
@@ -195,16 +195,10 @@ class EMDA:
         # mode : Union[str, NoneType] = None
 
         def __str__(self) -> str:
-            if len(self.result) == 0:
-                status = "Not calculated"
-            else:
-                status = "Calculated"
-
             print_ = f"Analysis dataclass with:\n"
             print_ += f"\tName:   {self.name}\n"
             print_ += f"\tType:   {self.type}\n"
             print_ += f"\tRelated mesure:    {self.measure_name}\n"
-            print_ += f"\tStatus: {status}\n"
 
             return print_
 
