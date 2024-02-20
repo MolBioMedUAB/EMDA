@@ -374,14 +374,15 @@ class EMDA:
         for variant in list(self.universe.keys()):
             for replica, u in self.universe[variant].items():
                 if end == -1 or end > len(u.trajectory):
-                    ends[variant][replica] = len(u.trajectory)
+                    ends[variant][replica] = len(u.trajectory)# + 1
                 else :  
-                    ends[variant][replica] = end
+                    ends[variant][replica] = end #+ 1
+
+        #print(ends)
 
         # Crates a dict with the same structure as universe for starts and step.
-        starts = get_dictionary_structure(self.universe, start)
+        starts = get_dictionary_structure(self.universe, start-1)
         steps  = get_dictionary_structure(self.universe, step)
-
 
         # Convert exclude to list to append precalculated measures if recalculate is False.
         ## If it is True, set measure's result as empty list, so it is overwritten.
@@ -427,15 +428,15 @@ class EMDA:
 
         def run_measures(self, measures, variant, replica):
 
-            u = self.universe[variant][replica]
+            #u = self.universe[variant][replica]
 
             # trajectory cycle
             first_cycle = True
-            for ts in tqdm(u.trajectory[starts[variant][replica] : ends[variant][replica] : steps[variant][replica]],
+            for ts in tqdm(self.universe[variant][replica].trajectory[starts[variant][replica] : ends[variant][replica] : steps[variant][replica]],
                            desc=f"Measuring variant {variant}, replica {replica}",
                            unit="Frame"
                         ):
-
+                
                 # measures cycle
                 for measure in measures[variant][replica]:
                     """
@@ -485,6 +486,8 @@ class EMDA:
 
                 sleep(sleep_time)
 
+            del ts, #u
+
 
         if self.__variants == 1:
             variant = list(self.universe.keys())[0]
@@ -501,8 +504,12 @@ class EMDA:
         else :
             # variants cycle
             for variant in tqdm(list(self.universe.keys()), desc='Variants', unit='var'):
+                print(f"Starting variant {variant} ")
                 # replicas cycle
+                r_num = 0
                 for replica in list(self.universe[variant].keys()):
+                    r_num += 1
+                    print(f"Starting replica {replica} ({r_num} of {len(self.universe[variant].keys())})")
                     run_measures(self, measures=measures, variant=variant, replica=replica)
 
 
