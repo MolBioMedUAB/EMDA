@@ -93,7 +93,106 @@ def analyse_contacts_frequency(self, name, measure, percentage=False, normalise_
         - percentage: Returns the values in percentage
     """
 
-    if self.measures[measure].type not in ("contacts", "protein_contacts"):
+    if self.measures[measure].type == "contacts":
+        contacts_freqs = get_dictionary_structure(self.measures[measure].result, {})
+        for variant in list(self.measures[measure].result.keys()):
+            for replica in list(self.measures[measure].result[variant].keys()):
+
+                for frame in self.measures[measure].result[variant][replica]:
+                    for resid in list(frame.keys()):
+                        if resid in contacts_freqs[variant][replica].keys():
+                            contacts_freqs[variant][replica][resid] += 1
+                        elif resid not in contacts_freqs[variant][replica].keys():
+                            contacts_freqs[variant][replica][resid] = 1
+
+                if percentage and not normalise_to_most_frequent:
+                    for residue in list(contacts_freqs[variant][replica].keys()):
+                        contacts_freqs[variant][replica][residue] = (
+                            contacts_freqs[variant][replica][residue] * 100 / len(self.measures[measure].result[variant][replica])
+                        )
+
+                elif not percentage and normalise_to_most_frequent:
+                    for residue in list(contacts_freqs[variant][replica].keys()):
+                        contacts_freqs[variant][replica][residue] = (
+                            contacts_freqs[variant][replica][residue] / max(contacts_freqs[variant][replica].values())
+                        )
+
+                elif percentage and normalise_to_most_frequent:
+                    for residue in list(contacts_freqs[variant][replica].keys()):
+                        contacts_freqs[variant][replica][residue] = (
+                            contacts_freqs[variant][replica][residue] * 100/ max(contacts_freqs[variant][replica].values())
+                        )
+        
+        
+    elif self.measures[measure].type == "protein_contacts":
+        contacts_freqs = get_dictionary_structure(self.measures[measure].result, {})
+        for variant in list(self.measures[measure].result.keys()):
+            for replica in list(self.measures[measure].result[variant].keys()):
+
+                # create dict containing the residue name as key and a list as value. In this list, each contact in each frame will be stored
+                total_contacts = {
+                    resid: [] for resid in list(self.measures[measure].result[variant][replica][0].keys())
+                }
+
+                for frame in self.measures[measure].result[variant][replica]:
+                    for resid in list(total_contacts.keys()):
+                        total_contacts[resid] += list(frame[resid].keys())
+
+                contacts_freqs[variant][replica] = {}
+                for residue in list(total_contacts.keys()):
+                
+                    if percentage and not normalise_to_most_frequent:
+                        contacts_freqs[variant][replica][residue] = {
+                            residue_from_tot : total_contacts[residue].count(residue_from_tot) * 100 / len(self.measures[measure].result[variant][replica]) for residue_from_tot in list(set(list(total_contacts[residue])))
+                        }
+
+                    elif not percentage or normalise_to_most_frequent:
+                        contacts_freqs[variant][replica][residue] = {
+                            residue_from_tot: total_contacts[residue].count(residue_from_tot) for residue_from_tot in list(set(list(total_contacts[residue])))
+                        }
+
+                if normalise_to_most_frequent:
+                    if percentage:
+                        max_value = 0
+                        for residue in list(contacts_freqs[variant][replica].keys()):
+                            if max_value < max(list(contacts_freqs[variant][replica][residue].values())): 
+                                max_value = max(list(contacts_freqs[variant][replica][residue].values()))
+
+                        for residue in list(contacts_freqs[variant][replica].keys()):
+                            for residue_ in list(contacts_freqs[variant][replica][residue].keys()):
+                                contacts_freqs[variant][replica][residue][residue_] = contacts_freqs[variant][replica][residue][residue_] * 100 / max_value
+
+                    elif not percentage:
+                        max_value = 0
+                        for residue in list(contacts_freqs[variant][replica].keys()):
+                            if max_value < max(list(contacts_freqs[variant][replica][residue].values())): 
+                                max_value = max(list(contacts_freqs[variant][replica][residue].values()))
+
+
+                        #max(list(contacts_freqs[variant][replica].values()))
+                        for residue in list(contacts_freqs[variant][replica].keys()):
+                            for residue_ in list(contacts_freqs[variant][replica][residue].keys()):
+                                contacts_freqs[variant][replica][residue][residue_] = contacts_freqs[variant][replica][residue][residue_] / max_value
+
+                    #if percentage and not normalise_to_most_frequent:
+                    #    for residue in list(contacts_freqs[variant][replica].keys()):
+                    #        contacts_freqs[variant][replica][residue] = (
+                    #            contacts_freqs[variant][replica][residue] * 100 / len(self.measures[measure].result[variant][replica])
+                    #        )
+#
+                    #elif not percentage and normalise_to_most_frequent:
+                    #    for residue in list(contacts_freqs[variant][replica].keys()):
+                    #        contacts_freqs[variant][replica][residue] = (
+                    #            contacts_freqs[variant][replica][residue] / max(contacts_freqs[variant][replica].values())
+                    #        )
+#
+                    #elif percentage and normalise_to_most_frequent:
+                    #    for residue in list(contacts_freqs[variant][replica].keys()):
+                    #        contacts_freqs[variant][replica][residue] = (
+                    #            contacts_freqs[variant][replica][residue] * 100/ max(contacts_freqs[variant][replica].values())
+                    #        )
+#
+    else :#
         raise NotCompatibleMeasureForAnalysisError
 
     # protein_contacts-related code
@@ -125,34 +224,7 @@ def analyse_contacts_frequency(self, name, measure, percentage=False, normalise_
     #            }
 
 
-    contacts_freqs = get_dictionary_structure(self.measures[measure].result, {})
-    for variant in list(self.measures[measure].result.keys()):
-        for replica in list(self.measures[measure].result[variant].keys()):
-
-            for frame in self.measures[measure].result:
-                for resid in list(frame.keys()):
-                    if resid in contacts_freqs[variant][replica].keys():
-                        contacts_freqs[variant][replica][resid] += 1
-                    elif resid not in contacts_freqs[variant][replica].keys():
-                        contacts_freqs[variant][replica][resid] = 1
-
-            if percentage and not normalise_to_most_frequent:
-                for residue in list(contacts_freqs[variant][replica].keys()):
-                    contacts_freqs[variant][replica][residue] = (
-                        contacts_freqs[variant][replica][residue] * 100 / len(self.measures[measure].result)
-                    )
-
-            elif not percentage and normalise_to_most_frequent:
-                for residue in list(contacts_freqs[variant][replica].keys()):
-                    contacts_freqs[variant][replica][residue] = (
-                        contacts_freqs[variant][replica][residue] / max(contacts_freqs[variant][replica].values())
-                    )
-
-            elif percentage and normalise_to_most_frequent:
-                for residue in list(contacts_freqs[variant][replica].keys()):
-                    contacts_freqs[variant][replica][residue] = (
-                        contacts_freqs[variant][replica][residue] * 100/ max(contacts_freqs[variant][replica].values())
-                    )
+    
         
 
     self.analyses[name] = self.Analysis(
