@@ -277,7 +277,7 @@ def calc_contacts_selection(
 
 
 def calc_contacts_protein(
-    sel, sel_env, interactions, measure_distances=False, include_WAT=False,
+    sel, sel_env, measure_distances=False, include_WAT=False,
 ):
 
     contacts = {}
@@ -306,7 +306,7 @@ def calc_contacts_protein(
         contacts[residue.resname + str(residue.resid)] = calc_contacts_selection(
             sel=residue.atoms,
             sel_env=residue_env,
-            interactions=interactions,
+            interactions=protein_residues,
             measure_distances=measure_distances,
         )
 
