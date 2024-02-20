@@ -102,8 +102,6 @@ def add_angle(self, name, sel1, sel2, sel3, units="deg", domain=360):
     """
 
     for sel in (sel1, sel2, sel3):
-        print(self.selections)
-        print(sel)
         if sel not in self.selections:
             raise NotExistingSelectionError
         
