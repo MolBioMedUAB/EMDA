@@ -1,17 +1,5 @@
 from .calculators import *
 
-""" 
-TO-DO:
-    - [x] Add distance
-    - [x] Add angle
-    - [x] Add dihedral
-    - [x] Add planar_angle
-    - [x] Add contacts
-    - [x] Add RMSD
-    - [x] Add distWATbridge
-    - [x] Add pKa
-"""
-
 
 def run_distance(self, Measure, variant, replica):
     """
