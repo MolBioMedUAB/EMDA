@@ -122,16 +122,21 @@ class EMDA:
         result: list
 
         def __str__(self) -> str:
-            if len(self.result) == 0:
-                status = "Not calculated"
-            else:
-                status = "Calculated"
-
             print_ = f"Measure dataclass with:\n"
             print_ += f"\tName:   {self.name}\n"
             print_ += f"\tType:   {self.type}\n"
             print_ += f"\tSel:    {self.sel}\n"
-            print_ += f"\tStatus: {status}\n"
+            print_ += f"\tStatus: \n"
+
+            #status = get_dictionary_structure(self.result, False)
+            for variant in list(self.result.keys()):
+                for replica in list(self.result[variant]):
+                    if len(self.result[variant][replica]) > 0:
+                        print_ += f"\t\t{variant}, {replica}: Calculated"
+                        #status[variant][replica] = "Calculated"
+                    else :
+                        print_ += f"\t\t{variant}, {replica}: Not calculated"
+                        #status[variant][replica] = "Not calculated"
 
             return print_
 
@@ -371,12 +376,12 @@ class EMDA:
         # Creates a dict with the same structure as universe. If end is -1, the lenght of each trajectory is read and
         ## saved. If not -1, the length is checked and if traj is longer, the given end is saved.
         ends = get_dictionary_structure(self.universe, 0)
-        for k in list(self.universe.keys()):
-            for k_, u in self.universe[k].items():
+        for variant in list(self.universe.keys()):
+            for replica, u in self.universe[variant].items():
                 if end == -1 or end > len(u.trajectory):
-                    ends[k][k_] = len(u.trajectory)
+                    ends[variant][replica] = len(u.trajectory)
                 else :  
-                    ends[k][k_] = end
+                    ends[variant][replica] = end
 
         # Crates a dict with the same structure as universe for starts and step.
         starts = get_dictionary_structure(self.universe, start)
@@ -398,18 +403,18 @@ class EMDA:
             recalculates = get_dictionary_structure(self.universe, [recalculate])
 
         for measure in list(self.measures.keys()):
-            for k in list(recalculates.keys()):
-                for k_ in list(recalculates[k].keys()):
-                    if len(self.measures[measure].result[k][k_]) > 0:
+            for variant in list(recalculates.keys()):
+                for replica in list(recalculates[variant].keys()):
+                    if len(self.measures[measure].result[variant][replica]) > 0:
                         if isinstance(recalculate, bool):
                             if recalculate:
-                                self.measures[measure].result[k][k_] = []
+                                self.measures[measure].result[variant][replica] = []
                             elif not recalculate:
-                                excludes[k][k_].append(measure)
+                                excludes[variant][replica].append(measure)
 
                         elif isinstance(recalculate, list):
                             if measure in recalculate:
-                                self.measures[measure].result[k][k_] = []
+                                self.measures[measure].result[variant][replica] = []
 
         # Check run_only. If run_only is used, the measure set will be the run_only list. Conversely, measures will be set as
         ## all measures except exclude (if none, it is converted to empty list in previous codeblock)
@@ -420,9 +425,9 @@ class EMDA:
                 measures = get_dictionary_structure(self.universe, set([run_only]))
         elif run_only == None:
             measures = get_dictionary_structure(self.universe, set())
-            for k in list(self.universe.keys()):
-                for k_ in list(self.universe[k].keys()):
-                    measures[k][k_] = set(set(self.measures.keys()) - set(excludes[k][k_]))
+            for variant in list(self.universe.keys()):
+                for replica in list(self.universe[variant].keys()):
+                    measures[variant][replica] = set(set(self.measures.keys()) - set(excludes[variant][replica]))
 
 
         def run_measures(self, measures, variant, replica):
@@ -486,9 +491,9 @@ class EMDA:
                 sleep(sleep_time)
 
 
-        if len(self.universe) == 1:
+        if self.__variants == 1:
             variant = list(self.universe.keys())[0]
-            if len(self.universe[variant]) == 1:
+            if self.__replicas == 1:
                 replica = list(self.universe[variant].keys())[0]
                 run_measures(self, measures=measures, variant=variant, replica=replica)
             else :
