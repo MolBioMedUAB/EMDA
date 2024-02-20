@@ -123,13 +123,13 @@ def run_protein_contacts(self, Measure, variant, replica):
     Measure.result[variant][replica].append(
         calc_contacts_protein(
             self.universe[variant][replica].select_atoms(Measure.sel[0]),
-            self.universe[variant][replica].select_atoms(
-                f"around {Measure.sel[1]} group select",
-                select=self.universe[variant][replica].select_atoms(self.selections[Measure.sel[0]])
-            ),
-            Measure.options["interactions"],
-            Measure.options["measure_dists"],
-            Measure.options["out_format"],
+            Measure.sel[1],
+            #self.universe[variant][replica].select_atoms(
+            #    f"around {Measure.sel[1]} group select",
+            #    select=self.universe[variant][replica].select_atoms(self.selections[Measure.sel[0]])
+            #),
+            measure_distances=Measure.options["measure_dists"],
+            include_WAT=Measure.options["include_WAT"]
         )
     )
 
