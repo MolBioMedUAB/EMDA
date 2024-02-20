@@ -81,7 +81,7 @@ class EMDA:
         
         print("Trajectory has been loaded!")
 
-        self.selections = { 'all' : [] }
+        self.selections = {}
         self.measures = {}
         self.analyses = {}
 
@@ -278,7 +278,7 @@ class EMDA:
         
         self.selections[name] = parse_selection(sel_input=sel_input, sel_type=sel_type, no_backbone=no_backbone)
 
-        
+
         # Creates selection for each variant
         #if variant == None:
         #    for variant_ in list(self.universe.keys()):
@@ -376,44 +376,65 @@ class EMDA:
         if len(self.measures) == 0:
             raise EmptyMeasuresError
 
-        # If last frame is -1 (the default), last in trajectory is chosen.
-        if end == -1:
-            end = len(self.universe.trajectory)
+        # Creates a dict with the same structure as universe. If end is -1, the lenght of each trajectory is read and
+        ## saved. If not -1, the length is checked and if traj is longer, the given end is saved.
+        ends = get_dictionary_structure(self.universe, 0)
+        for k in list(self.universe.keys()):
+            for k_, u in self.universe[k].items():
+                if end == -1 or end > len(u.trajectory):
+                    ends[k][k_] = len(u.trajectory)
+                else :  
+                    ends[k][k_] = end
+
+        # Crates a dict with the same structure as universe for starts and step.
+        starts = get_dictionary_structure(self.universe, start)
+        steps  = get_dictionary_structure(self.universe, step)
+
 
         # Convert exclude to list to append precalculated measures if recalculate is False.
         ## If it is True, set measure's result as empty list, so it is overwritten.
         ## If a measure or list of measures is given, their result list will be reset as [].
         if exclude == None:
-            exclude = []
+            excludes = get_dictionary_structure(self.universe, [])
         elif isinstance(exclude, str):
-            exclude = [exclude]
+            excludes = get_dictionary_structure(self.universe, [exclude])
         ###
             
         # Checks if there is contents in results and resets the list 
+        recalculates = get_dictionary_structure(self.universe, [])
         if isinstance(recalculate, str):
-            recalculate = [recalculate]
+            recalculates = get_dictionary_structure(self.universe, [recalculate])
 
         for measure in list(self.measures.keys()):
-            if len(self.measures[measure].result) > 0:
-                if isinstance(recalculate, bool):
-                    if recalculate:
-                        self.measures[measure].result = []
-                    elif not recalculate:
-                        exclude.append(measure)
+            for k in list(recalculates.keys()):
+                for k_ in list(recalculates[k].keys()):
+                    if len(self.measures[measure].result[k][k_]) > 0:
+                        if isinstance(recalculate, bool):
+                            if recalculate:
+                                self.measures[measure].result[k][k_] = []
+                            elif not recalculate:
+                                excludes[k][k_].append(measure)
 
-                elif isinstance(recalculate, list):
-                    if measure in recalculate:
-                        self.measures[measure].result = []
+                        elif isinstance(recalculate, list):
+                            if measure in recalculate:
+                                self.measures[measure].result[k][k_] = []
 
         # Check run_only. If run_only is used, the measure set will be the run_only list. Conversely, measures will be set as
         ## all measures except exclude (if none, it is converted to empty list in previous codeblock)
         if run_only != None:
             if isinstance(run_only, str):
-                measures = set([run_only])
+                measures = get_dictionary_structure(self.universe, set([run_only]))
             elif isinstance(run_only, list):
-                measures = set(run_only)
+                measures = get_dictionary_structure(self.universe, set([run_only]))
         elif run_only == None:
-            measures = set(set(self.measures.keys()) - set(exclude))
+            measures = get_dictionary_structure(self.universe, set())
+            for k in list(self.universe.keys()):
+                for k_ in list(self.universe[k].keys()):
+                    measures[k][k_] = set(set(self.measures.keys()) - set(excludes[k][k_]))
+
+        print('excludes', excludes)
+        print('recalculates', recalculates)
+        print('measures', measures)
 
         # trajectory cycle
         first_cycle = True
