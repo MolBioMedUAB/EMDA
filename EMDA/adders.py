@@ -318,6 +318,7 @@ def add_contacts(
         result=get_dictionary_structure(self.universe, []),
     )
 
+
 def add_protein_contacts(
     self,
     name,
@@ -342,7 +343,7 @@ def add_protein_contacts(
     """
     self.measures[name] = self.Measure(
         name=name,
-        type="contacts",
+        type="protein_contacts",
         sel=['protein', sel_env],
         options={
             "measure_dists": measure_distances,
