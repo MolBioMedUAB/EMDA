@@ -17,14 +17,7 @@ from .plotters import *
 # load custom exceptions
 from .exceptions import EmptyMeasuresError, NotAvailableVariantError
 
-from .tools import in_notebook
-
-#from tqdm.autonotebook import tqdm
-if in_notebook:
-    from tqdm.notebook import tqdm
-
-elif not in_notebook:
-    from tqdm import tqdm
+from tqdm.autonotebook import tqdm
 
 from time import sleep
 
