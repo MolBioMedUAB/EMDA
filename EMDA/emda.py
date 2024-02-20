@@ -459,7 +459,7 @@ class EMDA:
                         run_contacts(self, self.measures[measure], variant=variant, replica=replica)
 
                     elif self.measures[measure].type == "protein_contacts":
-                        run_contacts(self, self.measures[measure], variant=variant, replica=replica)
+                        run_protein_contacts(self, self.measures[measure], variant=variant, replica=replica)
 
                     elif self.measures[measure].type == "RMSD":
                         run_RMSD(self, self.measures[measure], variant=variant, replica=replica)
