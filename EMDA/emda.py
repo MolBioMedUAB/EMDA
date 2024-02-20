@@ -137,7 +137,7 @@ class EMDA:
                     else :
                         print_ += f"\t\t{variant}, {replica}: Not calculated"
                         #status[variant][replica] = "Not calculated"
-
+ 
             return print_
 
         def __repr__(self):
