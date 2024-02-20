@@ -9,7 +9,7 @@ from .exceptions import (
     NotEqualLenghtsError,
     NotEnoughDataError,
 )
-from .tools import get_most_frequent
+from .tools import get_most_frequent, get_dictionary_structure
 
 #from numpy import maximum as max
 
@@ -60,11 +60,13 @@ def analyse_value(self, name, measure, val1, val2=0, mode="thres"):
 
     else:
         raise NotAvailableOptionError
+    
+    results = get_dictionary_structure(self.measures[measure], [])
+    for variant in list(self.measures[measure].result.keys()):
+        for replica in list(self.measures[measure].result[variant].keys()):
+            for result in self.measures[measure].result[variant][replica]:
+                results[variant][replica].append(min_val < result < max_val)
 
-    results = []
-
-    for result in self.measures[measure].result:
-        results.append(min_val < result < max_val)
 
     self.analyses[name] = self.Analysis(
         name=name,
@@ -92,74 +94,74 @@ def analyse_contacts_frequency(self, name, measure, percentage=False, normalise_
         - percentage: Returns the values in percentage
     """
 
-    if self.measures[measure].type not in ("contacts"):
+    if self.measures[measure].type not in ("contacts", "protein_contacts"):
         raise NotCompatibleMeasureForAnalysisError
 
-    if self.measures[measure].options["out_format"] not in ("new"):
-        raise NotCompatibleContactsFormatError
+    # protein_contacts-related code
+    #if self.measures[measure].options["mode"] == "protein":
+    #    # create dict containing the residue name as key and a list as value. In this list, each contact in each frame will be stored
+    #    total_contacts = {
+    #        resid: [] for resid in list(self.measures[measure].result[0].keys())
+    #    }
+#
+    #    for frame in self.measures[measure].result:
+    #        for resid in list(total_contacts.keys()):
+    #            total_contacts[resid] += list(frame[resid].keys())
+#
+    #    contacts_freq = {}
+    #    for residue in list(total_contacts.keys()):
+#
+    #        if percentage:
+    #            contacts_freq[residue] = {
+    #                residue_from_tot: total_contacts[residue].count(residue_from_tot)
+    #                * 100
+    #                / len(self.measures[measure].result)
+    #                for residue_from_tot in list(set(list(total_contacts[residue])))
+    #            }
+#
+    #        elif not percentage:
+    #            contacts_freq[residue] = {
+    #                residue_from_tot: total_contacts[residue].count(residue_from_tot)
+    #                for residue_from_tot in list(set(list(total_contacts[residue])))
+    #            }
 
-    if self.measures[measure].options["mode"] == "protein":
-        # create dict containing the residue name as key and a list as value. In this list, each contact in each frame will be stored
-        total_contacts = {
-            resid: [] for resid in list(self.measures[measure].result[0].keys())
-        }
 
-        for frame in self.measures[measure].result:
-            for resid in list(total_contacts.keys()):
-                total_contacts[resid] += list(frame[resid].keys())
+    contacts_freqs = get_dictionary_structure(self.measures[measure].result, {})
+    for variant in list(self.measures[measure].result.keys()):
+        for replica in list(self.measures[measure].result[variant].keys()):
 
-        contacts_freq = {}
-        for residue in list(total_contacts.keys()):
+            for frame in self.measures[measure].result:
+                for resid in list(frame.keys()):
+                    if resid in contacts_freqs[variant][replica].keys():
+                        contacts_freqs[variant][replica][resid] += 1
+                    elif resid not in contacts_freqs[variant][replica].keys():
+                        contacts_freqs[variant][replica][resid] = 1
 
-            if percentage:
-                contacts_freq[residue] = {
-                    residue_from_tot: total_contacts[residue].count(residue_from_tot)
-                    * 100
-                    / len(self.measures[measure].result)
-                    for residue_from_tot in list(set(list(total_contacts[residue])))
-                }
+            if percentage and not normalise_to_most_frequent:
+                for residue in list(contacts_freqs[variant][replica].keys()):
+                    contacts_freqs[variant][replica][residue] = (
+                        contacts_freqs[variant][replica][residue] * 100 / len(self.measures[measure].result)
+                    )
 
-            elif not percentage:
-                contacts_freq[residue] = {
-                    residue_from_tot: total_contacts[residue].count(residue_from_tot)
-                    for residue_from_tot in list(set(list(total_contacts[residue])))
-                }
+            elif not percentage and normalise_to_most_frequent:
+                for residue in list(contacts_freqs[variant][replica].keys()):
+                    contacts_freqs[variant][replica][residue] = (
+                        contacts_freqs[variant][replica][residue] / max(contacts_freqs[variant][replica].values())
+                    )
 
-    elif self.measures[measure].options["mode"] == "selection":
-
-        contacts_freq = {}
-        for frame in self.measures[measure].result:
-            for resid in list(frame.keys()):
-                if resid in contacts_freq.keys():
-                    contacts_freq[resid] += 1
-                elif resid not in contacts_freq.keys():
-                    contacts_freq[resid] = 1
-
-        if percentage and not normalise_to_most_frequent:
-            for residue in list(contacts_freq.keys()):
-                contacts_freq[residue] = (
-                    contacts_freq[residue] * 100 / len(self.measures[measure].result)
-                )
-
-        elif not percentage and normalise_to_most_frequent:
-            for residue in list(contacts_freq.keys()):
-                contacts_freq[residue] = (
-                    contacts_freq[residue] / max(contacts_freq.values())
-                )
-
-        elif percentage and normalise_to_most_frequent:
-            for residue in list(contacts_freq.keys()):
-                contacts_freq[residue] = (
-                    contacts_freq[residue] * 100/ max(contacts_freq.values())
-                )
+            elif percentage and normalise_to_most_frequent:
+                for residue in list(contacts_freqs[variant][replica].keys()):
+                    contacts_freqs[variant][replica][residue] = (
+                        contacts_freqs[variant][replica][residue] * 100/ max(contacts_freqs[variant][replica].values())
+                    )
         
 
     self.analyses[name] = self.Analysis(
         name=name,
         type="contacts_frequency",
         measure_name=measure,
-        result=contacts_freq,
-        options={"mode": self.measures[measure].options["mode"], "percentage": True},
+        result=contacts_freqs,
+        options={"mode": self.measures[measure].type, "percentage": True},
     )
 
 
