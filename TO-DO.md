@@ -14,9 +14,10 @@
 - [ ] Allow normalisation by variant and not only by variant & replica.
 - [ ] Allow global normalisation by variant & replica, or variant.
 
+## EMDA.RUN
+- [ ] Update adders before running so 
 
-
------------------------------------------------------------
+---------------------------------------------------------------------
 
 # DONE
 - [X] Add some code previous to the running cycle in the run method to extend selections to these variants/replicas that have been added after the selection
