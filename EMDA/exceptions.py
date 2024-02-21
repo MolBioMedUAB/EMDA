@@ -165,11 +165,11 @@ class NotEqualLenghtsError(Exception):
     Raised when lists to compare do not have the same number of frames (so lists' lenghts).
     """
 
-    def __init__(self, list_names, lenght):
+    def __init__(self, list_names):
         # list_names_str = ', '.join(list_names)
         Exception.__init__(
             self,
-            f"{', '.join(list_names)} has/have not the same number of frames than the most common number ({lenght}).",
+            f"{', '.join(list_names)} has/have not the same number of frames than the most commons.",
         )
 
     pass
