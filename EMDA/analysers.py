@@ -249,31 +249,38 @@ def analyse_contacts_amount(self, name, measure):
             A frame-wise list containing the number of contacts for each frame.
     """
 
-    if self.measures[measure].type not in ("contacts"):
+    if self.measures[measure].type  == "contacts":
+        
+        contacts_amount = get_dictionary_structure(self.measures[measure].result, [])
+        for variant in list(self.measures[measure].result.keys()):
+            for replica in list(self.measures[measure].result[variant].keys()):
+
+                for frame in self.measures[measure].result[variant][replica]:
+                    contacts_amount[variant][replica].append(len(frame))
+
+    elif self.measures[measure].type == "protein_contacts":
+
+        # create dict containing the residue name as key and a list as value insite the variant/replica dict. In this list, each contact in each frame will be stored
+        contacts_amount = get_dictionary_structure(self.measures[measure].result, [])
+        for variant in list(self.measures[measure].result.keys()):
+            for replica in list(self.measures[measure].result[variant].keys()):
+
+                for frame in self.measures[measure].result[variant][replica]:
+                    contacts_amount[variant][replica].append(
+                        {resid: [] for resid in list(self.measures[measure].result[variant][replica][0].keys())}
+                    )
+                    for resid in list(contacts_amount[variant][replica][-1].keys()):
+                        contacts_amount[variant][replica][-1][resid] = len(frame[resid])
+
+    else :
         raise NotCompatibleMeasureForAnalysisError
 
-    if self.measures[measure].options["mode"] == "protein":
-        # create dict containing the residue name as key and a list as value. In this list, each contact in each frame will be stored
-        contacts_amount = []
-
-        for frame in self.measures[measure].result:
-            contacts_amount.append(
-                {resid: [] for resid in list(self.measures[measure].result[0].keys())}
-            )
-            for resid in list(contacts_amount[-1].keys()):
-                contacts_amount[-1][resid] = len(frame[resid])
-
-    elif self.measures[measure].options["mode"] == "selection":
-
-        contacts_amount = []
-        for frame in self.measures[measure].result:
-            contacts_amount.append(len(frame))
 
     self.analyses[name] = self.Analysis(
         name=name,
         type="contacts_amount",
         options={
-            "mode": self.measures[measure].options["mode"],
+            "mode": self.measures[measure].type,
         },
         measure_name=measure,
         result=contacts_amount,
