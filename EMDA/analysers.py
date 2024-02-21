@@ -287,7 +287,7 @@ def analyse_contacts_amount(self, name, measure):
     )
 
 
-def analyse_NACs(self, name, analyses: list, inverse: list = False):
+def analyse_NACs(self, name, analyses : list, merge_replicas : bool = False, invert : list = False):
     """
     DESCRIPTION:
         Metaanalyser (analyses two or more analyses) for combining boolean-output Analysis. It reads the boolean value corresponding to each analysis and returns True if all are True.
@@ -301,51 +301,62 @@ def analyse_NACs(self, name, analyses: list, inverse: list = False):
 
     # Check if input analyses are of the proper type
     if len(analyses) < 2:
-        raise NotEnoughDataError(2)
+        raise NotEnoughDataError(2) 
 
     for analysis in analyses:
-
-        if not isinstance(self.analyses[analysis].result, list):
+        if self.analyses[analysis].type != "value":
             raise NotCompatibleAnalysisForAnalysisError
 
-        else:
-            if not isinstance(self.analyses[analysis].result[0], bool):
-                raise NotCompatibleAnalysisForAnalysisError
-
-    # Check if all analyses have the same number of frames
-    length = get_most_frequent(
-        [len(self.analyses[analysis].result) for analysis in analyses]
-    )
-
-    not_equal = [analysis for analysis in analyses if len(self.analyses[analysis].result) != length]
-
-    if len(not_equal) != 0:
-        raise NotEqualLenghtsError(list_names=not_equal, lenght=length)
-
-    if inverse != False:
-        for inverse_ in inverse:
-            if inverse_ not in analyses:
+    if invert != False:
+        for invert_ in invert:
+            if invert_ not in analyses:
                 print(
-                    f"{inverse_} is not in analyses, so it's value will not be inverted."
+                    f"{invert_} is not in analyses, so it's value will not be inverted."
                 )
+
+    if not merge_replicas:
+
+        lengths = get_dictionary_structure(self.analyses[analyses[0]].result, {})
+
+        for variant in list(self.analyses[analyses[0]].result.keys()):
+            for replica in list(self.analyses[analyses[0]].result[variant].keys()):
+                # Check if all analyses in same replica have the same number of frames
+                lengths[variant][replica] = get_most_frequent([ len(self.analyses[analysis].result[variant][replica]) for analysis in analyses ])
+                
+                # Check those replicas with different length
+                not_equal = [ analysis for analysis in analyses if len(self.analyses[analysis].result[variant][replica]) != lengths[variant][replica] ]
+
+
+        if len(not_equal) != 0:
+            raise NotEqualLenghtsError(list_names=not_equal)
+
+
+
+        results = get_dictionary_structure(self.analyses[analyses[0]].result, []) 
+        for variant in list(self.analyses[analyses[0]].result.keys()):
+            for replica in list(self.analyses[analyses[0]].result[variant].keys()):
+                result_ = True
+                for result_ix in range(len(self.analyses[analyses[0]].result[variant][replica])):
+                    for analysis in analyses:
+                        # check if analysis name is false or different
+                        if invert == False:
+                            result_ = result_ and self.analyses[analysis].result[variant][replica][result_ix]
+                        
+                        else :
+                            # check if analysis name is in invert or not
+                            if analysis not in invert or not invert:
+                                result_ = result_ and self.analyses[analysis].result[variant][replica][result_ix]
+                            elif analysis in invert:
+                                result_ = result_ and not self.analyses[analysis].result[variant][replica][result_ix]
+                        
+                    results[variant][replica].append(result_)
+                    
 
     self.analyses[name] = self.Analysis(
         name=name,
         type="NACs",
         measure_name=analyses,
-        result=[],
-        options      = {}
+        result=results,
+        options = {"merge_replicas" : merge_replicas}
     )
 
-    for frame in range(length):
-        result_ = True
-        for analysis in analyses:
-            if inverse != False:
-                if analysis in inverse:
-                    result_ = result_ and not self.analyses[analysis].result[frame]
-                else:
-                    result_ = result_ and self.analyses[analysis].result[frame]
-            else:
-                result_ = result_ and self.analyses[analysis].result[frame]
-
-        self.analyses[name].result.append(result_)
