@@ -376,12 +376,21 @@ def add_RMSD(self, name, sel, ref=0, center : bool = True, superposition : bool 
 
     elif weights.lower() ==  'mass':
         weights = get_dictionary_structure(self.universe, None)
-        for k in list(self.universe.keys()):
-            for k_ in list(self.universe[k].keys()):
-                weights[k][k_] = self.universe[k][k_].select_atoms(self.selections[sel]).masses
+        for variant in list(self.universe.keys()):
+            #for replica in list(self.universe[variant].keys()):
+                #weights[variant][replica] = self.universe[variant][replica].select_atoms(self.selections[sel]).masses
+            weights[variant] = self.universe[variant][list(self.universe[variant].keys())[0]].select_atoms(self.selections[sel]).masses
 
     else :
         raise NotAvailableOptionError
+    
+
+    if isinstance(ref, int):
+        refs = get_dictionary_structure(self.universe, None)
+        for variant in list(self.universe.keys()):
+            for replica in list(self.universe[variant].keys()):
+                self.universe[variant][replica].trajectory[ref]
+                refs[variant][replica] = self.universe[variant][replica].select_atoms(self.selections[sel]).positions
     
 
     self.measures[name] = self.Measure(
@@ -391,7 +400,7 @@ def add_RMSD(self, name, sel, ref=0, center : bool = True, superposition : bool 
         options={
             "center" : center,
             "superposition": superposition,
-            "ref": ref,
+            "ref": refs,
             "weights" : weights
         },
         result=get_dictionary_structure(self.universe, []),
