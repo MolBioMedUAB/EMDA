@@ -363,7 +363,7 @@ def add_RMSD(self, name, sel, ref=0, center : bool = True, superposition : bool 
         - sel:      selection as EMDA.selection key
         - ref:      reference universe. If not provided, the first frame will be used as the reference.
         - center:   substracts the COM of the selection
-        - superposition [bool]: superimposes the coordinates 
+        - superposition [bool]: rotates and translates the frame to align the reference. Its activation forces center to be True by MDAnalysis' implementation
 
     OUTPUT:
         - Array of RMSDs of each frame against a reference
@@ -390,7 +390,7 @@ def add_RMSD(self, name, sel, ref=0, center : bool = True, superposition : bool 
         for variant in list(self.universe.keys()):
             for replica in list(self.universe[variant].keys()):
                 self.universe[variant][replica].trajectory[ref]
-                refs[variant][replica] = self.universe[variant][replica].select_atoms(self.selections[sel]).positions
+                refs[variant][replica] = self.universe[variant][replica].select_atoms(self.selections[sel]).positions.copy()
     
 
     self.measures[name] = self.Measure(
