@@ -406,7 +406,8 @@ def add_RMSD(self, name, sel, ref=0, center : bool = True, superposition : bool 
         result=get_dictionary_structure(self.universe, []),
     )
 
-
+## Deactivated
+    
 def add_distWATbridge(self, name, sel1, sel2, sel1_rad=3, sel2_rad=3):
     """
     DESCRIPTION
@@ -424,31 +425,34 @@ def add_distWATbridge(self, name, sel1, sel2, sel1_rad=3, sel2_rad=3):
         - List of dictionaries containing the number of the bridging water and the smallest distance to each of the selection sets.
     """
 
-    # sel1_rad, sel2_rad = sel1_env, sel2_env
+    return "distWATbridge has not been adapted to new multivariant/multireplica scheme yet"
 
-    #sel1_env = self.universe.select_atoms(
+    # # sel1_rad, sel2_rad = sel1_env, sel2_env
+
+    # #sel1_env = self.universe.select_atoms(
     #    "resname WAT and around %s group select" % sel1_rad,
-    #    select=sel1,
-    #    updating=True,
-    #)
+    # #    select=sel1,
+    # #    updating=True,
+    # #)
 
-    #sel2_env = self.universe.select_atoms(
-    #    "resname WAT and around %s group select" % sel2_rad,
-    #    select=sel2,
-    #    updating=True,
-    #)
+    # #sel2_env = self.universe.select_atoms(
+    # #    "resname WAT and around %s group select" % sel2_rad,
+    # #    select=sel2,
+    # #    updating=True,
+    # #)
 
-    self.measures[name] = self.Measure(
-        name=name,
-        type="distWATbridge",
-        sel=[
-            sel1, sel2,
-            #sel1_env, sel2_env,
-            sel1_rad, sel2_rad,
-        ],
-        options={},
-        result=get_dictionary_structure(self.universe, []),
-    )
+    # commented due to deactivation
+    #self.measures[name] = self.Measure(
+    #    name=name,
+    #    type="distWATbridge",
+    #    sel=[
+    #        sel1, sel2,
+    #        #sel1_env, sel2_env,
+    #        sel1_rad, sel2_rad,
+    #    ],
+    #    options={},
+    #    result=get_dictionary_structure(self.universe, []),
+    #)
 
 
 def add_pKa(
@@ -476,29 +480,32 @@ def add_pKa(
         - Per-frame array of dicts with shape { residue : pKa }
     """
 
-    if sel.lower() == 'protein':
-        sel == 'protein'
+    return "distWATbridge has not been adapted to new multivariant/multireplica scheme yet"
 
-    else :
-        excluded_ions = " or resname ".join(excluded_ions)
-        sel =  "not (resname WAT or resname HOH or resname " + excluded_ions + ")"
+    # commented due to deactivation
+    #if sel.lower() == 'protein':
+    #    sel == 'protein'
+
+    #else :
+    #    excluded_ions = " or resname ".join(excluded_ions)
+    #    sel =  "not (resname WAT or resname HOH or resname " + excluded_ions + ")"
 
 
-    # create 
-    pdb_folders = get_dictionary_structure(self.universe, pdb_folder)
-    for variant in list(pdb_folders.keys()):
-        for replica in list(pdb_folders[variant].keys()):
-            pdb_folders[variant][replica] += f"/{variant}/{replica}/"
+    ## create 
+    #pdb_folders = get_dictionary_structure(self.universe, pdb_folder)
+    #for variant in list(pdb_folders.keys()):
+    #    for replica in list(pdb_folders[variant].keys()):
+    #        pdb_folders[variant][replica] += f"/{variant}/{replica}/"
 
-    self.measures[name] = self.Measure(
-        name=name,
-        type="pka",
-        sel=[sel],
-        options={
-            "pka_ref": pka_ref,
-            "pdb_folder": pdb_folders,
-            "keep_pdb": keep_pdb,
-            "keep_pka": keep_pka,
-        },
-        result=get_dictionary_structure(self.universe, []),
-    )
+    #self.measures[name] = self.Measure(
+    #    name=name,
+    #    type="pka",
+    #    sel=[sel],
+    #    options={
+    #        "pka_ref": pka_ref,
+    #        "pdb_folder": pdb_folders,
+    #        "keep_pdb": keep_pdb,
+    #        "keep_pka": keep_pka,
+    #    },
+    #    result=get_dictionary_structure(self.universe, []),
+    #)
