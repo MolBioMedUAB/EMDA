@@ -348,6 +348,7 @@ class EMDA:
         step=1,
         start=1,
         end=-1,
+        verbose=False,
         sleep_time=0,
     ): 
         """
@@ -374,11 +375,9 @@ class EMDA:
         for variant in list(self.universe.keys()):
             for replica, u in self.universe[variant].items():
                 if end == -1 or end > len(u.trajectory):
-                    ends[variant][replica] = len(u.trajectory)# + 1
+                    ends[variant][replica] = len(u.trajectory)
                 else :  
-                    ends[variant][replica] = end #+ 1
-
-        #print(ends)
+                    ends[variant][replica] = end
 
         # Crates a dict with the same structure as universe for starts and step.
         starts = get_dictionary_structure(self.universe, start-1)
@@ -504,12 +503,14 @@ class EMDA:
         else :
             # variants cycle
             for variant in tqdm(list(self.universe.keys()), desc='Variants', unit='var'):
-                print(f"Starting variant {variant} ")
+                if verbose:
+                    print(f"Starting variant {variant} ")
                 # replicas cycle
                 r_num = 0
                 for replica in list(self.universe[variant].keys()):
                     r_num += 1
-                    print(f"Starting replica {replica} ({r_num} of {len(self.universe[variant].keys())})")
+                    if verbose:
+                        print(f"Starting replica {replica} ({r_num} of {len(self.universe[variant].keys())})")
                     run_measures(self, measures=measures, variant=variant, replica=replica)
 
 
