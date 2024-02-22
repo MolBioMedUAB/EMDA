@@ -6,6 +6,7 @@
 - [ ] Add a method to EMDA class to check if selections are correct within the different vairants/replicas
 - [ ] Add async features to run method
 - [ ] Add print statistic method to Measure to print avg of value (for dist and similar) and sd.
+- [ ] Add unwrap option when a variant/replica is loaded
 
 ## PER SECTION
 ### ADD_CONTACTS
@@ -21,7 +22,7 @@
 ### EMDA.RUN
 - [ ] Update adders before running so 
 
-###
+### 
 
 ## PER VERSION
  
