@@ -7,20 +7,182 @@ TO BUILD:
     - [] 
 """
 
-
-def plot_values(self, measure_name, out_name=None):
+def plot_measure(self, measure_name, same_y : bool = True, same_x : bool = True, axis_label_everywhere=False, merge_replica_plots=False, out_name=False):
     """
     DESCRIPTION:
-        P
+        Function for plotting all measures in a Measure class. Only suitable for frame-wise lists 
+        like the obtained with distance, angle, dihedral, planar angle and RMSD.
 
+    OPTIONS:
+        - measure_name:             [str]        name of the measure listed as EMDA.measures key
+        - same_y, same_x:           [bool]       shares the y and/or x among all plots in the same row/column, so plots have the same axis dimensions
+        - axis_label_everywhere:    [bool]       Adds the x and y axis labels to all the subplots instead of only to the ones at the left and bottom
+        - out_name:                 [pseudobool] False by default. If a string is given, the plot will be saved.
+        - 
     """
+    print('merge', merge_replica_plots)
 
-    plt.plot(self.measure[measure_name].result)
+    # Plotting from a plotter
+    if measure_name != None:
+        variants = len(self.measures[measure_name].result)
+
+        if merge_replica_plots:
+            max_replicas = 1
+        else :
+            max_replicas = max([ len(self.measures[measure_name].result[variant]) for variant in list(self.measures[measure_name].result) ])
+
+        fig, axs = plt.subplots(ncols=variants, nrows=max_replicas, sharey=same_y, sharex=same_x)
+
+        for v_num, variant in enumerate(list(self.measures[measure_name].result.keys())):
+            for r_num, replica in enumerate(list(self.measures[measure_name].result[variant].keys())):
+
+                if merge_replica_plots:
+                    axs[v_num].plot(
+                    range(1, len(self.measures[measure_name].result[variant][replica])+1),
+                    self.measures[measure_name].result[variant][replica],
+                    c = f"C{v_num}",
+                    label=replica
+                    )
+
+                    if v_num == 0:
+                        if self.measures[measure_name].type in ("distance"):
+                            axs[v_num].set_ylabel("Distance (Å)")
+
+                        elif self.measures[measure_name].type in ("RMSD"):
+                            axs[v_num].set_ylabel("RMSD (Å)")
+
+                        elif self.measures[measure_name].type in ("angle"):
+                            axs[v_num].set_ylabel("Angle (°)")
+
+                        elif self.measures[measure_name].type in ("planar_angle"):
+                            axs[v_num].set_ylabel("Planar angle (°)")
+                        
+                        elif self.measures[measure_name].type in ("dihedral"):
+                            axs[v_num].set_ylabel("Dihedral angle (°)")
+
+                    if r_num == max_replicas-1 or axis_label_everywhere:
+                        axs[v_num].set_xlabel("Frame")
+                        
+                    axs[v_num].set_title(f"{variant}, replicas {', '.join(list(self.measures[measure_name].result[variant].keys()))}")  
+
+                else :
+                    axs[r_num, v_num].plot(
+                        range(1, len(self.measures[measure_name].result[variant][replica])+1),
+                        self.measures[measure_name].result[variant][replica],
+                        c = f"C{v_num}"
+                        )
+                    
+                    if v_num == 0 or axis_label_everywhere:
+                        if self.measures[measure_name].type in ("distance"):
+                            axs[r_num, v_num].set_ylabel("Distance (Å)")
+
+                        elif self.measures[measure_name].type in ("RMSD"):
+                            axs[r_num, v_num].set_ylabel("RMSD (Å)")
+
+                        elif self.measures[measure_name].type in ("angle"):
+                            axs[r_num, v_num].set_ylabel("Angle (°)")
+
+                        elif self.measures[measure_name].type in ("planar_angle"):
+                            axs[r_num, v_num].set_ylabel("Planar angle (°)")
+                        
+                        elif self.measures[measure_name].type in ("dihedral"):
+                            axs[r_num, v_num].set_ylabel("Dihedral angle (°)")
+
+                    if r_num == max_replicas-1 or axis_label_everywhere:
+                        axs[v_num, r_num].set_xlabel("Frame")
+                    
+                    axs[v_num, r_num].set_title(f"{variant}, {replica}")    
+
+        fig.suptitle("Plots for " + r"$\bf{%s}$" % measure_name.replace('_', '\_') +  " Measure")
+
+
+    # code for Measure's method
+    elif measure_name == None:
+        variants = len(self.result)
+
+        if merge_replica_plots:
+            max_replicas = 1
+        else :
+            max_replicas = max([ len(self.result[variant]) for variant in list(self.result) ])
+
+        fig, axs = plt.subplots(ncols=variants, nrows=max_replicas, sharey=same_y, sharex=same_x)
+
+        for v_num, variant in enumerate(list(self.result.keys())):
+            for r_num, replica in enumerate(list(self.result[variant].keys())):
+
+                if merge_replica_plots:
+                    axs[v_num].plot(
+                        range(1, len(self.result[variant][replica])+1),
+                        self.result[variant][replica],
+                        c = f"C{v_num}",
+                        label=replica
+                    )
+
+                    if v_num == 0:
+                        if self.type in ("distance"):
+                            axs[v_num].set_ylabel("Distance (Å)")
+
+                        elif self.type in ("RMSD"):
+                            axs[v_num].set_ylabel("RMSD (Å)")
+
+                        elif self.type in ("angle"):
+                            axs[v_num].set_ylabel("Angle (°)")
+
+                        elif self.type in ("planar_angle"):
+                            axs[v_num].set_ylabel("Planar angle (°)")
+                        
+                        elif self.type in ("dihedral"):
+                            axs[v_num].set_ylabel("Dihedral angle (°)")
+
+                    if r_num == max_replicas-1 or axis_label_everywhere:
+                        axs[v_num].set_xlabel("Frame")
+                    
+                    axs[v_num].set_title(f"{variant}, replicas {', '.join(list(self.result[variant].keys()))}")  
+
+                else :
+                    axs[r_num, v_num].plot(
+                        range(1, len(self.result[variant][replica])+1),
+                        self.result[variant][replica],
+                        c = f"C{v_num}"
+                        )
+                    
+                    if v_num == 0 or axis_label_everywhere:
+                        if self.type in ("distance"):
+                            axs[r_num, v_num].set_ylabel("Distance (Å)")
+
+                        elif self.type in ("RMSD"):
+                            axs[r_num, v_num].set_ylabel("RMSD (Å)")
+
+                        elif self.type in ("angle"):
+                            axs[r_num, v_num].set_ylabel("Angle (°)")
+
+                        elif self.type in ("planar_angle"):
+                            axs[r_num, v_num].set_ylabel("Planar angle (°)")
+                        
+                        elif self.type in ("dihedral"):
+                            axs[r_num, v_num].set_ylabel("Dihedral angle (°)")
+
+                    if r_num == variants-1 or axis_label_everywhere:
+                        axs[r_num, v_num].set_xlabel("Frame")
+                    
+                    axs[r_num, v_num].set_title(f"{variant}, {replica}")    
+                    
+        fig.suptitle("Plots for " + r"$\bf{%s}$" % self.name.replace('_', '\_') +  " Measure")
+        
+
+    fig.tight_layout()
+
+    #if merge_replica_plots:
+    #    plt.legend()
+
+    if out_name != False and isinstance(out_name, str):
+        if not out_name.endswith((".png", ".jpg", ".jpeg", ".tiff")):
+            out_name = ".".join(out_name.split('.')[:-1]) + ".png"
+
+        plt.savefig(out_name, dpi=300, bbox_inches='tight')
 
     plt.show()
-
-    if out_name != None:
-        pass
+    plt.close()
 
 
 def plot_contacts_frequency(self, analysis_name, out_name=None, fill_empty=False, width_plot=0.5):
