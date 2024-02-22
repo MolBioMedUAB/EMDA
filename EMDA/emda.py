@@ -143,32 +143,14 @@ class EMDA:
 
         def __repr__(self):
             return self.__str__()
-
-        def plot(self):
-            """
-            DESCRIPTION:
-                Measure's method to plot the stored values in the result attribute for distance, angle, dihedral, RMSD and planar_angle types.
-            """
-
+        
+        
+        def plot(self, same_y : bool = True, same_x : bool = True, axis_label_everywhere=False, merge_replica_plots=False, out_name=None):
             if self.type in ("distance", "angle", "dihedral", "RMSD", "planar_angle"):
-                units = {
-                    "distance": "(Å)",
-                    "angle": "(º)",
-                    "dihedral": "(º)",
-                    "planar_angle": "(º)",
-                    "RMSD": "(Å)",
-                }
-
-                plt.plot(self.result)
-                plt.ylabel(
-                    " ".join(self.type.split("_")).capitalize() + " " + units[self.type]
-                )
-                plt.xlabel("Frame")
-
-                plt.show()
-                plt.close()
+                plot_measure(self, measure_name=None, same_y=same_y, same_x=same_x, axis_label_everywhere=axis_label_everywhere, merge_replica_plots=merge_replica_plots, out_name=out_name)
             else:
                 print(f"This method is still not available for {type} measures.")
+
 
     @dataclass
     class Analysis:
