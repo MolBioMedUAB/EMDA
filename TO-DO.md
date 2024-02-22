@@ -3,6 +3,7 @@
 - [ ] Add multi-variant and multi-replica function to EMDA class, so more than one variant (parameters and trajectory) and/or more than one replica (trajectory) can be loaded into the EMDA class. Thus, all the measures, analysis and plots are added once and executed for all.
 - [ ] Add a method to EMDA class to check if selections are correct within the different vairants/replicas
 - [ ] Add async features to run method
+- [ ] Add print statistic method to Measure to print avg of value (for dist and similar) and sd.
 
 ## ADD_CONTACTS
 
@@ -16,6 +17,8 @@
 
 ## EMDA.RUN
 - [ ] Update adders before running so 
+
+## 
 
 ---------------------------------------------------------------------
 
