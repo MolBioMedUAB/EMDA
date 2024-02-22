@@ -25,7 +25,8 @@ The available measures are listed below:
 - __Planar angle__: measures the angle between the closest planes to two sets of at least three atoms
 - __Distance of bridging waters between two sets of atoms__: identifies the closest water that is bridging between two sets of atoms and measures the distances to each
 - __RMSD__: measures the RMSD of a set of atoms (or the whole system) in reference of a frame of the structure
-- __Contacts__, both of a group of atoms and of a whole protein: identifies the contacts stablished by a selection in a given radius or the contacts of each residue.
+- __Contacts__ of a group of atoms: identifies the contacts stablished by a selection in a given radius.
+- __Protein contacts__: gets all contacts stablished by each residue in a given radius along the trajectory.
 
 ### Analysers
 
