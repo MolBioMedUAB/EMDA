@@ -144,13 +144,9 @@ class EMDA:
         def __repr__(self):
             return self.__str__()
         
-        
-        def plot(self, same_y : bool = True, same_x : bool = True, axis_label_everywhere=False, merge_replica_plots=False, out_name=None):
-            if self.type in ("distance", "angle", "dihedral", "RMSD", "planar_angle"):
-                plot_measure(self, measure_name=None, same_y=same_y, same_x=same_x, axis_label_everywhere=axis_label_everywhere, merge_replica_plots=merge_replica_plots, out_name=out_name)
-            else:
-                print(f"This method is still not available for {type} measures.")
 
+        def plot(self, same_y : bool = True, same_x : bool = True, axis_label_everywhere=False, combine_replicas=False, out_name=None):
+            plot_measure(self, measure_name=None, same_y=same_y, same_x=same_x, axis_label_everywhere=axis_label_everywhere, combine_replicas=combine_replicas, out_name=out_name)
 
     @dataclass
     class Analysis:
@@ -470,12 +466,14 @@ class EMDA:
             del ts, #u
 
 
-        if self.__variants == 1:
+
+        if len(self.universe) == 1:
             variant = list(self.universe.keys())[0]
-            if self.__replicas == 1:
+            if len(self.universe[variant]) == 1:
                 replica = list(self.universe[variant].keys())[0]
                 run_measures(self, measures=measures, variant=variant, replica=replica)
             else :
+                print('single variant, multireplica')
                 for replica in tqdm(list(self.universe[variant].keys()),
                                     desc="Replica",
                                     unit="rep"
