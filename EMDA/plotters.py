@@ -201,9 +201,11 @@ def plot_NACs(self, analysis_name, merge_replicas=False, percentage=False, error
             # plot a bar for each replica
             ax.bar(variant, avgs, bar_width*max_replicas, color = f"C{v_num}")
             if error_bar and max_replicas != 1:
-                ax.errorbar(variant, avgs, yerr=std([analysis_obj.result[variant][replica].count(True) for replica in list(analysis_obj.result[variant].keys())]), color = f"k",
+                ax.errorbar(variant, avgs, 
+                        yerr=std([analysis_obj.result[variant][replica].count(True) for replica in list(analysis_obj.result[variant].keys())]), 
+                        color = f"k",
                         solid_capstyle='butt',
-                        capsize=5
+                        capsize=bar_width*72 # in to pt is 72, 5 is to make it wider
                         )
 
     elif not merge_replicas: 
@@ -223,7 +225,6 @@ def plot_NACs(self, analysis_name, merge_replicas=False, percentage=False, error
         for variant in true_counts.values():
             for i, count in enumerate(variant):
                 if percentage:
-                    print(all_counts[list(true_counts.keys())[v_num]])
                     counts_by_replica[f'R{i+1}'].append(count*100/all_counts[list(true_counts.keys())[v_num]][i])
                 else :
                     counts_by_replica[f'R{i+1}'].append(count)
@@ -236,8 +237,7 @@ def plot_NACs(self, analysis_name, merge_replicas=False, percentage=False, error
         labels = list(true_counts.keys())  # Variant names
         num_variants = len(true_counts)
         x = arange(num_variants)  # the label locations
-
-        print(counts_by_replica)
+    
 
         for i, (replica, counts) in enumerate(counts_by_replica.items()):
             ax.bar(x + i*bar_width, counts, bar_width, label=replica)
