@@ -222,7 +222,6 @@ def ext_plot_contacts_frequencies_differences(
     else:
         plt.ylabel("Frequency (number of)")
 
-    plt.show()
 
     if save_plot:
         plt.savefig('contacts_frequencies_diffs.png', dpi=300, bbox_inches='tight')
@@ -231,7 +230,7 @@ def ext_plot_contacts_frequencies_differences(
         plt.savefig(save_plot + '.png', dpi=300, bbox_inches='tight')
 
         
-
+    plt.show()
     plt.close()
 
     if return_results and return_labels:
