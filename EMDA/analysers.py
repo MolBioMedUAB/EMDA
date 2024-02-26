@@ -10,7 +10,7 @@ from .exceptions import (
 )
 from .tools import get_most_frequent, get_dictionary_structure
 
-#from numpy import maximum as max
+# from numpy import maximum as max
 
 """
 TO BUILD in 0.2.0:
@@ -68,15 +68,13 @@ def analyse_value(self, name, measure, val1, val2=0, mode="thres"):
 
 
     self.analyses[name] = self.Analysis(
-        name=name,
-        type="value",
-        measure_name=measure,
-        result=results,
-        options = {}
+        name=name, type="value", measure_name=measure, result=results, options={}
     )
 
 
-def analyse_contacts_frequency(self, name, measure, percentage=False, normalise_to_most_frequent=False):
+def analyse_contacts_frequency(
+    self, name, measure, percentage=False, normalise_to_most_frequent=False
+):
     """
     DESCRIPTION:
         Analyser for calculating the frequency (in absolute value or %) of the calculated contacts.

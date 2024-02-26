@@ -308,28 +308,43 @@ def plot_contacts_frequency(self, analysis_name, fill_empty=False, width_plot=0.
     """
 
     if self.analyses[analysis_name].type != "contacts_frequency":
-        #raise 
+        # raise
         pass
 
     if fill_empty:
-        all_protein = self.universe.select_atoms('protein')
-        for resname, resid in zip(list(all_protein.residues.resnames), list(all_protein.residues.resids)):
-            if f"{str(resname)}{str(resid)}" not in list(self.analyses[analysis_name].result.keys()):
+        all_protein = self.universe.select_atoms("protein")
+        for resname, resid in zip(
+            list(all_protein.residues.resnames), list(all_protein.residues.resids)
+        ):
+            if f"{str(resname)}{str(resid)}" not in list(
+                self.analyses[analysis_name].result.keys()
+            ):
                 self.analyses[analysis_name].result[f"{str(resname)}{str(resid)}"] = 0
 
         plt.figure(figsize=(len(self.analyses[analysis_name].result) * width_plot, 5))
 
         plt.bar(
             [int(res[3:]) for res in list(self.analyses[analysis_name].result.keys())],
-            #list(self.analyses[analysis_name].result.keys()),
-            [self.analyses[analysis_name].result[res] for res in list(self.analyses[analysis_name].result.keys())]
-            #list(self.analyses[analysis_name].result.values())
+            # list(self.analyses[analysis_name].result.keys()),
+            [
+                self.analyses[analysis_name].result[res]
+                for res in list(self.analyses[analysis_name].result.keys())
+            ],
+            # list(self.analyses[analysis_name].result.values())
         )
-    
+
         plt.xticks(
-        [int(res[3:]) for res in list(self.analyses[analysis_name].result.keys()) if self.analyses[analysis_name].result[res] != 0],
-        [res for res in list(self.analyses[analysis_name].result.keys()) if self.analyses[analysis_name].result[res] != 0],
-        rotation=90
+            [
+                int(res[3:])
+                for res in list(self.analyses[analysis_name].result.keys())
+                if self.analyses[analysis_name].result[res] != 0
+            ],
+            [
+                res
+                for res in list(self.analyses[analysis_name].result.keys())
+                if self.analyses[analysis_name].result[res] != 0
+            ],
+            rotation=90,
         )
 
     elif not fill_empty:
@@ -337,13 +352,10 @@ def plot_contacts_frequency(self, analysis_name, fill_empty=False, width_plot=0.
 
         plt.bar(
             list(self.analyses[analysis_name].result.keys()),
-            list(self.analyses[analysis_name].result.values())
+            list(self.analyses[analysis_name].result.values()),
         )
 
-
         plt.xticks(rotation=45, ha="right")
-
-    
 
     plt.show()
     plt.close()
@@ -372,7 +384,7 @@ def ext_plot_contacts_frequencies_differences(
         - return_results:       returns the dictionary with the compared results.
         - return_labels:        returns the list of labels of the obtained results.
         - width_plot:           sets the width per bar of the output plot.
-        - save_plot:            pseudoboolean value to save the generated plot. If True, it will be stored as 'contacts_frequencies_diffs.png'. 
+        - save_plot:            pseudoboolean value to save the generated plot. If True, it will be stored as 'contacts_frequencies_diffs.png'.
                                 If a string is given, it will be used as the file name's with the .png extension.
 
     BUILDING NOTES:
@@ -456,11 +468,13 @@ def ext_plot_contacts_frequencies_differences(
             elif int(k_[0]) == int(k_[1]) - 1:
                 del important_contacts[k]
 
-
     # Remove redundant
     for k in list(important_contacts.keys()):
         for k_ in list(important_contacts.keys()):
-            if k.split('-')[0] == k_.split('-')[1] and k.split('-')[1] == k_.split('-')[0]:
+            if (
+                k.split("-")[0] == k_.split("-")[1]
+                and k.split("-")[1] == k_.split("-")[0]
+            ):
                 del important_contacts[k]
 
     if len(important_contacts) == 0:
@@ -498,16 +512,13 @@ def ext_plot_contacts_frequencies_differences(
     else:
         plt.ylabel("Frequency (number of)")
 
-    plt.show()
-
     if save_plot:
-        plt.savefig('contacts_frequencies_diffs.png', dpi=300, bbox_inches='tight')
+        plt.savefig("contacts_frequencies_diffs.png", dpi=300, bbox_inches="tight")
 
     elif isinstance(save_plot, str):
-        plt.savefig(save_plot + '.png', dpi=300, bbox_inches='tight')
+        plt.savefig(save_plot + ".png", dpi=300, bbox_inches="tight")
 
-        
-
+    plt.show()
     plt.close()
 
     if return_results and return_labels:
@@ -516,4 +527,3 @@ def ext_plot_contacts_frequencies_differences(
         return important_contacts
     elif return_labels:
         return return_labels
-
