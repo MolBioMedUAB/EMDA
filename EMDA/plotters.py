@@ -165,10 +165,10 @@ def plot_NACs(self, analysis_name, merge_replicas=False, percentage=False, error
     # Check width
     if width == None:
         fig.set_figwidth(10*bar_width*len(analysis_obj.result))
-    elif width.lower() in ('auto', 'automatic'):
-        pass
     elif isinstance(width, (float, int)):
         fig.set_figwidth(width)
+    elif width.lower() in ('auto', 'automatic'):
+        pass
     else :
         print("width value ({width}) cannot be understood, using default value.")
 
@@ -184,7 +184,7 @@ def plot_NACs(self, analysis_name, merge_replicas=False, percentage=False, error
 
             # plot a bar for each replica
             ax.bar(variant, avgs, bar_width*max_replicas, color = f"C{v_num}")
-            if error_bar:
+            if error_bar and max_replicas != 1:
                 ax.errorbar(variant, avgs, yerr=std([analysis_obj.result[variant][replica].count(True) for replica in list(analysis_obj.result[variant].keys())]), color = f"k",
                         solid_capstyle='butt',
                         capsize=5
@@ -195,15 +195,12 @@ def plot_NACs(self, analysis_name, merge_replicas=False, percentage=False, error
         # Counting True values for each replica in each variant
         true_counts = {variant: [sum(replica) for replica in replicas.values()] for variant, replicas in analysis_obj.result.items()}
         all_counts  = {variant: [len(replica) for replica in replicas.values()] for variant, replicas in analysis_obj.result.items()}
-        print(true_counts)
-        print(all_counts)
 
         # Find the maximum number of replicas to standardize the data structure
         max_replicas = max(len(replicas) for replicas in true_counts.values())
 
         # Initialize a list to hold the count of Trues for each replica in each variant
         counts_by_replica = {f'R{i+1}': [] for i in range(max_replicas)}
-        print(counts_by_replica)
 
         # Populate the counts by iterating through each variant and replica
         v_num = 0
@@ -224,12 +221,15 @@ def plot_NACs(self, analysis_name, merge_replicas=False, percentage=False, error
         num_variants = len(true_counts)
         x = arange(num_variants)  # the label locations
 
+        print(counts_by_replica)
+
         for i, (replica, counts) in enumerate(counts_by_replica.items()):
             ax.bar(x + i*bar_width, counts, bar_width, label=replica)
 
         # Add some text for labels, title, and custom x-axis tick labels, etc.
-        
-        
+            
+        ax.set_xticks(x + bar_width * (max_replicas / 2 - 0.5))
+        ax.set_xticklabels(labels)
        
         ax.legend()
 
@@ -251,9 +251,10 @@ def plot_NACs(self, analysis_name, merge_replicas=False, percentage=False, error
 
     elif not percentage:
         ax.set_ylabel('Number of NACs')
-        if not merge_replicas:
-            ax.set_xticks(x + bar_width * (max_replicas / 2 - 0.5))
-            ax.set_xticklabels(labels)
+    
+#    if not merge_replicas:
+#        ax.set_xticks(x + bar_width * (max_replicas / 2 - 0.5))
+#        ax.set_xticklabels(labels)
         
     ax.grid(axis='x')
     ax.set_xlabel('Variant')
