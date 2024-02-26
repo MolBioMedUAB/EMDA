@@ -97,6 +97,22 @@ def plot_measure(self, measure_name, same_y : bool = True, same_x : bool = True,
                         
                     axs[v_num].set_title(f"{variant}, replicas {', '.join(list(measure_obj.result[variant].keys()))}")  
 
+                elif variants == 1:
+                    axs[r_num].plot(
+                    range(1, len(measure_obj.result[variant][replica])+1),
+                    measure_obj.result[variant][replica],
+                    c = f"C{v_num}",
+                    label=replica
+                    )
+
+                    if r_num == 0 or axis_label_everywhere:
+                        axs[r_num].set_ylabel(y_labels[measure_obj.type])
+
+                    if v_num == variants-1 or axis_label_everywhere:
+                        axs[r_num].set_xlabel("Frame")
+                        
+                    axs[r_num].set_title(f"{variant}, {replica}")  
+
                 else :
                     axs[v_num, r_num].plot(
                         range(1, len(measure_obj.result[variant][replica])+1),
