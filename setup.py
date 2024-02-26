@@ -17,7 +17,7 @@ setup(
     author_mail="mcanyellesnino@gmail.com",
     packages=find_packages(where='.'),
     include_package_data=True,
-    install_requires=["mdanalysis", "tqdm", "matplotlib"],
+    install_requires=["MDAnalysis", "tqdm", "matplotlib"],
     keywords="biochemistry, simulations, MDAnalysis, molecular dynamics",
     url="https://github.com/MolBioMedUAB/EMDA",
     download_url=f"https://github.com/MolBioMedUAB/EMDA/archive/refs/tags/{EMDA.__version__}.tar.gz",
