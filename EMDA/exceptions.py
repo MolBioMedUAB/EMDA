@@ -145,6 +145,29 @@ class NotCompatibleAnalysisForAnalysisError(Exception):
 
     pass
 
+class NotCompatibleAnalysisForPlotterError(Exception):
+    """
+    Raised when the analyses to plot is not of an accepted type by the plotter.
+    """
+
+    def __init__(self):
+        Exception.__init__(
+            self, "The input analysis is not compatible with the chosen plotter."
+        )
+
+    pass
+
+class NotCompatibleMeasureForPlotterError(Exception):
+    """
+    Raised when the measures to plot is not of an accepted type by the plotter.
+    """
+
+    def __init__(self):
+        Exception.__init__(
+            self, "The input measure is not compatible with the chosen plotter."
+        )
+
+    pass
 
 class NotCompatibleContactsFormatError(Exception):
     """
