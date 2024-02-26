@@ -1,5 +1,9 @@
 import matplotlib.pyplot as plt
 from numpy import absolute as abs
+from numpy import average, std, arange, array
+import numpy as np
+
+from .exceptions import NotCompatibleAnalysisForPlotterError, NotCompatibleMeasureForPlotterError
 
 """
 TO BUILD:
@@ -7,7 +11,7 @@ TO BUILD:
     - [] 
 """
 
-def plot_measure(self, measure_name, same_y : bool = True, same_x : bool = True, axis_label_everywhere=False, merge_replica_plots=False, out_name=False):
+def plot_measure(self, measure_name, same_y : bool = True, same_x : bool = True, axis_label_everywhere : bool =False, combine_replicas : bool =False, width_per_replica : float = 4, height_per_variant : float = 4, out_name=False):
     """
     DESCRIPTION:
         Function for plotting all measures in a Measure class. Only suitable for frame-wise lists 
@@ -20,156 +24,110 @@ def plot_measure(self, measure_name, same_y : bool = True, same_x : bool = True,
         - out_name:                 [pseudobool] False by default. If a string is given, the plot will be saved.
         - 
     """
-    print('merge', merge_replica_plots)
 
-    # Plotting from a plotter
-    if measure_name != None:
-        variants = len(self.measures[measure_name].result)
+    y_labels = {
+        "distance" : "Distance (Å)",
+        "RMSD" : "RMSD (Å)",
+        "angle" : "Angle (°)",
+        "planar_angle" : "Planar angle (°)",
+        "dihedral" : "Dihedral angle (°)"
+    }
 
-        if merge_replica_plots:
-            max_replicas = 1
-        else :
-            max_replicas = max([ len(self.measures[measure_name].result[variant]) for variant in list(self.measures[measure_name].result) ])
+    # Check if plotting as plotter or as class' method
+    if measure_name == None:
+        measure_obj = self
+    else :
+        measure_obj = self.measures[measure_name]
 
-        fig, axs = plt.subplots(ncols=variants, nrows=max_replicas, sharey=same_y, sharex=same_x)
+    if measure_obj.type not in ("distance", "angle", "dihedral", "RMSD", "planar_angle"):
+        raise NotCompatibleMeasureForPlotterError
 
-        for v_num, variant in enumerate(list(self.measures[measure_name].result.keys())):
-            for r_num, replica in enumerate(list(self.measures[measure_name].result[variant].keys())):
+    variants = len(measure_obj.result)
 
-                if merge_replica_plots:
+    if combine_replicas:
+        max_replicas = 1
+    else :
+        max_replicas = max([ len(measure_obj.result[variant]) for variant in list(measure_obj.result) ])
+
+    #fig, axs = plt.subplots(ncols=variants, nrows=max_replicas, sharey=same_y, sharex=same_x) --> axs[r_num, v_num]
+    # plotting replicas in X axis and variant in Y axis
+    fig, axs = plt.subplots(
+        ncols=max_replicas, nrows=variants, 
+        sharey=same_y, sharex=same_x, 
+        figsize=(max_replicas*width_per_replica, variants*height_per_variant)
+    )
+
+    # Check if only one variant
+
+    if variants == 1 and max_replicas == 1:
+        variant = list(measure_obj.result.keys())[0]
+        replica = list(measure_obj.result[variant].keys())[0]
+
+        axs.plot(
+            range(1, len(measure_obj.result[variant][replica])+1),
+            measure_obj.result[variant][replica],
+            c = f"C0",
+            label=replica
+            )
+        
+        axs.set_ylabel(y_labels[measure_obj.type])
+        axs.set_xlabel("Frame")
+    
+    else :
+        # If there's only one replica, treat it as merged
+        if max_replicas == 1:
+            combine_replicas = True
+
+        for v_num, variant in enumerate(list(measure_obj.result.keys())):
+            for r_num, replica in enumerate(list(measure_obj.result[variant].keys())):
+
+                if combine_replicas:
                     axs[v_num].plot(
-                    range(1, len(self.measures[measure_name].result[variant][replica])+1),
-                    self.measures[measure_name].result[variant][replica],
+                    range(1, len(measure_obj.result[variant][replica])+1),
+                    measure_obj.result[variant][replica],
                     c = f"C{v_num}",
                     label=replica
                     )
 
-                    if v_num == 0:
-                        if self.measures[measure_name].type in ("distance"):
-                            axs[v_num].set_ylabel("Distance (Å)")
+                    if r_num == 0 or axis_label_everywhere:
+                        axs[v_num].set_ylabel(y_labels[measure_obj.type])
 
-                        elif self.measures[measure_name].type in ("RMSD"):
-                            axs[v_num].set_ylabel("RMSD (Å)")
-
-                        elif self.measures[measure_name].type in ("angle"):
-                            axs[v_num].set_ylabel("Angle (°)")
-
-                        elif self.measures[measure_name].type in ("planar_angle"):
-                            axs[v_num].set_ylabel("Planar angle (°)")
-                        
-                        elif self.measures[measure_name].type in ("dihedral"):
-                            axs[v_num].set_ylabel("Dihedral angle (°)")
-
-                    if r_num == max_replicas-1 or axis_label_everywhere:
+                    if v_num == variants-1 or axis_label_everywhere:
                         axs[v_num].set_xlabel("Frame")
                         
-                    axs[v_num].set_title(f"{variant}, replicas {', '.join(list(self.measures[measure_name].result[variant].keys()))}")  
+                    axs[v_num].set_title(f"{variant}, replicas {', '.join(list(measure_obj.result[variant].keys()))}")  
 
                 else :
-                    axs[r_num, v_num].plot(
-                        range(1, len(self.measures[measure_name].result[variant][replica])+1),
-                        self.measures[measure_name].result[variant][replica],
+                    axs[v_num, r_num].plot(
+                        range(1, len(measure_obj.result[variant][replica])+1),
+                        measure_obj.result[variant][replica],
                         c = f"C{v_num}"
                         )
                     
-                    if v_num == 0 or axis_label_everywhere:
-                        if self.measures[measure_name].type in ("distance"):
-                            axs[r_num, v_num].set_ylabel("Distance (Å)")
-
-                        elif self.measures[measure_name].type in ("RMSD"):
-                            axs[r_num, v_num].set_ylabel("RMSD (Å)")
-
-                        elif self.measures[measure_name].type in ("angle"):
-                            axs[r_num, v_num].set_ylabel("Angle (°)")
-
-                        elif self.measures[measure_name].type in ("planar_angle"):
-                            axs[r_num, v_num].set_ylabel("Planar angle (°)")
-                        
-                        elif self.measures[measure_name].type in ("dihedral"):
-                            axs[r_num, v_num].set_ylabel("Dihedral angle (°)")
-
-                    if r_num == max_replicas-1 or axis_label_everywhere:
+                    if r_num == 0 or axis_label_everywhere:
+                        axs[v_num, r_num].set_ylabel(y_labels[measure_obj.type])
+                    
+                    if v_num == variants-1 or axis_label_everywhere:
                         axs[v_num, r_num].set_xlabel("Frame")
                     
-                    axs[v_num, r_num].set_title(f"{variant}, {replica}")    
+                    axs[v_num, r_num].set_title(f"{variant}, {replica}")
 
+            if r_num != max_replicas-1:
+                for r_num_ in range(r_num, max_replicas):
+                    if v_num == variants-1 or axis_label_everywhere:
+                        axs[v_num, r_num_].plot()
+                        axs[v_num, r_num_].set_xlabel("Frame")
+
+            
+
+
+    if measure_name == None:
+        fig.suptitle("Plots for " + r"$\bf{%s}$" % self.name.replace('_', '\_') +  " Measure")
+
+    else :
         fig.suptitle("Plots for " + r"$\bf{%s}$" % measure_name.replace('_', '\_') +  " Measure")
 
-
-    # code for Measure's method
-    elif measure_name == None:
-        variants = len(self.result)
-
-        if merge_replica_plots:
-            max_replicas = 1
-        else :
-            max_replicas = max([ len(self.result[variant]) for variant in list(self.result) ])
-
-        fig, axs = plt.subplots(ncols=variants, nrows=max_replicas, sharey=same_y, sharex=same_x)
-
-        for v_num, variant in enumerate(list(self.result.keys())):
-            for r_num, replica in enumerate(list(self.result[variant].keys())):
-
-                if merge_replica_plots:
-                    axs[v_num].plot(
-                        range(1, len(self.result[variant][replica])+1),
-                        self.result[variant][replica],
-                        c = f"C{v_num}",
-                        label=replica
-                    )
-
-                    if v_num == 0:
-                        if self.type in ("distance"):
-                            axs[v_num].set_ylabel("Distance (Å)")
-
-                        elif self.type in ("RMSD"):
-                            axs[v_num].set_ylabel("RMSD (Å)")
-
-                        elif self.type in ("angle"):
-                            axs[v_num].set_ylabel("Angle (°)")
-
-                        elif self.type in ("planar_angle"):
-                            axs[v_num].set_ylabel("Planar angle (°)")
-                        
-                        elif self.type in ("dihedral"):
-                            axs[v_num].set_ylabel("Dihedral angle (°)")
-
-                    if r_num == max_replicas-1 or axis_label_everywhere:
-                        axs[v_num].set_xlabel("Frame")
-                    
-                    axs[v_num].set_title(f"{variant}, replicas {', '.join(list(self.result[variant].keys()))}")  
-
-                else :
-                    axs[r_num, v_num].plot(
-                        range(1, len(self.result[variant][replica])+1),
-                        self.result[variant][replica],
-                        c = f"C{v_num}"
-                        )
-                    
-                    if v_num == 0 or axis_label_everywhere:
-                        if self.type in ("distance"):
-                            axs[r_num, v_num].set_ylabel("Distance (Å)")
-
-                        elif self.type in ("RMSD"):
-                            axs[r_num, v_num].set_ylabel("RMSD (Å)")
-
-                        elif self.type in ("angle"):
-                            axs[r_num, v_num].set_ylabel("Angle (°)")
-
-                        elif self.type in ("planar_angle"):
-                            axs[r_num, v_num].set_ylabel("Planar angle (°)")
-                        
-                        elif self.type in ("dihedral"):
-                            axs[r_num, v_num].set_ylabel("Dihedral angle (°)")
-
-                    if r_num == variants-1 or axis_label_everywhere:
-                        axs[r_num, v_num].set_xlabel("Frame")
-                    
-                    axs[r_num, v_num].set_title(f"{variant}, {replica}")    
-                    
-        fig.suptitle("Plots for " + r"$\bf{%s}$" % self.name.replace('_', '\_') +  " Measure")
-        
-
+    
     fig.tight_layout()
 
     #if merge_replica_plots:
@@ -185,7 +143,148 @@ def plot_measure(self, measure_name, same_y : bool = True, same_x : bool = True,
     plt.close()
 
 
-def plot_contacts_frequency(self, analysis_name, out_name=None, fill_empty=False, width_plot=0.5):
+
+def plot_NACs(self, analysis_name, merge_replicas=False, percentage=False, error_bar=True, bar_width=0.1, width=None, title=None, out_name=False):
+    """
+    DESCRIPTION:
+        Function for plotting NACs (or value-type Analysis) as a bar plot where all the variants are compared
+    """
+
+    # Check if plotting as plotter or as class' method
+    if analysis_name == None:
+        analysis_obj = self
+    else :
+        analysis_obj = self.analyses[analysis_name]
+
+    if analysis_obj.type not in ('value', 'NACs'):
+        raise NotCompatibleMeasureForPlotterError
+
+    # create pyplot subplot
+    fig, ax = plt.subplots(ncols=1,nrows=1)
+    
+    # Check width
+    if width == None:
+        fig.set_figwidth(10*bar_width*len(analysis_obj.result))
+    elif width.lower() in ('auto', 'automatic'):
+        pass
+    elif isinstance(width, (float, int)):
+        fig.set_figwidth(width)
+    else :
+        print("width value ({width}) cannot be understood, using default value.")
+
+    # run code if merging replicas
+    if merge_replicas:
+        max_replicas = max([ len(analysis_obj.result[variant]) for variant in list(analysis_obj.result) ])
+        for v_num, variant in enumerate(list(analysis_obj.result.keys())):
+            # calculate the avg value for the bar (it height)
+            if percentage:
+                avgs = average([analysis_obj.result[variant][replica].count(True)*100/len(analysis_obj.result[variant][replica]) for replica in list(analysis_obj.result[variant].keys())])
+            elif not percentage:
+                avgs = average([analysis_obj.result[variant][replica].count(True) for replica in list(analysis_obj.result[variant].keys())])
+
+            # plot a bar for each replica
+            ax.bar(variant, avgs, bar_width*max_replicas, color = f"C{v_num}")
+            if error_bar:
+                ax.errorbar(variant, avgs, yerr=std([analysis_obj.result[variant][replica].count(True) for replica in list(analysis_obj.result[variant].keys())]), color = f"k",
+                        solid_capstyle='butt',
+                        capsize=5
+                        )
+
+    elif not merge_replicas: 
+        # Step 1: Process data
+        # Counting True values for each replica in each variant
+        true_counts = {variant: [sum(replica) for replica in replicas.values()] for variant, replicas in analysis_obj.result.items()}
+        all_counts  = {variant: [len(replica) for replica in replicas.values()] for variant, replicas in analysis_obj.result.items()}
+        print(true_counts)
+        print(all_counts)
+
+        # Find the maximum number of replicas to standardize the data structure
+        max_replicas = max(len(replicas) for replicas in true_counts.values())
+
+        # Initialize a list to hold the count of Trues for each replica in each variant
+        counts_by_replica = {f'R{i+1}': [] for i in range(max_replicas)}
+        print(counts_by_replica)
+
+        # Populate the counts by iterating through each variant and replica
+        v_num = 0
+        for variant in true_counts.values():
+            for i, count in enumerate(variant):
+                if percentage:
+                    print(all_counts[list(true_counts.keys())[v_num]])
+                    counts_by_replica[f'R{i+1}'].append(count*100/all_counts[list(true_counts.keys())[v_num]][i])
+                else :
+                    counts_by_replica[f'R{i+1}'].append(count)
+            v_num += 1
+            # If a variant has fewer replicas, append 0 to ensure equal length lists
+            for i in range(len(variant), max_replicas):
+                counts_by_replica[f'R{i+1}'].append(0)
+
+        # Step 2: Organize data for plotting
+        labels = list(true_counts.keys())  # Variant names
+        num_variants = len(true_counts)
+        x = arange(num_variants)  # the label locations
+
+        for i, (replica, counts) in enumerate(counts_by_replica.items()):
+            ax.bar(x + i*bar_width, counts, bar_width, label=replica)
+
+        # Add some text for labels, title, and custom x-axis tick labels, etc.
+        
+        
+       
+        ax.legend()
+
+
+    if percentage:
+        ax.set_ylim([0,100])
+
+    
+    if title == None:
+        ax.set_title('Plot for ' + r"$\bf{%s}$" % analysis_obj.name.replace('_', '\_') + " Analysis")
+    elif title == '':
+        pass
+    else :
+        ax.set_title(title)
+
+    if percentage:
+        ax.set_ylabel('Percentage of NACs (%)')
+        ax.set_yticks(range(0,101, 10))
+
+    elif not percentage:
+        ax.set_ylabel('Number of NACs')
+        if not merge_replicas:
+            ax.set_xticks(x + bar_width * (max_replicas / 2 - 0.5))
+            ax.set_xticklabels(labels)
+        
+    ax.grid(axis='x')
+    ax.set_xlabel('Variant')
+        
+    if out_name != False and isinstance(out_name, str):
+        if not out_name.endswith((".png", ".jpg", ".jpeg", ".tiff")):
+            out_name = ".".join(out_name.split('.')[:-1]) + ".png"
+
+        plt.savefig(out_name, dpi=300, bbox_inches='tight')
+
+    plt.show()
+    plt.close()
+            
+
+
+
+
+
+
+        
+    
+
+
+
+
+
+
+
+
+
+def plot_contacts_frequency(self, analysis_name, fill_empty=False, width_plot=0.5, out_name=None):
     """
     DESCRIPTION:
         Plotter that takes the result of a contacts_frequency analysis and plots each interaction as a bar plot
@@ -231,8 +330,6 @@ def plot_contacts_frequency(self, analysis_name, out_name=None, fill_empty=False
 
     plt.show()
     plt.close()
-
-
 
 
 def ext_plot_contacts_frequencies_differences(
