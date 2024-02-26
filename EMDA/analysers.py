@@ -11,7 +11,7 @@ from .exceptions import (
 )
 from .tools import get_most_frequent
 
-#from numpy import maximum as max
+# from numpy import maximum as max
 
 """
 TO BUILD in 0.2.0:
@@ -68,15 +68,13 @@ def analyse_value(self, name, measure, val1, val2=0, mode="thres"):
         results.append(min_val < result < max_val)
 
     self.analyses[name] = self.Analysis(
-        name=name,
-        type="value",
-        measure_name=measure,
-        result=results,
-        options = {}
+        name=name, type="value", measure_name=measure, result=results, options={}
     )
 
 
-def analyse_contacts_frequency(self, name, measure, percentage=False, normalise_to_most_frequent=False):
+def analyse_contacts_frequency(
+    self, name, measure, percentage=False, normalise_to_most_frequent=False
+):
     """
     DESCRIPTION:
         Analyser for calculating the frequency (in absolute value or %) of the calculated contacts.
@@ -144,16 +142,15 @@ def analyse_contacts_frequency(self, name, measure, percentage=False, normalise_
 
         elif not percentage and normalise_to_most_frequent:
             for residue in list(contacts_freq.keys()):
-                contacts_freq[residue] = (
-                    contacts_freq[residue] / max(contacts_freq.values())
+                contacts_freq[residue] = contacts_freq[residue] / max(
+                    contacts_freq.values()
                 )
 
         elif percentage and normalise_to_most_frequent:
             for residue in list(contacts_freq.keys()):
                 contacts_freq[residue] = (
-                    contacts_freq[residue] * 100/ max(contacts_freq.values())
+                    contacts_freq[residue] * 100 / max(contacts_freq.values())
                 )
-        
 
     self.analyses[name] = self.Analysis(
         name=name,
@@ -238,7 +235,11 @@ def analyse_NACs(self, name, analyses: list, inverse: list = False):
         [len(self.analyses[analysis].result) for analysis in analyses]
     )
 
-    not_equal = [analysis for analysis in analyses if len(self.analyses[analysis].result) != length]
+    not_equal = [
+        analysis
+        for analysis in analyses
+        if len(self.analyses[analysis].result) != length
+    ]
 
     if len(not_equal) != 0:
         raise NotEqualLenghtsError(list_names=not_equal, lenght=length)
@@ -251,11 +252,7 @@ def analyse_NACs(self, name, analyses: list, inverse: list = False):
                 )
 
     self.analyses[name] = self.Analysis(
-        name=name,
-        type="NACs",
-        measure_name=analyses,
-        result=[],
-        options      = {}
+        name=name, type="NACs", measure_name=analyses, result=[], options={}
     )
 
     for frame in range(length):

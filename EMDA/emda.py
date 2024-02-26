@@ -60,7 +60,7 @@ class EMDA:
         self.trajectory = trajectory
         if self.trajectory == None:
             self.universe = Universe(parameters)
-        else :
+        else:
             self.universe = Universe(parameters, trajectory)
         print("Trajectory has been loaded!")
         self.selections = {}
