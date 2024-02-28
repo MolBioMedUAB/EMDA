@@ -7,6 +7,7 @@
 - [ ] Add async features to run method
 - [ ] Add print statistic method to Measure to print avg of value (for dist and similar) and sd.
 - [ ] Add unwrap option when a variant/replica is loaded
+- [ ] Add saving and loading options.
 
 ## PER SECTION
 ### CONTACTS/PROTEIN_CONTACTS
@@ -43,4 +44,4 @@
 - [X] Remove out_format-related features
 
 ### EMDA.RUN
-- [X] Update adders before running so 
+- [X] Update adders before running
