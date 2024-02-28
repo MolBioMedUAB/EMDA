@@ -12,6 +12,9 @@
 ### CONTACTS/PROTEIN_CONTACTS
 - [ ] Add the possibility to give a selection instead of the whole protein. It has to have more than one residue.
 
+### PLOTTERS
+- [ ] Move ext_plot_contacts_frequencies_differences to internal.
+
 
 ### RMSD ADDER AND CALCULATOR
 - [ ] Add the option to set the average structure as reference
@@ -20,10 +23,7 @@
 - [ ] Allow normalisation by variant and not only by variant & replica.
 - [ ] Allow global normalisation by variant & replica, or variant.
 
-### EMDA.RUN
-- [ ] Update adders before running so 
 
-### 
 
 ## PER VERSION
  
@@ -41,3 +41,5 @@
 - [X] Split selection and whole protein contacts into to different adders
 - [X] Remove out_format-related features
 
+### EMDA.RUN
+- [X] Update adders before running so 
