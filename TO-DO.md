@@ -9,7 +9,8 @@
 - [ ] Add unwrap option when a variant/replica is loaded
 
 ## PER SECTION
-### ADD_CONTACTS
+### CONTACTS/PROTEIN_CONTACTS
+- [ ] Add the possibility to give a selection instead of the whole protein. It has to have more than one residue.
 
 
 ### RMSD ADDER AND CALCULATOR
