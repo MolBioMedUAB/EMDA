@@ -191,11 +191,13 @@ class EMDA:
                 if bar_width == None:
                     bar_width = 0.1
                 plot_NACs(self, analysis_name=analysis_name, merge_replicas=merge_replicas, percentage=percentage, error_bar=error_bar, bar_width=bar_width, width=width, title=title, out_name=out_name)
+            
+            elif self.type in ('contacts_amount') and self.options['mode'] in ('contacts'):
+                plot_measure(self, measure_name=None, same_y=same_y, same_x=same_x, axis_label_everywhere=axis_label_everywhere, combine_replicas=merge_replicas, out_name=out_name)
 
             elif self.type in ("contacts_frequency") and self.options['mode'] in ('contacts'):
                 if bar_width == None:
                     bar_width = 0.8
-                print('here!')
                 plot_contacts_frequency(self, analysis_name=analysis_name, same_y=same_y, same_x=same_x, axis_label_everywhere=axis_label_everywhere, merge_replicas=merge_replicas, error_bar=error_bar, bar_width=bar_width, errorbar_width=errorbar_width, width_per_replica=width_per_replica, height_per_variant=height_per_variant, residue_label_rotation=residue_label_rotation, out_name=out_name)
 
             else :
