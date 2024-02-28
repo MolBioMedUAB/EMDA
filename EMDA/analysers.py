@@ -230,7 +230,7 @@ def analyse_contacts_frequency(
         type="contacts_frequency",
         measure_name=measure,
         result=contacts_freqs,
-        options={"mode": self.measures[measure].type, "percentage": True},
+        options={"mode": self.measures[measure].type, "percentage": percentage},
     )
 
 
