@@ -29,7 +29,7 @@ IDEAS:
 
 class EMDA:
 
-    def __init__(self, parameters, trajectory=None, variant_name=None):
+    def __init__(self, parameters, trajectory=None, variant_name=None, load_in_memory : bool = False):
         """
         DESCRIPTION:
             Function to initialise the EMDA class by loading the parameters and trajectory as a MDAnalysis universe and loading adders, analysers and plotters as internal methods.
@@ -58,7 +58,7 @@ class EMDA:
 
         if isinstance(parameters, str) and trajectory == None:
             self.universe = { variant_name : 
-                             { "R1" : Universe(parameters, trajectory) }
+                             { "R1" : Universe(parameters, trajectory, in_memory=load_in_memory) }
                             }
             self.parameters = { variant_name : parameters } 
             self.__variants = 1
@@ -77,6 +77,8 @@ class EMDA:
         self.selections = {}
         self.measures = {}
         self.analyses = {}
+
+        self.load_in_memory = load_in_memory
 
         # Automatically add all imported functions from adders.py and from analysers.py as EMDA methods
         external_functions = [
@@ -215,7 +217,7 @@ class EMDA:
         else :
             new_variant = name
 
-        self.universe[new_variant]   = {"R1" : Universe(parameters, trajectory)}
+        self.universe[new_variant]   = {"R1" : Universe(parameters, trajectory, in_memory=self.load_in_memory)}
         self.parameters[new_variant] = parameters
 
         # Adds new variant and replica to existing measures
@@ -241,7 +243,7 @@ class EMDA:
 
         new_replica = int(max(list(self.universe[variant_name].keys()))[1:]) + 1
 
-        self.universe[variant_name][f"R{new_replica}"] = Universe(self.parameters[variant_name], trajectory)
+        self.universe[variant_name][f"R{new_replica}"] = Universe(self.parameters[variant_name], trajectory, in_memory=self.load_in_memory)
 
         # Adds new variant and replica to existing measures
         for measure in list(self.measures.keys()):
