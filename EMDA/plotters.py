@@ -31,7 +31,8 @@ def plot_measure(self, measure_name, same_y : bool = True, same_x : bool = True,
         "RMSD" : "RMSD (Å)",
         "angle" : "Angle (°)",
         "planar_angle" : "Planar angle (°)",
-        "dihedral" : "Dihedral angle (°)"
+        "dihedral" : "Dihedral angle (°)",
+        "contacts_amount": "Number of contacts"
     }
 
     # Check if plotting as plotter or as class' method
@@ -40,9 +41,12 @@ def plot_measure(self, measure_name, same_y : bool = True, same_x : bool = True,
     else :
         measure_obj = self.measures[measure_name]
 
-    if measure_obj.type not in ("distance", "angle", "dihedral", "RMSD", "planar_angle"):
+    
+    if measure_obj.type not in ("distance", "angle", "dihedral", "RMSD", "planar_angle", "contacts_amount"):
         raise NotCompatibleMeasureForPlotterError
-
+    if measure_obj.type == "contacts_amounts" and measure_obj.options["mode"] not in ("contacts"):
+        raise NotCompatibleMeasureForPlotterError
+    
     variants = len(measure_obj.result)
 
     if combine_replicas:
