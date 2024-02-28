@@ -287,21 +287,6 @@ def plot_NACs(self, analysis_name, merge_replicas=False, percentage=False, error
             
 
 
-
-
-
-
-        
-    
-
-
-
-
-
-
-
-
-
 def plot_contacts_frequency(
         #self, analysis_name, fill_empty=False, width_plot=0.5, out_name=None
         self, analysis_name, same_y : bool = True, same_x : bool = True, axis_label_everywhere : bool =False, merge_replicas : bool =False, error_bar=True, bar_width=0.8, errorbar_width=5 , width_per_replica : float = 4, height_per_variant : float = 4, residue_label_rotation=45, out_name=False
@@ -495,6 +480,8 @@ def plot_contacts_frequency(
     else :
         fig.suptitle("Plots for " + r"$\bf{%s}$" % analysis_name.replace('_', '\_') +  " Measure")
 
+    if analysis_obj.options['percentage']:
+        plt.setp(axs, ylim=(0,100))
     
     fig.tight_layout()
 
