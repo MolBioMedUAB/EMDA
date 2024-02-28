@@ -4,6 +4,7 @@ from numpy import average, std, arange, array
 import numpy as np
 
 from .exceptions import NotCompatibleAnalysisForPlotterError, NotCompatibleMeasureForPlotterError
+from .tools import get_dictionary_structure
 
 """
 TO BUILD:
@@ -301,61 +302,210 @@ def plot_NACs(self, analysis_name, merge_replicas=False, percentage=False, error
 
 
 
-def plot_contacts_frequency(self, analysis_name, fill_empty=False, width_plot=0.5, out_name=None):
+def plot_contacts_frequency(
+        #self, analysis_name, fill_empty=False, width_plot=0.5, out_name=None
+        self, analysis_name, same_y : bool = True, same_x : bool = True, axis_label_everywhere : bool =False, merge_replicas : bool =False, error_bar=True, bar_width=0.8, errorbar_width=5 , width_per_replica : float = 4, height_per_variant : float = 4, residue_label_rotation=45, out_name=False
+        ):
     """
     DESCRIPTION:
         Plotter that takes the result of a contacts_frequency analysis and plots each interaction as a bar plot
+
+    TODO:
+        - [ ] Add normalisation to max per replica
     """
 
-    if self.analyses[analysis_name].type != "contacts_frequency":
-        # raise
-        pass
 
-    if fill_empty:
-        all_protein = self.universe.select_atoms("protein")
-        for resname, resid in zip(
-            list(all_protein.residues.resnames), list(all_protein.residues.resids)
-        ):
-            if f"{str(resname)}{str(resid)}" not in list(
-                self.analyses[analysis_name].result.keys()
-            ):
-                self.analyses[analysis_name].result[f"{str(resname)}{str(resid)}"] = 0
+    #y_labels = {
+        #"distance" : "Distance (Å)",
+        #"RMSD" : "RMSD (Å)",
+        #"angle" : "Angle (°)",
+        #"planar_angle" : "Planar angle (°)",
+        #"dihedral" : "Dihedral angle (°)"
+    #}
 
-        plt.figure(figsize=(len(self.analyses[analysis_name].result) * width_plot, 5))
+    # Check if plotting as plotter or as class' method
+    if analysis_name == None:
+        analysis_obj = self
+    else :
+        analysis_obj = self.analyses[analysis_name]
 
-        plt.bar(
-            [int(res[3:]) for res in list(self.analyses[analysis_name].result.keys())],
-            # list(self.analyses[analysis_name].result.keys()),
-            [
-                self.analyses[analysis_name].result[res]
-                for res in list(self.analyses[analysis_name].result.keys())
-            ],
-            # list(self.analyses[analysis_name].result.values())
-        )
+    if analysis_obj.type not in ("contacts_frequency") and analysis_obj.options['mode'] not in ('contacts'):
+        raise NotCompatibleAnalysisForPlotterError
 
-        plt.xticks(
-            [
-                int(res[3:])
-                for res in list(self.analyses[analysis_name].result.keys())
-                if self.analyses[analysis_name].result[res] != 0
-            ],
-            [
-                res
-                for res in list(self.analyses[analysis_name].result.keys())
-                if self.analyses[analysis_name].result[res] != 0
-            ],
-            rotation=90,
-        )
+    variants = len(analysis_obj.result)
+    max_replicas = max([ len(analysis_obj.result[variant]) for variant in list(analysis_obj.result) ])
 
-    elif not fill_empty:
-        plt.figure(figsize=(len(self.analyses[analysis_name].result) * width_plot, 5))
+    if merge_replicas:
+        # if only one replica, no merge is possible.
+        if max_replicas == 1:
+            merge_replicas = False
 
-        plt.bar(
-            list(self.analyses[analysis_name].result.keys()),
-            list(self.analyses[analysis_name].result.values()),
-        )
+        else:
+            max_replicas = 1
+            merged_replicas = {}
+            for variant in list(analysis_obj.result.keys()):
+                merged_replicas[variant] = {}
+                for replica in list(analysis_obj.result[variant].keys()):
+                    for residue in list(analysis_obj.result[variant][replica].keys()):
+                        merged_replicas[variant][residue] = []
 
-        plt.xticks(rotation=45, ha="right")
+            for variant in list(merged_replicas.keys()):
+                for residue in list(merged_replicas[variant].keys()):
+                    for replica in list(analysis_obj.result[variant].keys()):
+                        if residue not in list(analysis_obj.result[variant][replica].keys()):
+                            merged_replicas[variant][residue].append(0)
+                        else :
+                            merged_replicas[variant][residue].append(analysis_obj.result[variant][replica][residue])
+
+            avgs, errs = {}, {}
+            for variant in list(merged_replicas.keys()):
+                avgs[variant], errs[variant] = {}, {}
+
+                for residue in merged_replicas[variant]:
+                    avgs[variant][residue] = average(merged_replicas[variant][residue])
+                    errs[variant][residue] =     std(merged_replicas[variant][residue])
+
+    #fig, axs = plt.subplots(ncols=variants, nrows=max_replicas, sharey=same_y, sharex=same_x) --> axs[r_num, v_num]
+    # plotting replicas in X axis and variant in Y axis
+    fig, axs = plt.subplots(
+        ncols=max_replicas, nrows=variants, 
+        sharey=same_y, sharex=same_x, 
+        figsize=(max_replicas*width_per_replica, variants*height_per_variant)
+    )
+
+    # Check if only one variant
+    if variants == 1 and max_replicas == 1:
+        variant = list(analysis_obj.result.keys())[0]
+        replica = list(analysis_obj.result[variant].keys())[0]
+
+        axs.bar(
+            list(analysis_obj.result[variant][replica].keys()),
+            list(analysis_obj.result[variant][replica].values()),
+            color = f"C0",
+            #label=replica
+            )
+        
+        #axs.set_ylabel(y_labels[analysis_obj.type])
+        axs.set_xlabel("Residue")
+        #axs.set_xticks(rotation=45)
+    
+    else :
+
+        for v_num, variant in enumerate(list(analysis_obj.result.keys())):
+            for r_num, replica in enumerate(list(analysis_obj.result[variant].keys())):
+
+                if merge_replicas:
+                    axs[v_num].bar(
+                        list(avgs[variant].keys()),
+                        list(avgs[variant].values()),
+                        bar_width,
+                        color = f"C{v_num}",
+                    )
+
+                    if error_bar:
+                        #if bar_width < 1:
+                        #    capsize = bar_width*15
+                        #elif bar_width >= 1:
+                        #    capsize = bar_width*2
+                        
+                        axs[v_num].errorbar(
+                            list(avgs[variant].keys()),
+                            list(avgs[variant].values()),
+                            yerr=list(errs[variant].values()),
+                            xerr=None,
+                            ls='none',
+                            color = f"k",
+                            solid_capstyle='butt',
+                            capsize=errorbar_width #capsize #bar_width*5 #72/2 # in to pt is 72, 5 is to make it wider
+                        )
+
+                    #if r_num == 0 or axis_label_everywhere:
+                    #    axs[v_num].set_ylabel(y_labels[analysis_obj.type])
+
+                    if v_num == variants-1 or axis_label_everywhere:
+                        axs[v_num].set_xlabel("Residue")
+                        
+                    #axs[v_num].set_xticks(rotation=45)
+                    axs[v_num].set_title(f"{variant}, average of replicas {', '.join(list(analysis_obj.result[variant].keys()))}")  
+
+                elif max_replicas == 1:
+                    axs[v_num].bar(
+                    list(analysis_obj.result[variant][replica].keys()),
+                    list(analysis_obj.result[variant][replica].values()),
+                    bar_width,
+                    color = f"C{v_num}",
+                    label=replica
+                    )
+
+                    #if r_num == 0 or axis_label_everywhere:
+                    #    axs[v_num].set_ylabel(y_labels[analysis_obj.type])
+
+                    if v_num == variants-1 or axis_label_everywhere:
+                        axs[v_num].set_xlabel("Residue")
+                        
+                    #axs[v_num].set_xticks(rotation=45)
+                    axs[v_num].set_title(f"{variant}, replicas {', '.join(list(analysis_obj.result[variant].keys()))}")  
+
+                elif variants == 1:
+                    axs[r_num].bar(
+                        list(analysis_obj.result[variant][replica].keys()),
+                        list(analysis_obj.result[variant][replica].values()),
+                        bar_width,
+                        color = f"C{v_num}",
+                        #label=replica
+                    )
+
+                    #if r_num == 0 or axis_label_everywhere:
+                    #    axs[r_num].set_ylabel(y_labels[analysis_obj.type])
+
+                    if v_num == variants-1 or axis_label_everywhere:
+                        axs[r_num].set_xlabel("Residue")
+                        
+                    axs[r_num].set_title(f"{variant}, {replica}")  
+
+                else :
+                    axs[v_num, r_num].bar(
+                        list(analysis_obj.result[variant][replica].keys()),
+                        list(analysis_obj.result[variant][replica].values()),
+                        bar_width,
+                        color = f"C{v_num}"
+                        )
+                    
+                    #if r_num == 0 or axis_label_everywhere:
+                    #    axs[v_num, r_num].set_ylabel(y_labels[analysis_obj.type])
+                    
+                    if v_num == variants-1 or axis_label_everywhere:
+                        axs[v_num, r_num].set_xlabel("Residue")
+                    
+                    axs[v_num, r_num].set_title(f"{variant}, {replica}")
+
+            if r_num != max_replicas-1:
+                for r_num_ in range(r_num, max_replicas):
+                    if v_num == variants-1 or axis_label_everywhere:
+                        axs[v_num, r_num_].plot()
+                        axs[v_num, r_num_].set_xlabel("Residue")
+
+            
+    fig.autofmt_xdate(rotation=residue_label_rotation)
+
+
+    if analysis_name == None:
+        fig.suptitle("Plots for " + r"$\bf{%s}$" % self.name.replace('_', '\_') +  " Measure")
+
+    else :
+        fig.suptitle("Plots for " + r"$\bf{%s}$" % analysis_name.replace('_', '\_') +  " Measure")
+
+    
+    fig.tight_layout()
+
+    #if merge_replica_plots:
+    #    plt.legend()
+
+    if out_name != False and isinstance(out_name, str):
+        if not out_name.endswith((".png", ".jpg", ".jpeg", ".tiff")):
+            out_name = ".".join(out_name.split('.')[:-1]) + ".png"
+
+        plt.savefig(out_name, dpi=300, bbox_inches='tight')
 
     plt.show()
     plt.close()
