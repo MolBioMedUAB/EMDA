@@ -15,15 +15,12 @@
 ### PLOTTERS
 - [ ] Move ext_plot_contacts_frequencies_differences to internal.
 
-
 ### RMSD ADDER AND CALCULATOR
 - [ ] Add the option to set the average structure as reference
 
 ### ANALYSE_CONTACTS_FREQUENCY
 - [ ] Allow normalisation by variant and not only by variant & replica.
 - [ ] Allow global normalisation by variant & replica, or variant.
-
-
 
 ## PER VERSION
  
@@ -34,10 +31,14 @@
 ---------------------------------------------------------------------
 
 # DONE
+
+## GENERAL
 - [X] Add some code previous to the running cycle in the run method to extend selections to these variants/replicas that have been added after the selection
+- [X] Add option to load universes in memory.
 
+## PER-SECTION
 
-## ADD_CONTACTS
+### ADD_CONTACTS
 - [X] Split selection and whole protein contacts into to different adders
 - [X] Remove out_format-related features
 
