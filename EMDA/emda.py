@@ -155,7 +155,7 @@ class EMDA:
             Dataclass that stores calculated analyses and related attributes.
 
         ATTRIBUTES:
-            - name:             Name (ID) of the measure
+            - name:             Name (ID) of the analysis
             - type:             Type of the measure (distance, angle, dihedral, planar_angle, RMSD, and contacts are currently available)
             - measure_name:     Selections related to the measure as AtomGroups
             - options:          Empty dictionary containing different options to set the measure calculation
@@ -183,6 +183,22 @@ class EMDA:
 
         def __repr__(self):
             return self.__str__()
+        
+        def plot(self, analysis_name=None, merge_replicas=False, percentage=False, error_bar=True, bar_width=None, width=None, errorbar_width=5 , width_per_replica=4, height_per_variant=4, title=None, same_y=True, same_x=True, axis_label_everywhere=False, residue_label_rotation=45, out_name=False):
+            if self.type in ('value', 'NACs'):
+                if bar_width == None:
+                    bar_width = 0.1
+                plot_NACs(self, analysis_name=analysis_name, merge_replicas=merge_replicas, percentage=percentage, error_bar=error_bar, bar_width=bar_width, width=width, title=title, out_name=out_name)
+
+            elif self.type in ("contacts_frequency") and self.options['mode'] in ('contacts'):
+                if bar_width == None:
+                    bar_width = 0.8
+                print('here!')
+                plot_contacts_frequency(self, analysis_name=analysis_name, same_y=same_y, same_x=same_x, axis_label_everywhere=axis_label_everywhere, merge_replicas=merge_replicas, error_bar=error_bar, bar_width=bar_width, errorbar_width=errorbar_width, width_per_replica=width_per_replica, height_per_variant=height_per_variant, residue_label_rotation=residue_label_rotation, out_name=out_name)
+
+            else :
+                raise NotCompatibleAnalysisForPlotterError
+
 
 
     def load_variant(self, parameters, trajectory, name=None):
@@ -201,6 +217,10 @@ class EMDA:
 
         self.universe[new_variant]   = {"R1" : Universe(parameters, trajectory)}
         self.parameters[new_variant] = parameters
+
+        # Adds new variant and replica to existing measures
+        for measure in list(self.measures.keys()):
+                self.measures[measure].result[new_variant] = {"R1" : []}
 
         print(f"{new_variant} variant has been loaded!")
 
@@ -223,6 +243,9 @@ class EMDA:
 
         self.universe[variant_name][f"R{new_replica}"] = Universe(self.parameters[variant_name], trajectory)
 
+        # Adds new variant and replica to existing measures
+        for measure in list(self.measures.keys()):
+            self.measures[measure].result[variant_name][f"R{new_replica}"] = []
         
         print(f"A new replica has been loaded to variant {variant_name}!")
 
@@ -346,6 +369,9 @@ class EMDA:
         # Check that there is at least one measure set
         if len(self.measures) == 0:
             raise EmptyMeasuresError
+        
+        else :
+            pass
 
         # Creates a dict with the same structure as universe. If end is -1, the lenght of each trajectory is read and
         ## saved. If not -1, the length is checked and if traj is longer, the given end is saved.
