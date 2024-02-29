@@ -129,9 +129,9 @@ def run_RMSD(self, Measure, variant, replica):
     """
 
     Measure.result[variant][replica].append(
-        calc_RMSD(
-            self.universe[variant][replica].select_atoms(Measure.sel[0]),
-            Measure.options["ref"], 
+        calc_RMSD( 
+            self.universe[variant][replica].select_atoms(self.selections[Measure.sel[0]]),
+            Measure.options["ref"][variant][replica],
             Measure.options["superposition"]
         )
     )

@@ -29,7 +29,7 @@ IDEAS:
 
 class EMDA:
 
-    def __init__(self, parameters, trajectory=None, variant_name=None):
+    def __init__(self, parameters, trajectory=None, variant_name=None, load_in_memory : bool = False):
         """
         DESCRIPTION:
             Function to initialise the EMDA class by loading the parameters and trajectory as a MDAnalysis universe and loading adders, analysers and plotters as internal methods.
@@ -58,7 +58,7 @@ class EMDA:
 
         if isinstance(parameters, str) and trajectory == None:
             self.universe = { variant_name : 
-                             { "R1" : Universe(parameters, trajectory) }
+                             { "R1" : Universe(parameters, trajectory, in_memory=load_in_memory) }
                             }
             self.parameters = { variant_name : parameters } 
             self.__variants = 1
@@ -77,6 +77,8 @@ class EMDA:
         self.selections = {}
         self.measures = {}
         self.analyses = {}
+
+        self.load_in_memory = load_in_memory
 
         # Automatically add all imported functions from adders.py and from analysers.py as EMDA methods
         external_functions = [
@@ -143,32 +145,10 @@ class EMDA:
 
         def __repr__(self):
             return self.__str__()
+        
 
-        def plot(self):
-            """
-            DESCRIPTION:
-                Measure's method to plot the stored values in the result attribute for distance, angle, dihedral, RMSD and planar_angle types.
-            """
-
-            if self.type in ("distance", "angle", "dihedral", "RMSD", "planar_angle"):
-                units = {
-                    "distance": "(Å)",
-                    "angle": "(º)",
-                    "dihedral": "(º)",
-                    "planar_angle": "(º)",
-                    "RMSD": "(Å)",
-                }
-
-                plt.plot(self.result)
-                plt.ylabel(
-                    " ".join(self.type.split("_")).capitalize() + " " + units[self.type]
-                )
-                plt.xlabel("Frame")
-
-                plt.show()
-                plt.close()
-            else:
-                print(f"This method is still not available for {type} measures.")
+        def plot(self, same_y : bool = True, same_x : bool = True, axis_label_everywhere=False, combine_replicas=False, out_name=None):
+            plot_measure(self, measure_name=None, same_y=same_y, same_x=same_x, axis_label_everywhere=axis_label_everywhere, combine_replicas=combine_replicas, out_name=out_name)
 
     @dataclass
     class Analysis:
@@ -177,7 +157,7 @@ class EMDA:
             Dataclass that stores calculated analyses and related attributes.
 
         ATTRIBUTES:
-            - name:             Name (ID) of the measure
+            - name:             Name (ID) of the analysis
             - type:             Type of the measure (distance, angle, dihedral, planar_angle, RMSD, and contacts are currently available)
             - measure_name:     Selections related to the measure as AtomGroups
             - options:          Empty dictionary containing different options to set the measure calculation
@@ -205,6 +185,24 @@ class EMDA:
 
         def __repr__(self):
             return self.__str__()
+        
+        def plot(self, analysis_name=None, merge_replicas=False, percentage=False, error_bar=True, bar_width=None, width=None, errorbar_width=5 , width_per_replica=4, height_per_variant=4, title=None, same_y=True, same_x=True, axis_label_everywhere=False, residue_label_rotation=45, out_name=False):
+            if self.type in ('value', 'NACs'):
+                if bar_width == None:
+                    bar_width = 0.1
+                plot_NACs(self, analysis_name=analysis_name, merge_replicas=merge_replicas, percentage=percentage, error_bar=error_bar, bar_width=bar_width, width=width, title=title, out_name=out_name)
+            
+            elif self.type in ('contacts_amount') and self.options['mode'] in ('contacts'):
+                plot_measure(self, measure_name=None, same_y=same_y, same_x=same_x, axis_label_everywhere=axis_label_everywhere, combine_replicas=merge_replicas, out_name=out_name)
+
+            elif self.type in ("contacts_frequency") and self.options['mode'] in ('contacts'):
+                if bar_width == None:
+                    bar_width = 0.8
+                plot_contacts_frequency(self, analysis_name=analysis_name, same_y=same_y, same_x=same_x, axis_label_everywhere=axis_label_everywhere, merge_replicas=merge_replicas, error_bar=error_bar, bar_width=bar_width, errorbar_width=errorbar_width, width_per_replica=width_per_replica, height_per_variant=height_per_variant, residue_label_rotation=residue_label_rotation, out_name=out_name)
+
+            else :
+                raise NotCompatibleAnalysisForPlotterError
+
 
 
     def load_variant(self, parameters, trajectory, name=None):
@@ -221,8 +219,12 @@ class EMDA:
         else :
             new_variant = name
 
-        self.universe[new_variant]   = {"R1" : Universe(parameters, trajectory)}
+        self.universe[new_variant]   = {"R1" : Universe(parameters, trajectory, in_memory=self.load_in_memory)}
         self.parameters[new_variant] = parameters
+
+        # Adds new variant and replica to existing measures
+        for measure in list(self.measures.keys()):
+                self.measures[measure].result[new_variant] = {"R1" : []}
 
         print(f"{new_variant} variant has been loaded!")
 
@@ -243,8 +245,11 @@ class EMDA:
 
         new_replica = int(max(list(self.universe[variant_name].keys()))[1:]) + 1
 
-        self.universe[variant_name][f"R{new_replica}"] = Universe(self.parameters[variant_name], trajectory)
+        self.universe[variant_name][f"R{new_replica}"] = Universe(self.parameters[variant_name], trajectory, in_memory=self.load_in_memory)
 
+        # Adds new variant and replica to existing measures
+        for measure in list(self.measures.keys()):
+            self.measures[measure].result[variant_name][f"R{new_replica}"] = []
         
         print(f"A new replica has been loaded to variant {variant_name}!")
 
@@ -348,6 +353,7 @@ class EMDA:
         step=1,
         start=1,
         end=-1,
+        verbose=False,
         sleep_time=0,
     ): 
         """
@@ -367,6 +373,9 @@ class EMDA:
         # Check that there is at least one measure set
         if len(self.measures) == 0:
             raise EmptyMeasuresError
+        
+        else :
+            pass
 
         # Creates a dict with the same structure as universe. If end is -1, the lenght of each trajectory is read and
         ## saved. If not -1, the length is checked and if traj is longer, the given end is saved.
@@ -374,11 +383,9 @@ class EMDA:
         for variant in list(self.universe.keys()):
             for replica, u in self.universe[variant].items():
                 if end == -1 or end > len(u.trajectory):
-                    ends[variant][replica] = len(u.trajectory)# + 1
+                    ends[variant][replica] = len(u.trajectory)
                 else :  
-                    ends[variant][replica] = end #+ 1
-
-        #print(ends)
+                    ends[variant][replica] = end
 
         # Crates a dict with the same structure as universe for starts and step.
         starts = get_dictionary_structure(self.universe, start-1)
@@ -489,12 +496,14 @@ class EMDA:
             del ts, #u
 
 
-        if self.__variants == 1:
+
+        if len(self.universe) == 1:
             variant = list(self.universe.keys())[0]
-            if self.__replicas == 1:
+            if len(self.universe[variant]) == 1:
                 replica = list(self.universe[variant].keys())[0]
                 run_measures(self, measures=measures, variant=variant, replica=replica)
             else :
+                print('single variant, multireplica')
                 for replica in tqdm(list(self.universe[variant].keys()),
                                     desc="Replica",
                                     unit="rep"
@@ -504,12 +513,14 @@ class EMDA:
         else :
             # variants cycle
             for variant in tqdm(list(self.universe.keys()), desc='Variants', unit='var'):
-                print(f"Starting variant {variant} ")
+                if verbose:
+                    print(f"Starting variant {variant} ")
                 # replicas cycle
                 r_num = 0
                 for replica in list(self.universe[variant].keys()):
                     r_num += 1
-                    print(f"Starting replica {replica} ({r_num} of {len(self.universe[variant].keys())})")
+                    if verbose:
+                        print(f"Starting replica {replica} ({r_num} of {len(self.universe[variant].keys())})")
                     run_measures(self, measures=measures, variant=variant, replica=replica)
 
 

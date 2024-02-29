@@ -1,9 +1,14 @@
 # CHANGELOG
 
 ## 1.0.0
-- selections are now parsed to strings instead of AtomGroups using the parse_selection function in selection.py in order to be used with different variants
+- More than one variant/replicas can now be loaded and analysed with only one code.
+- selections are now parsed to strings instead of AtomGroups using the parse_selection function in selection.py in order to be used with different variants.
 - EMDA select method now accepts only the selection name as input and uses it to create the selection string and as selection name.
-- RMSD now can use mass weights
+- RMSD now can use mass weights.
+- Plotting methods have been updated for Measure and Analysis classes.
+- Universes can now be loaded in memory.
+- :warning: distWATbridge and pKa measures have been temporarily deactivated.
+- 
 
 
 ## 0.3.0
