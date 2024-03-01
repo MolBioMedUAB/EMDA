@@ -8,7 +8,8 @@
 - Plotting methods have been updated for Measure and Analysis classes.
 - Universes can now be loaded in memory.
 - :warning: distWATbridge and pKa measures have been temporarily deactivated.
-- 
+- Code's documentation has been enhanced
+
 
 
 ## 0.3.0
