@@ -222,3 +222,14 @@ class NotAvailableVariantError(Exception):
             f"{variant} is not available as universe. Use load_variant with the corresponding parameters and trajectory."
         )
 
+
+class NotCompatibleTransformations(Exception):
+    """
+    Raised when incompatible transformations are requested
+    """
+
+    def __init__(self):
+        Exception.__init__(
+            self, 
+            "The requested transformations cannot be combined. Check the class' documentation."
+        )
