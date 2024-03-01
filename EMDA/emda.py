@@ -5,12 +5,13 @@ import pickle
 from MDAnalysis import Universe
 
 from MDAnalysis.transformations.nojump import NoJump
-from MDAnalysis.transformations.wrap import unwrap
+from MDAnalysis.transformations.wrap import unwrap, wrap
 
 # from MDAnalysis.core.groups import AtomGroup
 
 # load internal EMDA classes and functions
 from .selection import selection, parse_selection
+
 from .adders import *
 from .runners import *
 from .analysers import *
@@ -19,53 +20,79 @@ from .plotters import *
 #from .tools import get_dictionary_structure
 
 # load custom exceptions
-from .exceptions import EmptyMeasuresError, NotAvailableVariantError
+from .exceptions import EmptyMeasuresError, NotAvailableVariantError, NotCompatibleTransformations
 
 from tqdm.autonotebook import tqdm
 
 from time import sleep
 from copy import deepcopy
 
-"""
-IDEAS:
-    - [] Make parameters and trajectory not only to strings but to dict with mutants and replicas.
-"""
-
-
 class EMDA:
 
-    def __init__(self, parameters, trajectory=None, variant_name=None, load_in_memory : bool = False, fix_jump : bool = False, unwrap : bool = False):
+    def __init__(self, parameters, trajectory=None, variant_name=None, load_in_memory : bool = False, fix_jump : bool = False, unwrap : bool = False, wrap : bool = False):
         """
         DESCRIPTION:
             Function to initialise the EMDA class by loading the parameters and trajectory as a MDAnalysis universe and loading adders, analysers and plotters as internal methods.
 
         ARGUMENTS:
-            - parameters:   name of the file containing the parameters and/or topology or the PDB containing the topology and coordinates (it can be multimodel)
-            - trajectory:   
+            - parameters:       name of the file containing the parameters and/or topology or the PDB containing the topology and coordinates (it can be multimodel). Any format accepted 
+                                by MDAnalysis can be loaded (more information: https://docs.mdanalysis.org/stable/documentation_pages/topology/init.html)
+                                Each parameters' file corresponds to a variant of the system. More variants can be added using the load_variant method.
+            - trajectory:       name of the file or list of the names of the files that contain the coordinates along the trajectory. 
+                                Each list of files corresponds to a replica. More replicas can be added using the load_replica method.
+            - variant_name:     custom name for the loaded variant. If not specified, the standard "V1" name will be used.
+            - load_in_memory:   boolean value that triggers the loading of the trajectory(ies) in memory. This results in faster measures but can consume all available memory.
+            - fix_jump:         boolean value for treating trajectory issues regarding the fitting of the protein in the solvent box. Useful when the protein's coordinates jump from one 
+                                side of the box to the oposite. In order to make it work properly, the protein should be OK at the first frame of the trajectory.
+                                It activates the use of the MDAnalysis' NoJump transformation class.
+            - unwrap:           boolean value for treating trajectory issues regarding the fitting of the system in the solvent box. Useful when the system is artifitially fitted in the 
+                                solvent box, so jumps appear. It is similar to the NoJump transformation (activated by setting fix_jump True), but more general.
+                                It activates the use of the MDAnalysis' unwrap transformation class.  Compatible with fix_jump but not with wrap.
+            - wrap:             boolean value for treating trajectory issues regarding the fitting of the system in the solvent box. Useful when the system is not fitted in the solvent box.
+                                It activates the use of the MDAnalysis' wrap transformation class. Compatible with fix_jump but not with unwrap.
 
         ATTRIBUTES:
-            - parameters:   name of the parameters and topology file as a dict containing the name of variant(s) and replica(s) 
-            - universe:     MDAnalysis Universe object containing the parameters and trajectory set as input of the class
-            - selections:   Dictionary containing as key the name (ID) of a selection and the MDAnalysis AtomGroup object as value
-            - measures:     Dictionary containing as key the name (ID) of a measure and the EMDA's Measure object as value
-            - analyses:     Dictionary containing as key the name (ID) of an analysis and the EMDA's Analysis object as value
+            - parameters:           name of the parameters and topology file as a dict containing the name of variant(s) and replica(s) 
+            - universe:             MDAnalysis Universe object containing the parameters and trajectory set as input of the class
+            - selections:           Dictionary containing as key the name (ID) of a selection and the MDAnalysis AtomGroup object as value
+            - measures:             Dictionary containing as key the name (ID) of a measure and the EMDA's Measure object as value
+            - analyses:             Dictionary containing as key the name (ID) of an analysis and the EMDA's Analysis object as value
+            - __transformations:    list, class or None value that contains the transformations to be applied on the Universes when loaded.
+            - __variants:           number of loaded variants.
+            - __replicas:           total number of loaded replicas.
 
 
         METHODS:
-            - add_*:        Adders loaded from adders.py file. The available adders and their description and usage can be printed using the print_available_adders EMDA's method
-            - analyse_*:    Analysers loaded from analysers.py file.
-            - plot_*:       Analysers loaded from plotters.py file. External plotter (indicated by using ext_ as function's name prefix) are not loaded.
+            - add_*:                    Adders loaded from adders.py file. The available adders and their description and usage can be printed using the print_available_adders EMDA's method
+            - analyse_*:                Analysers loaded from analysers.py file.
+            - plot_*:                   Plotters loaded from plotters.py file. External plotter (indicated by using ext_ as function's name prefix) are not loaded.
+            - load_variants:            method for loading new variants to the EMDA object
+            - load_replicas:            method for loading new replicas to preexisting variants in EMDA object. If no variant is specified, the last one will be used.
+            - print_available_adders:   Prints the description and usage of all the available adders.
+            - run:                      runs the measures added using the adders.
         """
 
         #self.parameters = parameters
         #self.trajectory = trajectory
 
-        if fix_jump and unwrap:
-            self.__transformations = [NoJump(), unwrap()]
-        elif fix_jump:
+        if fix_jump and unwrap and wrap:
+            raise NotCompatibleTransformations
+        
+        elif fix_jump and unwrap and not wrap:
+            self.__transformations = [unwrap(), NoJump()]
+        elif fix_jump and not unwrap and wrap:
+            self.__transformations = [wrap(), NoJump()]
+
+        elif not fix_jump and unwrap and wrap:
+            raise NotCompatibleTransformations
+        
+        elif fix_jump and not unwrap and not wrap:
             self.__transformations = NoJump()
-        elif unwrap:
+        elif not fix_jump and unwrap and not wrap:
             self.__transformations = unwrap()
+        elif not fix_jump and not unwrap and wrap:
+            self.__transformations = wrap()
+
         else :
             self.__transformations = None            
 
@@ -376,17 +403,6 @@ class EMDA:
         print(
             "Use '>>> help(EMDA.add_***)' to get the complete information of an adder."
         )
-
-    #def unwrap(self):
-    #    from MDAnalysis import transformations
-#
-    #    for variant in list(self.universe.keys()):
-    #        for replica in list(self.universe[variant].keys()):
-
-
-
-                
-
 
     
     def run(
