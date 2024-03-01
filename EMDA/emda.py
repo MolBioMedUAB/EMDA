@@ -29,7 +29,7 @@ IDEAS:
 
 class EMDA:
 
-    def __init__(self, parameters, trajectory=None, variant_name=None, load_in_memory : bool = False):
+    def __init__(self, parameters, trajectory=None, variant_name=None, load_in_memory : bool = False, unwrap : bool = False):
         """
         DESCRIPTION:
             Function to initialise the EMDA class by loading the parameters and trajectory as a MDAnalysis universe and loading adders, analysers and plotters as internal methods.
@@ -79,6 +79,11 @@ class EMDA:
         self.analyses = {}
 
         self.load_in_memory = load_in_memory
+
+        self.unwrap = unwrap
+        self.__unwrapped = { variant_name : 
+                            { "R1" : False }
+                           }
 
         # Automatically add all imported functions from adders.py and from analysers.py as EMDA methods
         external_functions = [
@@ -226,6 +231,10 @@ class EMDA:
         for measure in list(self.measures.keys()):
                 self.measures[measure].result[new_variant] = {"R1" : []}
 
+        self.__unwrapped = { new_variant : 
+                            { "R1" : False }
+                           }
+
         print(f"{new_variant} variant has been loaded!")
 
 
@@ -250,6 +259,10 @@ class EMDA:
         # Adds new variant and replica to existing measures
         for measure in list(self.measures.keys()):
             self.measures[measure].result[variant_name][f"R{new_replica}"] = []
+
+        self.__unwrapped = { variant_name : 
+                            { f"R{new_replica}" : False }
+                           }
         
         print(f"A new replica has been loaded to variant {variant_name}!")
 
@@ -345,6 +358,15 @@ class EMDA:
             "Use '>>> help(EMDA.add_***)' to get the complete information of an adder."
         )
 
+    def unwrap(self):
+
+        for variant in list(self.universe.keys()):
+            for replica in list(self.universe[variant].keys()):
+
+                
+
+
+    
     def run(
         self,
         exclude=None,
