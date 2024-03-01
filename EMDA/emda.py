@@ -72,9 +72,7 @@ class EMDA:
             - run:                      runs the measures added using the adders.
         """
 
-        #self.parameters = parameters
-        #self.trajectory = trajectory
-
+        # dealing with transformations
         if fix_jump and unwrap and wrap:
             raise NotCompatibleTransformations
         
@@ -96,15 +94,19 @@ class EMDA:
         else :
             self.__transformations = None            
 
-        # Check structure of variant(s) and trajectory(ies)
+        # set load_in_memory attr
+        self.__load_in_memory = load_in_memory
+
+
+        # Check variant's name and give it if None
         if variant_name == None:
             variant_name = "V1"
 
+        # Load the first variant and replica
         if isinstance(parameters, str) and trajectory == None:
             self.universe = { variant_name : 
-                                { "R1" : Universe(parameters, trajectory, in_memory=load_in_memory, transformations=deepcopy(self.__transformations) ) }
+                                { "R1" : Universe(parameters, in_memory=self.__load_in_memory, transformations=deepcopy(self.__transformations) ) }
                             }
-            
 
             self.parameters = { variant_name : parameters } 
             self.__variants = 1
@@ -112,7 +114,7 @@ class EMDA:
 
         elif isinstance(parameters, str) and isinstance(trajectory, (str, list)):
             self.universe = { variant_name : 
-                             { "R1" : Universe(parameters, trajectory, in_memory=load_in_memory, transformations=deepcopy(self.__transformations)) }
+                             { "R1" : Universe(parameters, trajectory, in_memory=self.__load_in_memory, transformations=deepcopy(self.__transformations)) }
                             }
             self.parameters = { variant_name : parameters } 
             self.__variants = 1
@@ -120,16 +122,11 @@ class EMDA:
         
         print("Trajectory has been loaded!")
 
+        # set missing attributes
         self.selections = {}
         self.measures = {}
         self.analyses = {}
 
-        self.load_in_memory = load_in_memory
-
-        #self.unwrap = unwrap
-        #self.__unwrapped = { variant_name : 
-        #                    { "R1" : False }
-        #                   }
 
         # Automatically add all imported functions from adders.py and from analysers.py as EMDA methods
         external_functions = [
@@ -152,6 +149,7 @@ class EMDA:
             setattr(EMDA, func_name, globals()[func_name])
 
 
+    # create Measure dataclass
     @dataclass
     class Measure:
         """
@@ -169,12 +167,14 @@ class EMDA:
             - plot:     Creates a simple plot of the calculated measures. Only available for distance, angle, dihedral, planar_angle, and RMSD types
         """
 
+        # set class' attrs
         name: str
         type: str
         sel: list
         options: dict
         result: list
 
+        # set printing
         def __str__(self) -> str:
             print_ = f"Measure dataclass with:\n"
             print_ += f"\tName:   {self.name}\n"
@@ -197,10 +197,11 @@ class EMDA:
         def __repr__(self):
             return self.__str__()
         
-
+        # define plotting method
         def plot(self, same_y : bool = True, same_x : bool = True, axis_label_everywhere=False, combine_replicas=False, out_name=None):
             plot_measure(self, measure_name=None, same_y=same_y, same_x=same_x, axis_label_everywhere=axis_label_everywhere, combine_replicas=combine_replicas, out_name=out_name)
 
+    # create Analysis dataclass
     @dataclass
     class Analysis:
         """
@@ -217,15 +218,15 @@ class EMDA:
         METHODS:
             - plot:     Creates a simple plot of the calculated measures. Only available for distance, angle, dihedral, planar_angle, and RMSD types
         """
-
+        
+        # set class' attrs
         name: str
         type: str
         measure_name: str
         result: list
         options: dict = field(default_factory={})
-        # options : dict
-        # mode : Union[str, NoneType] = None
 
+        # set printing
         def __str__(self) -> str:
             print_ = f"Analysis dataclass with:\n"
             print_ += f"\tName:   {self.name}\n"
@@ -237,6 +238,7 @@ class EMDA:
         def __repr__(self):
             return self.__str__()
         
+        # define plotting method
         def plot(self, analysis_name=None, merge_replicas=False, percentage=False, error_bar=True, bar_width=None, width=None, errorbar_width=5 , width_per_replica=4, height_per_variant=4, title=None, same_y=True, same_x=True, axis_label_everywhere=False, residue_label_rotation=45, out_name=False):
             if self.type in ('value', 'NACs'):
                 if bar_width == None:
@@ -255,41 +257,40 @@ class EMDA:
                 raise NotCompatibleAnalysisForPlotterError
 
 
-
+    # create load_variant method
     def load_variant(self, parameters, trajectory, name=None):
         """
         DESCRIPTION:
             Method that allows adding one new variant to the EMDA class. Its key in the EMDA's universe attr's dictionary is automatically given as "V" and the number of variant in __variants attr.
         """
 
+        # update variants and replicas attrs
         self.__variants += 1
         self.__replicas += 1
 
+        # set variant's name
         if name == None:
             new_variant  = f"V{self.__variants}"
         else :
             new_variant = name
 
-        self.universe[new_variant]   = {"R1" : Universe(parameters, trajectory, in_memory=self.load_in_memory, transformations=deepcopy(self.__transformations))}
+        self.universe[new_variant]   = {"R1" : Universe(parameters, trajectory, in_memory=self.__load_in_memory, transformations=deepcopy(self.__transformations))}
         self.parameters[new_variant] = parameters
 
         # Adds new variant and replica to existing measures
         for measure in list(self.measures.keys()):
                 self.measures[measure].result[new_variant] = {"R1" : []}
 
-        #self.__unwrapped = { new_variant : 
-        #                    { "R1" : False }
-        #                   }
-
         print(f"{new_variant} variant has been loaded!")
 
-
+    # create load_trajectory method
     def load_trajectory(self, trajectory, variant_name='last'):
         """
         DESCRIPTION:
             Method that allows adding one more replica to a pre-existing variant in th EMDA class.
         """
 
+        # check variant name where replica has to be loaded
         if variant_name == 'last':
             variant_name = list(self.universe.keys())[-1]
 
@@ -297,18 +298,14 @@ class EMDA:
             if variant_name not in list(self.parameters.keys()):
                 raise NotAvailableVariantError
 
-
+        # load new replica and name it as R + last_repllica_number+1
         new_replica = int(max(list(self.universe[variant_name].keys()))[1:]) + 1
 
-        self.universe[variant_name][f"R{new_replica}"] = Universe(self.parameters[variant_name], trajectory, in_memory=self.load_in_memory, transformations=deepcopy(self.__transformations))
+        self.universe[variant_name][f"R{new_replica}"] = Universe(self.parameters[variant_name], trajectory, in_memory=self.__load_in_memory, transformations=deepcopy(self.__transformations))
 
         # Adds new variant and replica to existing measures
         for measure in list(self.measures.keys()):
             self.measures[measure].result[variant_name][f"R{new_replica}"] = []
-
-        #self.__unwrapped = { variant_name : 
-        #                    { f"R{new_replica}" : False }
-        #                   }
         
         print(f"A new replica has been loaded to variant {variant_name}!")
 
@@ -320,38 +317,21 @@ class EMDA:
         sel_input=None,
         sel_type=None,
         no_backbone=False,
-        #variant=None
     ):
         """
         DESCRIPTION:
-            Method for creating selections inside the selections attribute of EMDA's class.
+            Method for creating selections inside the selections attribute of EMDA's class. Only the selection string is created
         """
 
+        # use selection's name as input string if none given
         if sel_input == None:
             sel_input = name
 
         # Creates the selection for all variants
         self.selections[name] = parse_selection(sel_input=sel_input, sel_type=sel_type, no_backbone=no_backbone)
 
-
-        # Creates selection for each variant
-        #if variant == None:
-        #    for variant_ in list(self.universe.keys()):
-        #        try :
-        #            self.selections[variant_][name] = parse_selection(sel_input=sel_input, sel_type=sel_type, no_backbone=no_backbone)
-        #        except KeyError:
-        #            self.selections[variant_] = {}
-        #            self.selections[variant_][name] = parse_selection(sel_input=sel_input, sel_type=sel_type, no_backbone=no_backbone)
-        #
-        #else :
-        #    if variant in list(self.universe.keys()):
-        #        self.selections[variant][name] = parse_selection(sel_input=sel_input, sel_type=sel_type, no_backbone=no_backbone)
-        #    else :
-        #        raise NotAvailableVariantError(variant)
-        #    
-        #self.selections['all'].append(name)
-
-
+    
+    # create method for printing available adders
     def print_available_adders(self):
         """
         DESCRIPTION:
@@ -405,6 +385,7 @@ class EMDA:
         )
 
     
+    # create method for running the measurements
     def run(
         self,
         exclude=None,
@@ -428,6 +409,7 @@ class EMDA:
             - step:         Frames to jump during the analysis. Default is 1, so all the trajectory will be analysed.
             - start:        First frame to start the analysis. Default is 0.
             - end:          Last frame to analyse (included). Default is last frame of trajectory.
+            - verbose:      Prints more information about when replicas' measurements are starting
         """
 
         # Check that there is at least one measure set
@@ -447,7 +429,7 @@ class EMDA:
                 else :  
                     ends[variant][replica] = end
 
-        # Crates a dict with the same structure as universe for starts and step.
+        # Creates a dict with the same structure as universe for starts and step.
         starts = get_dictionary_structure(self.universe, start-1)
         steps  = get_dictionary_structure(self.universe, step)
 
@@ -492,10 +474,8 @@ class EMDA:
                 for replica in list(self.universe[variant].keys()):
                     measures[variant][replica] = set(set(self.measures.keys()) - set(excludes[variant][replica]))
 
-
+        # define function for running measure depending on its type
         def run_measures(self, measures, variant, replica):
-
-            #u = self.universe[variant][replica]
 
             # trajectory cycle
             first_cycle = True
@@ -507,7 +487,7 @@ class EMDA:
                 # measures cycle
                 for measure in measures[variant][replica]:
                     """
-                    TO-DO:
+                    TODO:
                         Look for an automatic way to run the proper runner depending on the type set in the Measure. \
                         All runners should be named like run_${type_of_measure}, so maybe there is a chance to automate it.
                     """
@@ -553,10 +533,11 @@ class EMDA:
 
                 sleep(sleep_time)
 
-            del ts, #u
+            # remove ts variable to restart the trajectory cycle. Maybe it is not necessary
+            del ts
 
 
-
+        # run the measurements. Depending on the amount of variants and replicas, different progressbars will be shown
         if len(self.universe) == 1:
             variant = list(self.universe.keys())[0]
             if len(self.universe[variant]) == 1:
