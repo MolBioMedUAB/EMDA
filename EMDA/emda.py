@@ -3,6 +3,10 @@ import pickle
 
 # load MDAnalysis' universe class
 from MDAnalysis import Universe
+
+from MDAnalysis.transformations.nojump import NoJump
+from MDAnalysis.transformations.wrap import unwrap
+
 # from MDAnalysis.core.groups import AtomGroup
 
 # load internal EMDA classes and functions
@@ -20,6 +24,7 @@ from .exceptions import EmptyMeasuresError, NotAvailableVariantError
 from tqdm.autonotebook import tqdm
 
 from time import sleep
+from copy import deepcopy
 
 """
 IDEAS:
@@ -29,14 +34,17 @@ IDEAS:
 
 class EMDA:
 
-    def __init__(self, parameters, trajectory=None, variant_name=None, load_in_memory : bool = False, unwrap : bool = False):
+    def __init__(self, parameters, trajectory=None, variant_name=None, load_in_memory : bool = False, fix_jump : bool = False, unwrap : bool = False):
         """
         DESCRIPTION:
             Function to initialise the EMDA class by loading the parameters and trajectory as a MDAnalysis universe and loading adders, analysers and plotters as internal methods.
 
+        ARGUMENTS:
+            - parameters:   name of the file containing the parameters and/or topology or the PDB containing the topology and coordinates (it can be multimodel)
+            - trajectory:   
+
         ATTRIBUTES:
             - parameters:   name of the parameters and topology file as a dict containing the name of variant(s) and replica(s) 
-          X - trajectory:   name or list of names of the trajectory file(s)
             - universe:     MDAnalysis Universe object containing the parameters and trajectory set as input of the class
             - selections:   Dictionary containing as key the name (ID) of a selection and the MDAnalysis AtomGroup object as value
             - measures:     Dictionary containing as key the name (ID) of a measure and the EMDA's Measure object as value
@@ -52,21 +60,32 @@ class EMDA:
         #self.parameters = parameters
         #self.trajectory = trajectory
 
+        if fix_jump and unwrap:
+            self.__transformations = [NoJump(), unwrap()]
+        elif fix_jump:
+            self.__transformations = NoJump()
+        elif unwrap:
+            self.__transformations = unwrap()
+        else :
+            self.__transformations = None            
+
         # Check structure of variant(s) and trajectory(ies)
         if variant_name == None:
             variant_name = "V1"
 
         if isinstance(parameters, str) and trajectory == None:
             self.universe = { variant_name : 
-                             { "R1" : Universe(parameters, trajectory, in_memory=load_in_memory) }
+                                { "R1" : Universe(parameters, trajectory, in_memory=load_in_memory, transformations=deepcopy(self.__transformations) ) }
                             }
+            
+
             self.parameters = { variant_name : parameters } 
             self.__variants = 1
             self.__replicas = 1
 
         elif isinstance(parameters, str) and isinstance(trajectory, (str, list)):
             self.universe = { variant_name : 
-                             { "R1" : Universe(parameters, trajectory) }
+                             { "R1" : Universe(parameters, trajectory, in_memory=load_in_memory, transformations=deepcopy(self.__transformations)) }
                             }
             self.parameters = { variant_name : parameters } 
             self.__variants = 1
@@ -80,10 +99,10 @@ class EMDA:
 
         self.load_in_memory = load_in_memory
 
-        self.unwrap = unwrap
-        self.__unwrapped = { variant_name : 
-                            { "R1" : False }
-                           }
+        #self.unwrap = unwrap
+        #self.__unwrapped = { variant_name : 
+        #                    { "R1" : False }
+        #                   }
 
         # Automatically add all imported functions from adders.py and from analysers.py as EMDA methods
         external_functions = [
@@ -224,16 +243,16 @@ class EMDA:
         else :
             new_variant = name
 
-        self.universe[new_variant]   = {"R1" : Universe(parameters, trajectory, in_memory=self.load_in_memory)}
+        self.universe[new_variant]   = {"R1" : Universe(parameters, trajectory, in_memory=self.load_in_memory, transformations=deepcopy(self.__transformations))}
         self.parameters[new_variant] = parameters
 
         # Adds new variant and replica to existing measures
         for measure in list(self.measures.keys()):
                 self.measures[measure].result[new_variant] = {"R1" : []}
 
-        self.__unwrapped = { new_variant : 
-                            { "R1" : False }
-                           }
+        #self.__unwrapped = { new_variant : 
+        #                    { "R1" : False }
+        #                   }
 
         print(f"{new_variant} variant has been loaded!")
 
@@ -254,15 +273,15 @@ class EMDA:
 
         new_replica = int(max(list(self.universe[variant_name].keys()))[1:]) + 1
 
-        self.universe[variant_name][f"R{new_replica}"] = Universe(self.parameters[variant_name], trajectory, in_memory=self.load_in_memory)
+        self.universe[variant_name][f"R{new_replica}"] = Universe(self.parameters[variant_name], trajectory, in_memory=self.load_in_memory, transformations=deepcopy(self.__transformations))
 
         # Adds new variant and replica to existing measures
         for measure in list(self.measures.keys()):
             self.measures[measure].result[variant_name][f"R{new_replica}"] = []
 
-        self.__unwrapped = { variant_name : 
-                            { f"R{new_replica}" : False }
-                           }
+        #self.__unwrapped = { variant_name : 
+        #                    { f"R{new_replica}" : False }
+        #                   }
         
         print(f"A new replica has been loaded to variant {variant_name}!")
 
@@ -358,10 +377,13 @@ class EMDA:
             "Use '>>> help(EMDA.add_***)' to get the complete information of an adder."
         )
 
-    def unwrap(self):
+    #def unwrap(self):
+    #    from MDAnalysis import transformations
+#
+    #    for variant in list(self.universe.keys()):
+    #        for replica in list(self.universe[variant].keys()):
 
-        for variant in list(self.universe.keys()):
-            for replica in list(self.universe[variant].keys()):
+
 
                 
 
