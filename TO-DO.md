@@ -3,11 +3,15 @@
 ## GENERAL
 
 - [ ] Add multi-variant and multi-replica function to EMDA class, so more than one variant (parameters and trajectory) and/or more than one replica (trajectory) can be loaded into the EMDA class. Thus, all the measures, analysis and plots are added once and executed for all.
+
 - [ ] Add a method to EMDA class to check if selections are correct within the different vairants/replicas
 - [ ] Add async features to run method
 - [ ] Add print statistic method to Measure to print avg of value (for dist and similar) and sd.
-- [ ] Add unwrap option when a variant/replica is loaded
+- [ ] :exclamation: Add unwrap option when a variant/replica is loaded
 - [ ] Add saving and loading options.
+- [ ] Add H-bond as measure
+- [ ] :exclamation: Add anaylsis to check if a contact is present or not
+- [ ] Contacts amounts to analyse_value and NACs
 
 ## PER SECTION
 ### CONTACTS/PROTEIN_CONTACTS
@@ -15,6 +19,7 @@
 
 ### PLOTTERS
 - [ ] Move ext_plot_contacts_frequencies_differences to internal.
+- [ ] Add multiple values in plot_value
 
 ### RMSD ADDER AND CALCULATOR
 - [ ] Add the option to set the average structure as reference
