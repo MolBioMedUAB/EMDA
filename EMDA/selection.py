@@ -199,3 +199,9 @@ def selection_length(self, sel):
     first_replica = list(self.universe[first_variant].keys())[0]
 
     return len(self.universe[first_variant][first_replica].select_atoms(self.selections[sel]))
+
+
+
+def check_selection(self, u, selection):
+
+    return len(u.select_atoms(self.selections(selection)))

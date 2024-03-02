@@ -10,7 +10,7 @@ from MDAnalysis.transformations.wrap import unwrap, wrap
 # from MDAnalysis.core.groups import AtomGroup
 
 # load internal EMDA classes and functions
-from .selection import selection, parse_selection
+from .selection import parse_selection, check_selection
 
 from .adders import *
 from .runners import *
@@ -330,7 +330,26 @@ class EMDA:
         # Creates the selection for all variants
         self.selections[name] = parse_selection(sel_input=sel_input, sel_type=sel_type, no_backbone=no_backbone)
 
-    
+    # method for checking if a selection has no (or the actual number) atoms
+    def check_selections(self, selection, verbose : bool = False):
+        """
+        DESCRIPTION:
+            Method for checking the length of each selection to check it is correct.
+
+        ARGUMENTS:
+            - verbose:  If True, all replicas are printed.
+        """
+
+        for variant in list(self.universe.keys()):
+            for replica, universe in self.universe[variant].items():
+                len_ = check_selection(self, universe, selection)
+                if verbose:
+                    print(f"Variant {variant}, Replica {replica} has {len_} atoms.")
+                else :
+                    if len == 0:
+                        print(f"Variant {variant}, Replica {replica} has {len_} atoms.")
+
+
     # create method for printing available adders
     def print_available_adders(self):
         """
