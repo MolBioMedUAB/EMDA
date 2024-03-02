@@ -2,6 +2,8 @@
 from .exceptions import (
     NotCompatibleMeasureForAnalysisError,
     NotAvailableOptionError,
+    NotAvailableAnalysisError,
+    NotAvailableMeasureError
 )
 from .exceptions import (
     NotCompatibleAnalysisForAnalysisError,
@@ -9,6 +11,8 @@ from .exceptions import (
     NotEnoughDataError,
 )
 from .tools import get_most_frequent, get_dictionary_structure
+
+from typing import Literal
 
 # from numpy import maximum as max
 
@@ -26,31 +30,44 @@ AVAILABLE:
     - analyse_NACs:
 """
 
-
-def analyse_value(self, name, measure, val1, val2=0, mode="thres"):
+analyse_value_types = Literal['thres', 'threshold', 'tol', 'tolerance']
+def analyse_value(self, name, measure, val1, val2=0, mode : analyse_value_types = "thres"):
     """
     DESCRIPTION:
         Analyser for checking if a value in the frame is between to given values. Threshold (a upper and lower (default is 0) limits) \
             and tolerance (val1 is the central value and val2 the +- range). If the value for each frame is within the set limits, \
             True will be returned in the corresponding step.
 
+    COMPATIBLE DATA:
+        - measures: distance, angle, dihedral, planar_angle
+        - analyses: contacts_amount
+
     OUTPUT:
         A frame-wise list containing boolean values depending on if the criteria have been satisfied or not.
 
-    OPTIONS:
+    ARGUMENTS:
         - val1, val2:   upper and lower limits (if threshold mode) or reference and tolerance values (if tolerance mode)
         - mode:         [ 'thres' | 'tol' ] Mode to create the satisfying range. Thres(hold) mode will return True if the value is \
                             between the given values, while tol(erance) mode will return True if the value is between val1+val2 and val1-val2.
     """
 
-    if self.measures[measure].type not in (
-        "distance",
-        "angle",
-        "dihedral",
-        "planar_angle",
-    ):
-        raise NotCompatibleMeasureForAnalysisError
-
+    # If measure, check type and return the Measure as obj
+    if measure in self.measures[measure].keys():
+        if self.measures[measure].type not in ("distance", "angle", "dihedral", "planar_angle"):
+            raise NotCompatibleMeasureForAnalysisError
+        
+        obj = self.measures[measure]
+    
+    # If analysis, check type and return the Analysis as obj
+    elif measure in self.analyses[measure].keys():
+        if self.analyses[measure].type in ("contacts_amounts") and self.analyses[measure].options["mode"] in ("contacts"):
+            pass
+        else :
+            raise NotCompatibleAnalysisForAnalysisError
+        
+        obj = self.analyses[measure]
+        
+    # define max and min values depending on mode,
     if mode.lower() in ("tol", "tolerance"):
         min_val, max_val = val1 - val2, val1 + val2
 
@@ -60,21 +77,21 @@ def analyse_value(self, name, measure, val1, val2=0, mode="thres"):
     else:
         raise NotAvailableOptionError
     
-    results = get_dictionary_structure(self.measures[measure].result, [])
-    for variant in list(self.measures[measure].result.keys()):
-        for replica in list(self.measures[measure].result[variant].keys()):
-            for result in self.measures[measure].result[variant][replica]:
+    # Analyse results
+    results = get_dictionary_structure(obj.result, [])
+    for variant in list(obj.result.keys()):
+        for replica in list(obj.result[variant].keys()):
+            for result in obj.result[variant][replica]:
                 results[variant][replica].append(min_val < result < max_val)
 
 
+    # save result
     self.analyses[name] = self.Analysis(
         name=name, type="value", measure_name=measure, result=results, options={}
     )
 
 
-def analyse_contacts_frequency(
-    self, name, measure, percentage=False, normalise_to_most_frequent=False
-):
+def analyse_contacts_frequency(self, name, measure, percentage : bool = False, normalise_to_most_frequent : bool = False):
     """
     DESCRIPTION:
         Analyser for calculating the frequency (in absolute value or %) of the calculated contacts.
@@ -87,7 +104,7 @@ def analyse_contacts_frequency(
         If the contacts is of a selection (so mode is selection), a dictionary containing the residue to which it contacts as key and the number of contacts or the
             percentage as value.
 
-    OPTIONS:
+    ARGUMENTS:
         - percentage: Returns the values in percentage
     """
 
@@ -284,6 +301,55 @@ def analyse_contacts_amount(self, name, measure):
         result=contacts_amount,
     )
 
+analyse_contacts_presence_mode_types = Literal['all', 'any']
+def analyse_contacts_presence(self, name, measure, contact, mode : analyse_contacts_presence_mode_types = 'all'):
+    """
+    DESCRIPTION:
+        Analyser for checking if a contacts or contacts is/are present in a contacts analysis. If the contact is present, a True is returned-.
+        Currently only available for contact and not for protein_contact
+
+    ARGUMENTS:
+        - contact:  str or link containing the residue's number of the residue to be contacted
+        - mode:     'all' returns
+        requires all specified contacts to be present. 'any' requires at least one contact to be present.
+    """
+
+    # check the type of the measure type
+    if self.measures[measure].type not in ('contacts'):
+        raise NotCompatibleMeasureForAnalysisError
+    
+    # fix contact list if str is input
+    if isinstance(contact, (str, int)):
+        contact = [str(contact)]
+    
+    result = get_dictionary_structure(self.measures[measure].result, [])
+    for variant in list(self.measures[measure].result.keys()):
+        for replica in list(self.measures[measure].result[variant].keys()):
+            for frame in range(len(self.measures[measure].result[variant][replica])):
+                contacting = [ contacting_resid[3:] for contacting_resid in list(self.measures[measure].result[variant][replica][frame].keys())]
+                result_ = []
+                for c in contact:
+                    if c in contacting:
+                        result_.append(True)
+                    else :
+                        result_.append(False)
+
+                if mode == 'all':
+                    result[variant][replica].append(all(result_))
+                elif mode == 'any':
+                    result[variant][replica].append(any(result_))
+
+            
+    self.analyses[name] = self.Analysis(
+        name=name,
+        type="contacts_presence",
+        options={
+            "mode": self.measures[measure].type,
+        },
+        measure_name=measure,
+        result=result,
+    )
+
 
 def analyse_NACs(self, name, analyses : list, merge_replicas : bool = False, invert : list = False):
     """
@@ -291,7 +357,7 @@ def analyse_NACs(self, name, analyses : list, merge_replicas : bool = False, inv
         Metaanalyser (analyses two or more analyses) for combining boolean-output Analysis. It reads the boolean value corresponding to each analysis and returns True if all are True.
 
 
-    OPTIONS:
+    ARGUMENTS:
         - name:         Name of the analysis
         - analyses:     List of analyses' names to analyse
         - inverse:      List of analyses' names which will be treated in the opposite way, so True will be False and viceversa.
@@ -302,7 +368,7 @@ def analyse_NACs(self, name, analyses : list, merge_replicas : bool = False, inv
         raise NotEnoughDataError(2) 
 
     for analysis in analyses:
-        if self.analyses[analysis].type != "value":
+        if self.analyses[analysis].type not in ("value", "contacts_presence"):
             raise NotCompatibleAnalysisForAnalysisError
 
     if invert != False:
