@@ -223,6 +223,29 @@ class NotAvailableVariantError(Exception):
         )
 
 
+class NotAvailableMeasureError(Exception):
+    """
+    Raised when a Measure is accessed but it does not exist.
+    """
+
+    def __init__(self, measure_name) -> None:
+        Exception.__init__(
+            self,
+            f'{measure_name} does not exist,'
+        )
+
+class NotAvailableAnalysisError(Exception):
+    """
+    Raised when an Analysis is accessed but it does not exist.
+    """
+
+    def __init__(self, analysis_name) -> None:
+        Exception.__init__(
+            self,
+            f'{analysis_name} does not exist.'
+        )
+
+
 class NotCompatibleTransformations(Exception):
     """
     Raised when incompatible transformations are requested
@@ -233,3 +256,4 @@ class NotCompatibleTransformations(Exception):
             self, 
             "The requested transformations cannot be combined. Check the class' documentation."
         )
+
