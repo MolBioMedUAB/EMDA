@@ -7,8 +7,7 @@
 - [ ] :exclamation: Add unwrap option when a variant/replica is loaded
 - [ ] Add saving and loading options.
 - [ ] Add H-bond as measure
-- [ ] :exclamation: Add anaylsis to check if a contact is present or not
-- [ ] Contacts amounts to analyse_value and NACs
+
 
 ## PER SECTION
 ### CONTACTS/PROTEIN_CONTACTS
@@ -41,6 +40,10 @@
 - [X] Add multi-variant and multi-replica function to EMDA class, so more than one variant (parameters and trajectory) and/or more than one replica (trajectory) can be loaded into the EMDA class. Thus, all the measures, analysis and plots are added once and executed for all.
 
 ## PER-SECTION
+
+### ANALYSIS
+- [X] :exclamation: Add analysis to check if a contact is present or not
+- [X] Contacts amounts to analyse_value and NACs
 
 ### ADD_CONTACTS
 - [X] Split selection and whole protein contacts into to different adders
