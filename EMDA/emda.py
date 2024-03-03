@@ -4,14 +4,14 @@ from tqdm.autonotebook import tqdm
 from time import sleep
 from copy import deepcopy
 
-from dataclasses import dataclass, field, is_dataclass
-import pickle
+from dataclasses import dataclass, field
 
 # load MDAnalysis' universe class
 from MDAnalysis import Universe
 
 from MDAnalysis.transformations.nojump import NoJump
-from MDAnalysis.transformations.wrap import unwrap, wrap
+from MDAnalysis.transformations.wrap import unwrap as Unwrap
+from MDAnalysis.transformations.wrap import wrap as Wrap
 
 # load internal EMDA classes and functions
 from .selection import parse_selection, check_selection
@@ -76,9 +76,9 @@ class EMDA:
             raise NotCompatibleTransformations
         
         elif fix_jump and unwrap and not wrap:
-            self.__transformations = [unwrap(), NoJump()]
+            self.__transformations = [Unwrap(), NoJump()]
         elif fix_jump and not unwrap and wrap:
-            self.__transformations = [wrap(), NoJump()]
+            self.__transformations = [Wrap(), NoJump()]
 
         elif not fix_jump and unwrap and wrap:
             raise NotCompatibleTransformations
@@ -86,9 +86,9 @@ class EMDA:
         elif fix_jump and not unwrap and not wrap:
             self.__transformations = NoJump()
         elif not fix_jump and unwrap and not wrap:
-            self.__transformations = unwrap()
+            self.__transformations = Unwrap()
         elif not fix_jump and not unwrap and wrap:
-            self.__transformations = wrap()
+            self.__transformations = Wrap()
 
         else :
             self.__transformations = None            
