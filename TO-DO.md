@@ -1,12 +1,13 @@
 # TO-DO
 
 ## GENERAL
-- [ ] Add a method to EMDA class to check if selections are correct within the different vairants/replicas
 - [ ] Add async features to run method
 - [ ] Add print statistics' method to Measure to print avg of value (for dist and similar) and sd.
-- [ ] :exclamation: Add unwrap option when a variant/replica is loaded
-- [ ] Add saving and loading options.
 - [ ] Add H-bond as measure
+- [ ] Add selection exporter
+- [ ] Add pymol script creator for exporting loaded variants/replicas and selections.
+- [ ] Add RMSF, HELANAL and other analysers from MDAnalysis
+- [ ] Add trajectory exporter
 
 
 ## PER SECTION
@@ -38,6 +39,9 @@
 - [X] Add some code previous to the running cycle in the run method to extend selections to these variants/replicas that have been added after the selection
 - [X] Add option to load universes in memory.
 - [X] Add multi-variant and multi-replica function to EMDA class, so more than one variant (parameters and trajectory) and/or more than one replica (trajectory) can be loaded into the EMDA class. Thus, all the measures, analysis and plots are added once and executed for all.
+- [X] Add a method to EMDA class to check if selections are correct within the different vairants/replicas
+- [X] :exclamation: Add unwrap option when a variant/replica is loaded
+- [X] Add saving and loading options.
 
 ## PER-SECTION
 
