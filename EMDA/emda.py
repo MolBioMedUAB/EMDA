@@ -586,7 +586,7 @@ class EMDA:
 
 
     save_format_types = Literal['json', 'yaml', 'yml', 'pkl', 'pickle']
-    def save(self, out_name : str = 'EMDA', out_format : save_format_types = 'pkl', save_measure : bool = True, save_analyses : bool = True):
+    def save(self, out_name : str = 'EMDA', out_format : save_format_types = 'pkl', save_measure : bool = True, save_analyses : bool = True, save_selections : bool = True):
         """
         DESCRIPTION:
             EMDA's method for saving into a pickle file the result attribute of a Measure class or an Analysis class.
@@ -610,42 +610,43 @@ class EMDA:
             analyses = {}
             for analysis_name, analysis_class in self.analyses.items():
                 analyses[analysis_name] = {
-                    'name'      : analysis_class.name,
-                    'type'      : analysis_class.type,
-                    'sel'       : analysis_class.sel,
-                    'options'   : analysis_class.options,
-                    'result'    : analysis_class.result
+                    'name'          : analysis_class.name,
+                    'type'          : analysis_class.type,
+                    'measure_name'  : analysis_class.measure_name,
+                    'options'       : analysis_class.options,
+                    'result'        : analysis_class.result
                 }
 
 
         to_save = {
-            'measures' : measures,
-            'analyses' : analyses
+            'measures'      : measures,
+            'analyses'      : analyses,
+            'selections'    : self.selections
         }
 
 
         if out_format in  ('json'):
-            import json
+            from json import dump
 
             with open(f"{out_name}.{out_format}", 'w') as out_file:
-                json.dump(to_save, out_file)
+                dump(to_save, out_file)
 
         elif out_format in ('yml', 'yaml'):
-            import yaml
+            from yaml import safe_dump as dump
 
             with open(f"{out_name}.{out_format}", 'w') as out_file:
-                yaml.dump(to_save, out_file)
+                dump(to_save, out_file)
             
         elif out_format in ('pkl', 'pickle'):
-            import pickle
-
+            from pickle import dump, HIGHEST_PROTOCOL
+            
             with open(f"{out_name}.{out_format}", 'wb') as out_file:
-                pickle.dump(to_save, out_file, protocol=pickle.HIGHEST_PROTOCOL)
+                dump(to_save, out_file, protocol=HIGHEST_PROTOCOL)
 
         print(f"EMDA's measures and analyses have been saved as {out_name}.{out_format}")
 
 
-    def load(self, file_name, format : str = None, load_measure : bool = True, load_analyses : bool = True):
+    def load(self, file_name, format : str = None, load_measure : bool = True, load_analyses : bool = True, load_selections : bool = True):
         """
         DESCRIPTION:
             Method for loading pre-stored EMDA's measurements and analyses. Please, load the trajectories before loading the stored measures and analyses.
@@ -657,16 +658,17 @@ class EMDA:
 
         
         if format in  ('json'):
-            import json
+            from json import load
 
             with open(file_name, 'r') as in_file:
-                to_load = json.load(in_file)
+                to_load = load(in_file)
 
         elif format in ('yml', 'yaml'):
-            import yaml
+            from yaml import safe_load as load
+            from yaml.loader import SafeLoader
 
             with open(file_name, 'r') as in_file:
-                to_load = yaml.load(in_file)
+                to_load = load(in_file, Loader=SafeLoader)
             
         elif format in ('pkl', 'pickle'):
             import pickle
@@ -694,10 +696,16 @@ class EMDA:
                 self.analyses[analysis_name] = self.Analysis(
                     name = analysis['name'],
                     type = analysis['type'],
-                    measure_name  = analysis['measure_name'],
+                    s  = analysis['measure_name'],
                     options = analysis['options'],
                     result = analysis['result']
                 )
 
             print('EMDA analyses have been loaded!')
+
+        if len(to_load['selections']) > 0 and load_selections:
+            self.selections = to_load['selections']
+
+
+            print('EMDA selections have been loaded!')
 
