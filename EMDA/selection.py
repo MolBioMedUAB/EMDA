@@ -202,6 +202,6 @@ def selection_length(self, sel):
 
 
 
-def check_selection(self, u, selection):
+def check_selection(u, selection):
 
-    return len(u.select_atoms(self.selections(selection)))
+    return len(u.select_atoms(selection))
