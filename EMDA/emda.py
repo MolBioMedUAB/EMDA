@@ -662,21 +662,14 @@ class EMDA:
         if format in  ('json'):
             from json import load
 
-            with open(file_name, 'r') as in_file:
-                to_load = load(in_file)
-
         elif format in ('yml', 'yaml'):
             from yaml import safe_load as load
-            from yaml.loader import SafeLoader
 
-            with open(file_name, 'r') as in_file:
-                to_load = load(in_file, Loader=SafeLoader)
-            
         elif format in ('pkl', 'pickle'):
-            import pickle
+            from pickle import load
 
-            with open(file_name, 'rb') as in_file:
-                to_load = pickle.load(in_file)
+        with open(file_name, 'rb') as in_file:
+            to_load = load(in_file)
 
         if len(to_load['measures']) > 0 and load_measure:
             for measure_name, measure in to_load['measures'].items():
@@ -698,7 +691,7 @@ class EMDA:
                 self.analyses[analysis_name] = self.Analysis(
                     name = analysis['name'],
                     type = analysis['type'],
-                    s  = analysis['measure_name'],
+                    measure_name  = analysis['measure_name'],
                     options = analysis['options'],
                     result = analysis['result']
                 )
