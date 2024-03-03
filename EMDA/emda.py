@@ -69,6 +69,8 @@ class EMDA:
             - load_replicas:            method for loading new replicas to preexisting variants in EMDA object. If no variant is specified, the last one will be used.
             - print_available_adders:   Prints the description and usage of all the available adders.
             - run:                      runs the measures added using the adders.
+            - save:                     Saves current status to a file (json, yaml or pickle). Saves selections, measures and analyses, but not the universes to avoid huge file sizes.
+            - load:                     Loads previously saved files using the save method.
         """
 
         # dealing with transformations
