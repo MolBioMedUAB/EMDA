@@ -502,6 +502,175 @@ def plot_contacts_frequency(
     plt.close()
 
 
+
+def plot_probability_densities(self, analysis_name, plot_minima : bool = True,same_y : bool = True, same_x : bool = True, axis_label_everywhere : bool = False, colorbar_everywhere : bool = True, width_per_replica : float = 4, height_per_variant : float = 4, color_map='RdBu_r', out_name=False):
+    """
+    DESCRIPTION:
+        Plotter for probability density maps.
+
+    ARGUMENTS:
+        - plot_minima:  adds minima to contour plots.
+
+    TODO:
+        - [ ] fix global colorbar
+    """
+
+    axis_labels = {
+        "distance" : "Distance (Å)",
+        "RMSD" : "RMSD (Å)",
+        "angle" : "Angle (°)",
+        "planar_angle" : "Planar angle (°)",
+        "dihedral" : "Dihedral angle (°)",
+        "contacts_amount": "Number of contacts"
+    }
+
+    # Check if plotting as plotter or as class' method
+    if analysis_name == None:
+        analysis_obj = self
+    else :
+        analysis_obj = self.analyses[analysis_name]
+
+    
+    if analysis_obj.type not in ("pdf"):
+        raise NotCompatibleAnalysisForPlotterError
+    
+    variants = len(analysis_obj.result)
+
+    max_replicas = max([ len(analysis_obj.result[variant]) for variant in list(analysis_obj.result) ])
+
+    #fig, axs = plt.subplots(ncols=variants, nrows=max_replicas, sharey=same_y, sharex=same_x) --> axs[r_num, v_num]
+    # plotting replicas in X axis and variant in Y axis
+    fig, axs = plt.subplots(
+        ncols=max_replicas, nrows=variants, 
+        sharey=same_y, sharex=same_x, 
+        figsize=(max_replicas*width_per_replica, variants*height_per_variant)
+    )
+
+    # Check if only one variant
+
+    if variants == 1 and max_replicas == 1:
+        variant = list(analysis_obj.result.keys())[0]
+        replica = list(analysis_obj.result[variant].keys())[0]
+
+        axs.tricontour(
+            np.array(analysis_obj.result[variant][replica]['lscape'])[:,0],
+            np.array(analysis_obj.result[variant][replica]['lscape'])[:,1],
+            np.array(analysis_obj.result[variant][replica]['lscape'])[:,4],
+            levels = 25, linewidths=0.5, colors='k')
+        cntr = axs.tricontourf(
+            np.array(analysis_obj.result[variant][replica]['lscape'])[:,0],
+            np.array(analysis_obj.result[variant][replica]['lscape'])[:,1],
+            np.array(analysis_obj.result[variant][replica]['lscape'])[:,4],
+            levels = 25, cmap=color_map)
+        
+        if plot_minima:
+            axs.scatter(
+                np.array(analysis_obj.result[variant][replica]['mins'])[:,1],
+                np.array(analysis_obj.result[variant][replica]['mins'])[:,2],
+                color='k')
+
+        axs.set_xlabel(axis_labels[analysis_obj.options["measure_types"][0]])
+        axs.set_ylabel(axis_labels[analysis_obj.options["measure_types"][1]])
+
+        cbar = fig.colorbar(cntr, ax=axs)
+        cbar.set_label('E/RT')
+
+    else :
+        # If there's only one replica, treat it as merged
+        if max_replicas == 1:
+            combine_replicas = True
+
+        for v_num, variant in enumerate(list(analysis_obj.result.keys())):
+            for r_num, replica in enumerate(list(analysis_obj.result[variant].keys())):
+                if variants == 1:
+                    axs[r_num].tricontour(
+                        np.array(analysis_obj.result[variant][replica]['lscape'])[:,0],
+                        np.array(analysis_obj.result[variant][replica]['lscape'])[:,1],
+                        np.array(analysis_obj.result[variant][replica]['lscape'])[:,4],
+                        levels = 25, linewidths=0.5, colors='k')
+                    cntr = axs[r_num].tricontourf(
+                        np.array(analysis_obj.result[variant][replica]['lscape'])[:,0],
+                        np.array(analysis_obj.result[variant][replica]['lscape'])[:,1],
+                        np.array(analysis_obj.result[variant][replica]['lscape'])[:,4],
+                        levels = 25, cmap=color_map)
+                    
+                    if plot_minima:
+                        axs[r_num].scatter(
+                            np.array(analysis_obj.result[variant][replica]['mins'])[:,1],
+                            np.array(analysis_obj.result[variant][replica]['mins'])[:,2],
+                            color='k')
+
+                    if r_num == 0 or axis_label_everywhere:
+                        axs[r_num].set_ylabel(axis_labels[analysis_obj.options["measure_types"][1]])
+
+                    if v_num == variants-1 or axis_label_everywhere:
+                        axs[r_num].set_xlabel(axis_labels[analysis_obj.options["measure_types"][0]])
+                        
+                    axs[r_num].set_title(f"{variant}, {replica}")  
+
+                    if colorbar_everywhere:
+                        cbar = fig.colorbar(cntr, ax=axs[r_num])
+                        cbar.set_label('E/RT')
+
+
+                else :
+                    axs[v_num, r_num].tricontour(
+                        np.array(analysis_obj.result[variant][replica]['lscape'])[:,0],
+                        np.array(analysis_obj.result[variant][replica]['lscape'])[:,1],
+                        np.array(analysis_obj.result[variant][replica]['lscape'])[:,4],
+                        levels = 25, linewidths=0.5, colors='k')
+                    cntr = axs[v_num, r_num].tricontourf(
+                        np.array(analysis_obj.result[variant][replica]['lscape'])[:,0],
+                        np.array(analysis_obj.result[variant][replica]['lscape'])[:,1],
+                        np.array(analysis_obj.result[variant][replica]['lscape'])[:,4],
+                        levels = 25, cmap=color_map)
+                    
+                    if plot_minima:
+                        axs[v_num, r_num].scatter(
+                            np.array(analysis_obj.result[variant][replica]['mins'])[:,1],
+                            np.array(analysis_obj.result[variant][replica]['mins'])[:,2],
+                            color='k')
+ 
+                    if r_num == 0 or axis_label_everywhere:
+                        axs[v_num, r_num].set_ylabel(axis_labels[analysis_obj.options["measure_types"][1]])
+                    
+                    if v_num == variants-1 or axis_label_everywhere:
+                        axs[v_num, r_num].set_xlabel(axis_labels[analysis_obj.options["measure_types"][0]])
+                    
+                    if colorbar_everywhere:
+                        cbar = fig.colorbar(cntr, ax=axs[v_num, r_num])
+                        cbar.set_label('E/RT')
+                    
+                    axs[v_num, r_num].set_title(f"{variant}, {replica}")
+
+
+
+    if not colorbar_everywhere:
+        cbar = fig.colorbar(cntr)
+        cbar.set_label('E/RT')
+
+    if analysis_name == None:
+        fig.suptitle("Plots for " + r"$\bf{%s}$" % self.name.replace('_', '\_') +  " Measure")
+
+    else :
+        fig.suptitle("Plots for " + r"$\bf{%s}$" % analysis_name.replace('_', '\_') +  " Measure")
+
+    
+    fig.tight_layout()
+
+    if out_name != False and isinstance(out_name, str):
+        if not out_name.endswith((".png", ".jpg", ".jpeg", ".tiff")):
+            out_name = ".".join(out_name.split('.')[:-1]) + ".png"
+
+        plt.savefig(out_name, dpi=300, bbox_inches='tight')
+
+    plt.show()
+    plt.close()
+
+
+
+################# EXTERNAL PLOTTERS #################
+
 def ext_plot_contacts_frequencies_differences(
     contacts_ref,
     contacts_tgt,
@@ -668,3 +837,4 @@ def ext_plot_contacts_frequencies_differences(
         return important_contacts
     elif return_labels:
         return return_labels
+
