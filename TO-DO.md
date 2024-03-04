@@ -17,6 +17,8 @@
 ### PLOTTERS
 - [ ] Move ext_plot_contacts_frequencies_differences to internal.
 - [ ] Add multiple values in plot_value so several RMSDs, distances, etc can be plotted in the same plot (per variant and replica)
+- [ ] :exclamation: Fix global colorbar in plot_probability_densities
+- [ ] :exclamation: Add axis label builder for specifying distance, angle, etc labels of PDF plots.
 
 ### RMSD ADDER AND CALCULATOR
 - [ ] Add the option to set the average structure as reference
