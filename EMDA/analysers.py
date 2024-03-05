@@ -23,17 +23,13 @@ import random
 # from numpy import maximum as max
 
 """
-TO BUILD in 0.2.0:
-    - [X] NACs
-    - [X] Contacts counter (how much contacts are in each frame)
-"""
-
-"""
-AVAILABLE:
+AVAILABLE ANALYSERS:
     - analyse_value:
     - analyse_contacts_frequency:
     - analyse_contacts_amount:
+    - analyse_contacts_presence:
     - analyse_NACs:
+    - analyse_probability_density: 
 """
 
 analyse_value_types = Literal['thres', 'threshold', 'tol', 'tolerance']
@@ -429,7 +425,6 @@ def analyse_NACs(self, name, analyses : list, merge_replicas : bool = False, inv
         result=results,
         options = {"merge_replicas" : merge_replicas}
     )
-
 
 
 def analyse_probability_density(self, name, measures, bw_method = 'scott', get_basins : bool = True, num_of_points = None, print_results : bool = False):
