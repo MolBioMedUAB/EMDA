@@ -19,9 +19,6 @@ from scipy.stats import gaussian_kde
 import numpy as np
 import random
 
-
-# from numpy import maximum as max
-
 """
 AVAILABLE ANALYSERS:
     - analyse_value:
