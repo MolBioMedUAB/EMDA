@@ -446,6 +446,13 @@ def analyse_probability_density(self, name, measures, bw_method = 'scott', get_b
         Code from Bruno Victor's
     """
 
+    if self.measures[measures[0]].type not in ('distance', 'angle', 'dihedral', 'planar_angle', 'RMSD'):#, 'contacts_amount'):
+        raise NotCompatibleMeasureForAnalysisError(measure=measures[0])
+    
+    if self.measures[measures[1]].type not in ('distance', 'angle', 'dihedral', 'planar_angle', 'RMSD'):#, 'contacts_amount'):
+        raise NotCompatibleMeasureForAnalysisError(measure=measures[1])
+
+
     # Find maximum value in a 2D array of n x n elements
     def calcPmax(PDF, n):
         pmax = 0
