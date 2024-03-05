@@ -9,7 +9,7 @@
 - Universes can now be loaded in memory.
 - :warning: distWATbridge and pKa measures have been temporarily deactivated.
 - Code's documentation has been enhanced
-
+- probability density maps have been added as analyser and plotter.
 
 
 ## 0.3.0
