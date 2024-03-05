@@ -125,10 +125,15 @@ class NotCompatibleMeasureForAnalysisError(Exception):
     Raised when the measure to analyse is not of an accepted type by the analyser.
     """
 
-    def __init__(self):
-        Exception.__init__(
-            self, "The input measure is not compatible with the chosen analysis."
-        )
+    def __init__(self, measure=None):
+        if measure == None:
+            Exception.__init__(
+                self, "The input measure is not compatible with the chosen analysis."
+            )
+        else :
+            Exception.__init__(
+                self, f"The input measure ({measure}) is not compatible with the chosen analysis."
+            )
 
     pass
 
@@ -138,10 +143,16 @@ class NotCompatibleAnalysisForAnalysisError(Exception):
     Raised when the analyses to analyse with a metaanalyser is not of an accepted type by the analyser.
     """
 
-    def __init__(self):
-        Exception.__init__(
-            self, "The input analyses is not compatible with the chosen analysis."
-        )
+    def __init__(self, analysis=None):
+
+        if analysis == None:
+            Exception.__init__(
+                self, "The input analysis is not compatible with the chosen analysis."
+            )
+        else :
+            Exception.__init__(
+                self, f"The input analysis ({analysis}) is not compatible with the chosen analysis."
+            )
 
     pass
 
@@ -150,10 +161,16 @@ class NotCompatibleAnalysisForPlotterError(Exception):
     Raised when the analyses to plot is not of an accepted type by the plotter.
     """
 
-    def __init__(self):
-        Exception.__init__(
-            self, "The input analysis is not compatible with the chosen plotter."
-        )
+    def __init__(self, analysis=None):
+
+        if analysis == None:
+            Exception.__init__(
+                self, "The input analysis is not compatible with the chosen plotter."
+            )
+        else :
+            Exception.__init__(
+                self, f"The input analysis ({analysis}) is not compatible with the chosen plotter."
+            )
 
     pass
 
@@ -162,10 +179,15 @@ class NotCompatibleMeasureForPlotterError(Exception):
     Raised when the measures to plot is not of an accepted type by the plotter.
     """
 
-    def __init__(self):
-        Exception.__init__(
-            self, "The input measure is not compatible with the chosen plotter."
-        )
+    def __init__(self, measure=None):
+        if measure == None:
+            Exception.__init__(
+                self, "The input measure is not compatible with the chosen plotter."
+            )
+        else :
+            Exception.__init__(
+                self, f"The input measure ({measure}) is not compatible with the chosen plotter."
+            )
 
     pass
 
