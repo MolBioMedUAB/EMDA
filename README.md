@@ -36,11 +36,15 @@ The available measures are listed below:
 
 Some analysis can be performed from previous measures and they are stored as Analysis classes. In this case, each analysis has its own analyser. In opposition with measures, analysis are executed when requested. All the analysers functions' names start with the 'analyse_' string.
 
-The available analyis are listed below:
+The available analysis are listed below:
 - __value__: analyses the value of a frame-wise measure (like distance, for instance) and returns frame-wise list containing True if the value is between the given values or False if it is not.
 - __contacts_frequency__: analyses the contacts and returns a dictionary containing the contacts that take place and how many times it takes place (in an absolute or relative number).
 - __contacts_amounts__: analyses the contacts and returns a frame-wise list containing how many contacts a selection (or a residue) stablishes in each frame.
+- __contacts_presence__: analyses if a requested contact(s) is present and returns a boolean frame-wise list.
 - __NACs__ (near-attack conformations): analyses two or more analysed values (so a frame-wise boolean list) and returns the combination of all the values as a boolean frame-wise list.
+- __probability_density__: uses the probability density function to analyse two different measures (distance, angle, dihedral, planar angle or RMSD).
+
+
 
 
 ### Plotters
