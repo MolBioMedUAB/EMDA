@@ -235,8 +235,9 @@ def add_contacts(
     sel,
     sel_env=3,
     interactions="all",
-    include_WAT=False,
-    measure_distances=True,
+    append_interaction=[],
+    include_WAT : bool = False,
+    measure_distances : bool = True,
 ):
     """
     DESCRIPTION:
@@ -301,6 +302,10 @@ def add_contacts(
     if include_WAT == True:
         interactions += ["WAT", "HOH"]
 
+
+    interactions += append_interaction
+
+
 #    if sel == "protein":
 #        mode = "protein"
 #        self.select("protein", sel, sel_type=None)
@@ -323,25 +328,76 @@ def add_per_residue_contacts(
     self,
     name,
     sel_input='protein',
-    sel_env=3,
-    include_WAT=False,
-    measure_distances=False
+    sel_env : float =3,
+    interactions = 'all',
+    append_interaction = [],
+    include_WAT : bool = False,
+    measure_distances : bool = False,
+    within_selection : bool = False,
 ):
     """
     DESCRIPTION:
         This function takes a adds the measure of the contacts of all residues in a protein
 
-    INPUT:
+    ARGUMENTS:
         - Name of the measurement
-        - sel_env      -> radius (in ang) around each residue
-        - 
-        - interactions -> type of interactions to be considered (all, polar, nonpolar, donorHbond, none). Custom
-                            interactions can be also analysed by passing a list of residues names
+        - sel_env:              radius (in ang) around each residue
+        - interactions:         type of interactions to be considered (all, polar, nonpolar, donorHbond, none). Custom
+                                    interactions can be also analysed by passing a list of residues names
+        - within_selection:     limits the exploration of the contacts in the given selection
 
 
     OUTPUT:
         - List of dictionaries containing the name and number of all interacting residues
     """
+
+    if isinstance(interactions, str):
+        if interactions not in ("all", "polar", "nonpolar", "donorHbond", "none"):
+            raise NotExistingInteractionError
+
+        else:
+            if interactions == "all":
+                interactions = [
+                    "ARG","HIS","HID","HIE","HIP","LYS",
+                    "ASP","ASH","GLU","GLH","SER","THR",
+                    "ASN","GLN","CYS","SEC","GLY","PRO",
+                    "ALA","ILE","LEU","MET","PHE","TRP",
+                    "TYR","VAL",
+                ]
+
+            elif interactions == "polar":
+                interactions = [
+                    "ARG","HIS","HID","HIE","HIP","LYS",
+                    "ASP","ASH","GLU","GLH","SER","THR",
+                    "ASN","GLN","CYS","SEC","TYR",
+                ]
+
+            elif interactions == "nonpolar":
+                interactions = [
+                    "CYS","SEC","GLY","PRO","ALA","ILE",
+                    "LEU","MET","PHE","TRP","TYR","VAL",
+                ]
+
+            elif interactions == "donorHbond":
+                interactions = [
+                    "ARG","HID","HIE","HIP","LYS","ASH",
+                    "GLH","SER","THR","ASN","GLN","CYS",
+                    "SEC","GLY","PRO","TYR",
+                ]
+
+            elif interactions == "none":
+                interactions = []
+
+    elif isinstance(interactions, list):
+        pass
+
+    else:
+        raise NotExistingInteractionError
+    
+    if include_WAT == True:
+        interactions += ["WAT", "HOH"]
+    
+    interactions += append_interaction
 
 
     self.measures[name] = self.Measure(
@@ -350,7 +406,9 @@ def add_per_residue_contacts(
         sel=[sel_input, sel_env],
         options={
             "measure_dists": measure_distances,
-            "include_WAT" : include_WAT,
+            "interactions" : interactions,
+            #"include_WAT" : include_WAT,
+            "within_selection" : within_selection,
         },
         result=get_dictionary_structure(self.universe, []),
     )

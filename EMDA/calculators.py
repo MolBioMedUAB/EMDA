@@ -277,21 +277,11 @@ def calc_contacts_selection(
 
 
 def calc_per_residue_contacts(
-    sel, sel_env, measure_distances=False, include_WAT=False,
+    universe, sel, sel_env, interactions, measure_distances=False, within_selection=False,
 ):
 
     contacts = {}
 
-    protein_residues = [
-        "ARG","HIS","HID","HIE","HIP","HSD",
-        "HSE","HSP","LYS","ASP","ASH","GLU",
-        "GLH","SER","THR","ASN","GLN","CYS",
-        "SEC","GLY","PRO","ALA","ILE","LEU",
-        "MET","PHE","TRP","TYR","VAL",
-    ]
-
-    if include_WAT:
-        protein_residues += ['WAT', 'HOH']
 
     #    for residue in sel.atoms.select_atoms('protein').residues:
     for residue in sel.residues:
@@ -299,14 +289,20 @@ def calc_per_residue_contacts(
         # if the residue does not belong to the protein, skip it
         #    continue
 
-        residue_env = sel.atoms.select_atoms(
-            f"around {sel_env} group select", select=residue.atoms
-        )
+        if within_selection:
+            residue_env = sel.atoms.select_atoms(
+                f"around {sel_env} group select", select=residue.atoms
+            )
+
+        elif not within_selection:
+            residue_env = universe.select_atoms(
+                f"around {sel_env} group select", select=residue.atoms
+            )
 
         contacts[residue.resname + str(residue.resid)] = calc_contacts_selection(
             sel=residue.atoms,
             sel_env=residue_env,
-            interactions=protein_residues,
+            interactions=interactions,
             measure_distances=measure_distances,
         )
 
