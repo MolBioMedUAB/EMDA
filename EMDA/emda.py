@@ -29,7 +29,7 @@ from .exceptions import EmptyMeasuresError, NotAvailableVariantError, NotCompati
 # Define EMDA class
 class EMDA:
 
-    def __init__(self, parameters, trajectory=None, variant_name=None, load_in_memory : bool = False, fix_jump : bool = False, unwrap : bool = False, wrap : bool = False):
+    def __init__(self, parameters, trajectory=None, variant_name=None, load_in_memory : bool = False, fix_jump : bool = False):#, unwrap : bool = False, wrap : bool = False):
         """
         DESCRIPTION:
             Function to initialise the EMDA class by loading the parameters and trajectory as a MDAnalysis universe and loading adders, analysers and plotters as internal methods.
@@ -45,10 +45,10 @@ class EMDA:
             - fix_jump:         boolean value for treating trajectory issues regarding the fitting of the protein in the solvent box. Useful when the protein's coordinates jump from one 
                                 side of the box to the oposite. In order to make it work properly, the protein should be OK at the first frame of the trajectory.
                                 It activates the use of the MDAnalysis' NoJump transformation class.
-            - unwrap:           boolean value for treating trajectory issues regarding the fitting of the system in the solvent box. Useful when the system is artifitially fitted in the 
+            X- unwrap:           boolean value for treating trajectory issues regarding the fitting of the system in the solvent box. Useful when the system is artifitially fitted in the 
                                 solvent box, so jumps appear. It is similar to the NoJump transformation (activated by setting fix_jump True), but more general.
                                 It activates the use of the MDAnalysis' unwrap transformation class.  Compatible with fix_jump but not with wrap.
-            - wrap:             boolean value for treating trajectory issues regarding the fitting of the system in the solvent box. Useful when the system is not fitted in the solvent box.
+            X- wrap:             boolean value for treating trajectory issues regarding the fitting of the system in the solvent box. Useful when the system is not fitted in the solvent box.
                                 It activates the use of the MDAnalysis' wrap transformation class. Compatible with fix_jump but not with unwrap.
 
         ATTRIBUTES:
@@ -75,24 +75,27 @@ class EMDA:
         """
 
         # dealing with transformations
-        if fix_jump and unwrap and wrap:
-            raise NotCompatibleTransformations
-        
-        elif fix_jump and unwrap and not wrap:
-            self.__transformations = [Unwrap(), NoJump()]
-        elif fix_jump and not unwrap and wrap:
-            self.__transformations = [Wrap(), NoJump()]
+        #if fix_jump and unwrap and wrap:
+        #    raise NotCompatibleTransformations
+        #
+        #elif fix_jump and unwrap and not wrap:
+        #    self.__transformations = [Unwrap(), NoJump()]
+        #elif fix_jump and not unwrap and wrap:
+        #    self.__transformations = [Wrap(), NoJump()]
 
-        elif not fix_jump and unwrap and wrap:
-            raise NotCompatibleTransformations
-        
-        elif fix_jump and not unwrap and not wrap:
-            self.__transformations = NoJump()
-        elif not fix_jump and unwrap and not wrap:
-            self.__transformations = Unwrap()
-        elif not fix_jump and not unwrap and wrap:
-            self.__transformations = Wrap()
+        #elif not fix_jump and unwrap and wrap:
+        #    raise NotCompatibleTransformations
+        #
+        #elif fix_jump and not unwrap and not wrap:
+        #    self.__transformations = NoJump()
+        #elif not fix_jump and unwrap and not wrap:
+        #    self.__transformations = Unwrap()
+        #elif not fix_jump and not unwrap and wrap:
+        #    self.__transformations = Wrap()
 
+
+        if fix_jump:
+        #    self.__transformations = NoJump()
         else :
             self.__transformations = None            
 
