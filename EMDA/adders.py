@@ -302,7 +302,9 @@ def add_contacts(
     if include_WAT == True:
         interactions += ["WAT", "HOH"]
 
-
+    if isinstance(append_interaction, str):
+        append_interaction = [append_interaction]
+    
     interactions += append_interaction
 
 
@@ -396,6 +398,9 @@ def add_per_residue_contacts(
     
     if include_WAT == True:
         interactions += ["WAT", "HOH"]
+    
+    if isinstance(append_interaction, str):
+        append_interaction = [append_interaction]
     
     interactions += append_interaction
 
