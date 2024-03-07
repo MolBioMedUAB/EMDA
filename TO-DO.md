@@ -12,13 +12,12 @@
 
 ## PER SECTION
 ### CONTACTS/PROTEIN_CONTACTS
-- [ ] Add the possibility to give a selection instead of the whole protein. It has to have more than one residue.
+
 
 ### PLOTTERS
 - [ ] Move ext_plot_contacts_frequencies_differences to internal.
 - [ ] Add multiple values in plot_value so several RMSDs, distances, etc can be plotted in the same plot (per variant and replica)
 - [ ] :exclamation: Fix global colorbar in plot_probability_densities
-- [ ] :exclamation: Add axis label builder for specifying distance, angle, etc labels of PDF plots.
 
 ### RMSD ADDER AND CALCULATOR
 - [ ] Add the option to set the average structure as reference
@@ -51,9 +50,13 @@
 - [X] :exclamation: Add analysis to check if a contact is present or not
 - [X] Contacts amounts to analyse_value and NACs
 
-### ADD_CONTACTS
+### PLOTTERS
+- [X] :exclamation: Add axis label builder for specifying distance, angle, etc labels of PDF plots.
+
+### CONTACTS
 - [X] Split selection and whole protein contacts into to different adders
 - [X] Remove out_format-related features
+- [X] Add the possibility to give a selection instead of the whole protein. It has to have more than one residue.
 
 ### EMDA.RUN
 - [X] Update adders before running
