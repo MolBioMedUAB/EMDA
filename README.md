@@ -52,7 +52,10 @@ The available analysis are listed below:
 Some analysis or measures can be plotted. The plotters functions (named with the plot_ prefix) take the analysis or measures' result and returns a plot depending on the type of data.
 
 The available plotters are listed below:
-- __values__: plots a float-containing frame-wise list. A similar method has been implemented inside the Measure class.
+- __measure__: plots a float-containing frame-wise list. A similar method has been implemented inside the Measure class.
+- __plot_NACs__: plots number of NACs as a bar plot.
+- __contacts_frequency__: takes the result of a contacts_frequency analysis and plots each interaction as a bar plot.
+- __probability_densities__: plots the probability densities maps calculated using the probability density analyser.
 - __contacts_frequencies_diff__: external plotter (so it is not a method of the EMDA class). It takes two contacts_frequency (analyser) results (or two lists of), compares them so a bar plot is returned containing the contacts that are the most different between the two sets.
 
 ## Installation
