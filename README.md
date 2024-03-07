@@ -30,7 +30,7 @@ The available measures are listed below:
 - __Distance of bridging waters between two sets of atoms__: identifies the closest water that is bridging between two sets of atoms and measures the distances to each
 - __RMSD__: measures the RMSD of a set of atoms (or the whole system) in reference of a frame of the structure
 - __Contacts__ of a group of atoms: identifies the contacts stablished by a selection in a given radius.
-- __Pre residue contacts__: gets all contacts stablished by each residue of a selection within a given radius along the trajectory.
+- __Per residue contacts__: gets all contacts stablished by each residue of a selection within a given radius along the trajectory.
 
 ### Analysers
 
