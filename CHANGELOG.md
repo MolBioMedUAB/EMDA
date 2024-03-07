@@ -11,7 +11,7 @@
 - Code's documentation has been enhanced
 - Probability density maps have been added as analyser and plotter.
 - Contacts adder has been split into contacts (for measuring contacts of a selection) and per_residue_contacts (for measuring contacts of each residue in a selection).
-- 
+- Exporters created. export_trajectory has been created to export trajectories that have been transformed.
 
 
 ## 0.3.0
