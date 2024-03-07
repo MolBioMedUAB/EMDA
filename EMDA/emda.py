@@ -10,8 +10,8 @@ from dataclasses import dataclass, field
 from MDAnalysis import Universe
 
 from MDAnalysis.transformations.nojump import NoJump
-from MDAnalysis.transformations.wrap import unwrap as Unwrap
-from MDAnalysis.transformations.wrap import wrap as Wrap
+#from MDAnalysis.transformations.wrap import unwrap as Unwrap
+#from MDAnalysis.transformations.wrap import wrap as Wrap
 
 # load internal EMDA classes and functions
 from .selection import parse_selection, check_selection
