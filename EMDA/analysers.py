@@ -683,9 +683,10 @@ def analyse_probability_density(self, name, measures, bw_method = 'scott', get_b
         measure_name=measures,
         result=result_,
         options = {
-            "bw_method"     : bw_method,
-            "get_basins"    : get_basins,
-            "num_of_points" : num_of_points,
-            "measure_types" : [self.measures[measures[0]].type, self.measures[measures[1]].type]
+            "bw_method"         : bw_method,
+            "get_basins"        : get_basins,
+            "num_of_points"     : num_of_points,
+            "measure_types"     : [self.measures[measures[0]].type, self.measures[measures[1]].type]
+            "selection_names"   : [','.join(self.measures[measures[0]].sel), ','.join(self.measures[measures[1]].sel)]
         }
     )
