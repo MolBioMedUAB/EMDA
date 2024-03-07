@@ -5,8 +5,69 @@ from tqdm.autonotebook import tqdm
 from .exceptions import *
 
 
+def export_frames_by_analysis(self, variant, replica, analysis_name, out_name=None, format='pdb', folder=None, selection = 'all'):
+    """
+    DESCRIPTION:
+        Function for exporting trajectories. Useful for exporting trajectories with transformations applied (such as wrap, unwrap or no jump).
 
-def export_trajectory(self, variant, replica, out_name : str = None, split_in : int = 1, format : str = 'xtc', start : int = 0, end : int = -1, step : int = 1, selection = None):
+    ARGUMENTS:
+        - variant :     variant name to export
+        - replica :     replica to export
+        - out_name:     name for the output file. Use * in the out_name to specify the position of the frame. If not present, it will be located before the extension.
+        - format:       only pdb is available
+        - folder:       subfolder where exported frames are saved
+
+    TODO:
+        - [ ] Add more formats
+    """
+    
+    #compatible_formats = ['dcd', 'xtc', 'trr', 'xyz', 'nc', 'pdb', 'crd', 'trz', 'mol2', 'coor', 'namdbin', 'in']
+    compatible_formats = ['pdb']
+
+
+    # Check that variant and replica exist
+    if variant not in list(self.universe.keys()):
+        raise KeyError("Variant is not available")
+    else :
+        if replica not in list(self.universe[variant].keys()):
+            raise KeyError(f"Replica is not available for variant {variant}")
+        
+    # load universe from EMDA
+    universe = self.universe[variant][replica]
+
+    # check out_name
+    if '.' in out_name:
+        if out_name.split('.')[-1] not in compatible_formats:
+            if '*' in out_name:
+                out_name = '.'.join([out_name, format])
+            else :
+                out_name = '.'.join([out_name + '_*', format])
+        
+        else :
+            if '*' not in out_name:
+                out_name = '.'.join(out_name.split('.')[:-1]) + '_*' + out_name.split('.')[-1]
+
+    else :
+        out_name = out_name + '_*' + format
+
+    if folder != None:
+        out_name = '/'.join([folder, out_name])
+
+
+    if selection in list(self.selections):
+        selection = self.selections[selection]
+
+    for frame, result in enumerate(self.analyses[analysis_name].result[variant][replica]):
+
+        if result:
+            universe.trajectory[frame]
+            to_write = universe.select_atoms(selection)
+            to_write.write(out_name.replace('*', str(frame+1)))
+            
+
+
+
+def export_trajectory(self, variant, replica, out_name : str = None, split_in : int = 1, format : str = 'xtc', start : int = 0, end : int = -1, step : int = 1, selection = None, folder = None):
     """
     DESCRIPTION:
         Function for exporting trajectories. Useful for exporting trajectories with transformations applied (such as wrap, unwrap or no jump).
@@ -29,7 +90,7 @@ def export_trajectory(self, variant, replica, out_name : str = None, split_in : 
         if replica not in list(self.universe[variant].keys()):
             raise KeyError(f"Replica is not available for variant {variant}")
         
-    # load universe form EMDA
+    # load universe from EMDA
     universe = self.universe[variant][replica]
 
     # check/create out_name
@@ -62,6 +123,10 @@ def export_trajectory(self, variant, replica, out_name : str = None, split_in : 
             out_name = out_name + '_*' + format
         elif split_in == 1:
             out_name = out_name + format
+            
+
+    if folder != None:
+        out_name = '/'.join([folder, out_name])
 
     # Save trajectory 
     if split_in == 1:
@@ -77,26 +142,26 @@ def export_trajectory(self, variant, replica, out_name : str = None, split_in : 
             if split == split_in-1:
 
                 if selection == None:
-                    with Writer(out_name, universe.atoms.n_atoms) as W:
+                    with Writer(out_name.replace('*', str(split+1)), universe.atoms.n_atoms) as W:
                         print(f"Printing from frame {split_lenght*split} to last.")
                         for ts in tqdm(universe[split_lenght*split:-1:step]):
                             W.write(universe.atoms)
 
                 else :
-                    with Writer(out_name, universe.select_atoms(self.selections[selection]).atoms.n_atoms) as W:
+                    with Writer(out_name.replace('*', str(split+1)), universe.select_atoms(self.selections[selection]).atoms.n_atoms) as W:
                         print(f"Printing from frame {split_lenght*split} to last.")
                         for ts in tqdm(universe[split_lenght*split:-1:step]):
                             W.write(universe.select_atoms(self.selections[selection]).atoms)
 
             else :
                 if selection == None:
-                    with Writer(out_name, universe.atoms.n_atoms) as W:
+                    with Writer(out_name.replace('*', str(split+1)), universe.atoms.n_atoms) as W:
                         print(f"Printing from frame {split_lenght*split} to {split_lenght*(split+1)}.")
                         for ts in tqdm(universe[split_lenght*split:split_lenght*(split+1):step]):
                             W.write(universe.atoms)
 
                 else :
-                    with Writer(out_name, universe.select_atoms(self.selections[selection]).atoms.n_atoms) as W:
+                    with Writer(out_name.replace('*', str(split+1)), universe.select_atoms(self.selections[selection]).atoms.n_atoms) as W:
                         print(f"Printing from frame {split_lenght*split} to {split_lenght*(split+1)}.")
                         for ts in tqdm(universe[split_lenght*split:split_lenght*(split+1):step]):
                             W.write(universe.select_atoms(self.selections[selection]).atoms)
