@@ -7,7 +7,7 @@
 - [ ] Add selection exporter
 - [ ] Add pymol script creator for exporting loaded variants/replicas and selections.
 - [ ] Add RMSF, HELANAL and other analysers from MDAnalysis
-- [ ] Add trajectory exporter
+- [ ] Add more formats to frame exporter.
 
 
 ## PER SECTION
@@ -43,6 +43,7 @@
 - [X] Add a method to EMDA class to check if selections are correct within the different vairants/replicas
 - [X] :exclamation: Add unwrap option when a variant/replica is loaded
 - [X] Add saving and loading options.
+- [X] Add trajectory exporter
 
 ## PER-SECTION
 
