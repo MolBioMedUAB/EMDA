@@ -9,7 +9,9 @@
 - Universes can now be loaded in memory.
 - :warning: distWATbridge and pKa measures have been temporarily deactivated.
 - Code's documentation has been enhanced
-- probability density maps have been added as analyser and plotter.
+- Probability density maps have been added as analyser and plotter.
+- Contacts adder has been split into contacts (for measuring contacts of a selection) and per_residue_contacts (for measuring contacts of each residue in a selection).
+- 
 
 
 ## 0.3.0
