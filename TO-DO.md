@@ -8,6 +8,7 @@
 - [ ] Add pymol script creator for exporting loaded variants/replicas and selections.
 - [ ] Add RMSF, HELANAL and other analysers from MDAnalysis
 - [ ] Add more formats to frame exporter.
+- [ ] Add multivariant/multireplica to exporters.
 
 
 ## PER SECTION
