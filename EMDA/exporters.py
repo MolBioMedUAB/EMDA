@@ -127,16 +127,27 @@ def export_trajectory(self, variant, replica, out_name : str = None, split_in : 
 
     if folder != None:
         out_name = '/'.join([folder, out_name])
+        
+    # 
+    if selection in list(self.selections):
+        selection = self.selections[selection]
 
     # Save trajectory 
     if split_in == 1:
 
-        with Writer(out_name, universe.atoms.n_atoms) as W:
-            for ts in tqdm(universe[start:end:step]):
-                W.write(universe.atoms)
+        if selection == None:
+            with Writer(out_name, universe.atoms.n_atoms) as W:
+                for ts in tqdm(universe[start:end:step]):
+                    W.write(universe.atoms)
+
+        else :
+            with Writer(out_name, universe.select_atoms(selection).atoms.n_atoms) as W:
+                for ts in tqdm(universe[start:end:step]):
+                    W.write(universe.select_atoms(selection).atoms)
+
 
     else :
-        split_lenght = len(universe[start:end])/split_in
+        split_lenght = len(universe.trajectory[start:end])/split_in
 
         for split in tqdm(range(0,split_in), desc="Split"):
             if split == split_in-1:
@@ -144,27 +155,27 @@ def export_trajectory(self, variant, replica, out_name : str = None, split_in : 
                 if selection == None:
                     with Writer(out_name.replace('*', str(split+1)), universe.atoms.n_atoms) as W:
                         print(f"Printing from frame {split_lenght*split} to last.")
-                        for ts in tqdm(universe[split_lenght*split:-1:step]):
+                        for ts in tqdm(universe.trajectory[split_lenght*split:-1:step]):
                             W.write(universe.atoms)
 
                 else :
                     with Writer(out_name.replace('*', str(split+1)), universe.select_atoms(self.selections[selection]).atoms.n_atoms) as W:
                         print(f"Printing from frame {split_lenght*split} to last.")
-                        for ts in tqdm(universe[split_lenght*split:-1:step]):
-                            W.write(universe.select_atoms(self.selections[selection]).atoms)
+                        for ts in tqdm(universe.trajectory[split_lenght*split:-1:step]):
+                            W.write(universe.select_atoms(selection).atoms)
 
             else :
                 if selection == None:
                     with Writer(out_name.replace('*', str(split+1)), universe.atoms.n_atoms) as W:
                         print(f"Printing from frame {split_lenght*split} to {split_lenght*(split+1)}.")
-                        for ts in tqdm(universe[split_lenght*split:split_lenght*(split+1):step]):
+                        for ts in tqdm(universe.trajectory[split_lenght*split:split_lenght*(split+1):step]):
                             W.write(universe.atoms)
 
                 else :
                     with Writer(out_name.replace('*', str(split+1)), universe.select_atoms(self.selections[selection]).atoms.n_atoms) as W:
                         print(f"Printing from frame {split_lenght*split} to {split_lenght*(split+1)}.")
-                        for ts in tqdm(universe[split_lenght*split:split_lenght*(split+1):step]):
-                            W.write(universe.select_atoms(self.selections[selection]).atoms)
+                        for ts in tqdm(universe.trajectory[split_lenght*split:split_lenght*(split+1):step]):
+                            W.write(universe.select_atoms(selection).atoms)
 
             
 
