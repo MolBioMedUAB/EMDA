@@ -20,6 +20,7 @@ from .adders import *
 from .runners import *
 from .analysers import *
 from .plotters import *
+from .exporters import *
 
 # load custom exceptions
 from .exceptions import EmptyMeasuresError, NotAvailableVariantError, NotCompatibleTransformations
@@ -144,6 +145,11 @@ class EMDA:
             func
             for func in globals()
             if callable(globals()[func]) and func.startswith("plot_")
+        ]
+        external_functions += [
+            func
+            for func in globals()
+            if callable(globals()[func]) and func.startswith("export_")
         ]
 
         for func_name in external_functions:
