@@ -95,7 +95,7 @@ class EMDA:
 
 
         if fix_jump:
-        #    self.__transformations = NoJump()
+            self.__transformations = NoJump()
         else :
             self.__transformations = None            
 
