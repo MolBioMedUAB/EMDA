@@ -102,14 +102,14 @@ def run_contacts(self, Measure, variant, replica):
         )
 
 
-def run_protein_contacts(self, Measure, variant, replica):
+def run_per_residue_contacts(self, Measure, variant, replica):
     """
     DESCRIPTION:
 
     """
 
     Measure.result[variant][replica].append(
-        calc_contacts_protein(
+        calc_per_residue_contacts(
             self.universe[variant][replica].select_atoms(Measure.sel[0]),
             Measure.sel[1],
             #self.universe[variant][replica].select_atoms(

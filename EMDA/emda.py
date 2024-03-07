@@ -527,8 +527,8 @@ class EMDA:
                     elif self.measures[measure].type == "contacts":
                         run_contacts(self, self.measures[measure], variant=variant, replica=replica)
 
-                    elif self.measures[measure].type == "protein_contacts":
-                        run_protein_contacts(self, self.measures[measure], variant=variant, replica=replica)
+                    elif self.measures[measure].type == "per_residue_contacts":
+                        run_per_residue_contacts(self, self.measures[measure], variant=variant, replica=replica)
 
                     elif self.measures[measure].type == "RMSD":
                         run_RMSD(self, self.measures[measure], variant=variant, replica=replica)

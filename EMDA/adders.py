@@ -319,9 +319,10 @@ def add_contacts(
     )
 
 
-def add_protein_contacts(
+def add_per_residue_contacts(
     self,
     name,
+    sel_input='protein',
     sel_env=3,
     include_WAT=False,
     measure_distances=False
@@ -341,10 +342,12 @@ def add_protein_contacts(
     OUTPUT:
         - List of dictionaries containing the name and number of all interacting residues
     """
+
+
     self.measures[name] = self.Measure(
         name=name,
-        type="protein_contacts",
-        sel=['protein', sel_env],
+        type="per_residue_contacts",
+        sel=[sel_input, sel_env],
         options={
             "measure_dists": measure_distances,
             "include_WAT" : include_WAT,

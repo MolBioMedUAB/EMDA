@@ -138,7 +138,7 @@ def analyse_contacts_frequency(self, name, measure, percentage : bool = False, n
                         )
         
         
-    elif self.measures[measure].type == "protein_contacts":
+    elif self.measures[measure].type == "per_residue_contacts":
         contacts_freqs = get_dictionary_structure(self.measures[measure].result, {})
         for variant in list(self.measures[measure].result.keys()):
             for replica in list(self.measures[measure].result[variant].keys()):
@@ -209,7 +209,7 @@ def analyse_contacts_frequency(self, name, measure, percentage : bool = False, n
     else :#
         raise NotCompatibleMeasureForAnalysisError
 
-    # protein_contacts-related code
+    # per_residue_contacts-related code
     #if self.measures[measure].options["mode"] == "protein":
     #    # create dict containing the residue name as key and a list as value. In this list, each contact in each frame will be stored
     #    total_contacts = {
@@ -272,7 +272,7 @@ def analyse_contacts_amount(self, name, measure):
                 for frame in self.measures[measure].result[variant][replica]:
                     contacts_amount[variant][replica].append(len(frame))
 
-    elif self.measures[measure].type == "protein_contacts":
+    elif self.measures[measure].type == "per_residue_contacts":
 
         # create dict containing the residue name as key and a list as value insite the variant/replica dict. In this list, each contact in each frame will be stored
         contacts_amount = get_dictionary_structure(self.measures[measure].result, [])

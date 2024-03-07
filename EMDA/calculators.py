@@ -276,7 +276,7 @@ def calc_contacts_selection(
     return contacts
 
 
-def calc_contacts_protein(
+def calc_per_residue_contacts(
     sel, sel_env, measure_distances=False, include_WAT=False,
 ):
 
