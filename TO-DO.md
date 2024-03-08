@@ -8,11 +8,13 @@
 - [ ] Add pymol script creator for exporting loaded variants/replicas and selections.
 - [ ] Add RMSF, HELANAL and other analysers from MDAnalysis
 - [ ] Add trajectory exporter
+- [ ] Add saver for specific results, not the whole EMDA status.
 
 
 ## PER SECTION
 ### CONTACTS/PROTEIN_CONTACTS
 - [ ] Add the possibility to give a selection instead of the whole protein. It has to have more than one residue.
+- [ ] Add other options besides distances to be calculated between conctacting groups such as contacting area, etc.
 
 ### PLOTTERS
 - [ ] Move ext_plot_contacts_frequencies_differences to internal.
