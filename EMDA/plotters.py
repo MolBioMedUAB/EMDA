@@ -503,7 +503,7 @@ def plot_contacts_frequency(
 
 
 
-def plot_probability_densities(self, analysis_name, plot_minima : bool = True,same_y : bool = True, same_x : bool = True, axis_label_everywhere : bool = False, colorbar_everywhere : bool = True, width_per_replica : float = 4, height_per_variant : float = 4, color_map='RdBu_r', out_name=False):
+def plot_probability_densities(self, analysis_name, plot_minima : bool = True,same_y : bool = True, same_x : bool = True, axis_label_everywhere : bool = False, colorbar_everywhere : bool = True, width_per_replica : float = 4, height_per_variant : float = 4, color_map='RdBu_r', set_names_in_axis = False, out_name=False):
     """
     DESCRIPTION:
         Plotter for probability density maps.
@@ -529,11 +529,25 @@ def plot_probability_densities(self, analysis_name, plot_minima : bool = True,sa
         analysis_obj = self
     else :
         analysis_obj = self.analyses[analysis_name]
-
     
     if analysis_obj.type not in ("pdf"):
         raise NotCompatibleAnalysisForPlotterError
     
+
+    if isinstance(set_names_in_axis, bool):
+        if set_names_in_axis:
+            x_axis = analysis_obj["options"]["selection_names"][0] + ' ' + axis_labels[analysis_obj.options["measure_types"][0]]
+            y_axis = analysis_obj["options"]["selection_names"][1] + ' ' + axis_labels[analysis_obj.options["measure_types"][1]]
+
+        else :
+            x_axis = axis_labels[analysis_obj.options["measure_types"][0]]
+            y_axis = axis_labels[analysis_obj.options["measure_types"][1]]
+    
+    elif isinstance(set_names_in_axis, list):
+        x_axis = set_names_in_axis[0] + ' ' + axis_labels[analysis_obj.options["measure_types"][0]]
+        y_axis = set_names_in_axis[1] + ' ' + axis_labels[analysis_obj.options["measure_types"][1]]
+        
+
     variants = len(analysis_obj.result)
 
     max_replicas = max([ len(analysis_obj.result[variant]) for variant in list(analysis_obj.result) ])
@@ -569,8 +583,8 @@ def plot_probability_densities(self, analysis_name, plot_minima : bool = True,sa
                 np.array(analysis_obj.result[variant][replica]['mins'])[:,2],
                 color='k')
 
-        axs.set_xlabel(axis_labels[analysis_obj.options["measure_types"][0]])
-        axs.set_ylabel(axis_labels[analysis_obj.options["measure_types"][1]])
+        axs.set_xlabel(x_axis)
+        axs.set_ylabel(y_axis)
 
         cbar = fig.colorbar(cntr, ax=axs)
         cbar.set_label('E/RT')
@@ -601,10 +615,10 @@ def plot_probability_densities(self, analysis_name, plot_minima : bool = True,sa
                             color='k')
 
                     if r_num == 0 or axis_label_everywhere:
-                        axs[r_num].set_ylabel(axis_labels[analysis_obj.options["measure_types"][1]])
+                        axs[r_num].set_ylabel(y_axis)
 
                     if v_num == variants-1 or axis_label_everywhere:
-                        axs[r_num].set_xlabel(axis_labels[analysis_obj.options["measure_types"][0]])
+                        axs[r_num].set_xlabel(x_axis)
                         
                     axs[r_num].set_title(f"{variant}, {replica}")  
 
@@ -632,10 +646,10 @@ def plot_probability_densities(self, analysis_name, plot_minima : bool = True,sa
                             color='k')
  
                     if r_num == 0 or axis_label_everywhere:
-                        axs[v_num, r_num].set_ylabel(axis_labels[analysis_obj.options["measure_types"][1]])
+                        axs[v_num, r_num].set_ylabel(y_axis)
                     
                     if v_num == variants-1 or axis_label_everywhere:
-                        axs[v_num, r_num].set_xlabel(axis_labels[analysis_obj.options["measure_types"][0]])
+                        axs[v_num, r_num].set_xlabel(x_axis)
                     
                     if colorbar_everywhere:
                         cbar = fig.colorbar(cntr, ax=axs[v_num, r_num])

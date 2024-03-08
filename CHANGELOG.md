@@ -9,6 +9,9 @@
 - Universes can now be loaded in memory.
 - :warning: distWATbridge and pKa measures have been temporarily deactivated.
 - Code's documentation has been enhanced
+- Probability density maps have been added as analyser and plotter.
+- Contacts adder has been split into contacts (for measuring contacts of a selection) and per_residue_contacts (for measuring contacts of each residue in a selection).
+- Exporters created. export_trajectory has been created to export trajectories that have been transformed. Export_frame_by_analysis has been created to export single PDBs of the frames that satisfy the criteria imposed by an analysis such as value or NACs.
 
 
 

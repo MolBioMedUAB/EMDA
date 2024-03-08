@@ -9,6 +9,8 @@
 - [ ] Add RMSF, HELANAL and other analysers from MDAnalysis
 - [ ] Add trajectory exporter
 - [ ] Add saver for specific results, not the whole EMDA status.
+- [ ] Add more formats to frame exporter.
+- [ ] Add multivariant/multireplica to exporters.
 
 
 ## PER SECTION
@@ -16,11 +18,11 @@
 - [ ] Add the possibility to give a selection instead of the whole protein. It has to have more than one residue.
 - [ ] Add other options besides distances to be calculated between conctacting groups such as contacting area, etc.
 
+
 ### PLOTTERS
 - [ ] Move ext_plot_contacts_frequencies_differences to internal.
 - [ ] Add multiple values in plot_value so several RMSDs, distances, etc can be plotted in the same plot (per variant and replica)
 - [ ] :exclamation: Fix global colorbar in plot_probability_densities
-- [ ] :exclamation: Add axis label builder for specifying distance, angle, etc labels of PDF plots.
 
 ### RMSD ADDER AND CALCULATOR
 - [ ] Add the option to set the average structure as reference
@@ -46,6 +48,7 @@
 - [X] Add a method to EMDA class to check if selections are correct within the different vairants/replicas
 - [X] :exclamation: Add unwrap option when a variant/replica is loaded
 - [X] Add saving and loading options.
+- [X] Add trajectory exporter
 
 ## PER-SECTION
 
@@ -53,9 +56,13 @@
 - [X] :exclamation: Add analysis to check if a contact is present or not
 - [X] Contacts amounts to analyse_value and NACs
 
-### ADD_CONTACTS
+### PLOTTERS
+- [X] :exclamation: Add axis label builder for specifying distance, angle, etc labels of PDF plots.
+
+### CONTACTS
 - [X] Split selection and whole protein contacts into to different adders
 - [X] Remove out_format-related features
+- [X] Add the possibility to give a selection instead of the whole protein. It has to have more than one residue.
 
 ### EMDA.RUN
 - [X] Update adders before running

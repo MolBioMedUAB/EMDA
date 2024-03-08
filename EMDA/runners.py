@@ -102,22 +102,25 @@ def run_contacts(self, Measure, variant, replica):
         )
 
 
-def run_protein_contacts(self, Measure, variant, replica):
+def run_per_residue_contacts(self, Measure, variant, replica):
     """
     DESCRIPTION:
 
     """
 
     Measure.result[variant][replica].append(
-        calc_contacts_protein(
-            self.universe[variant][replica].select_atoms(Measure.sel[0]),
+        calc_per_residue_contacts(
+            self.universe[variant][replica],
+            self.universe[variant][replica].select_atoms(self.selections[Measure.sel[0]]),
             Measure.sel[1],
             #self.universe[variant][replica].select_atoms(
             #    f"around {Measure.sel[1]} group select",
             #    select=self.universe[variant][replica].select_atoms(self.selections[Measure.sel[0]])
             #),
+            interactions=Measure.options["interactions"],
             measure_distances=Measure.options["measure_dists"],
-            include_WAT=Measure.options["include_WAT"]
+            #include_WAT=Measure.options["include_WAT"],
+            within_selection=Measure.options["within_selection"]
         )
     )
 

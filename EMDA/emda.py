@@ -10,8 +10,8 @@ from dataclasses import dataclass, field
 from MDAnalysis import Universe
 
 from MDAnalysis.transformations.nojump import NoJump
-from MDAnalysis.transformations.wrap import unwrap as Unwrap
-from MDAnalysis.transformations.wrap import wrap as Wrap
+#from MDAnalysis.transformations.wrap import unwrap as Unwrap
+#from MDAnalysis.transformations.wrap import wrap as Wrap
 
 # load internal EMDA classes and functions
 from .selection import parse_selection, check_selection
@@ -20,6 +20,7 @@ from .adders import *
 from .runners import *
 from .analysers import *
 from .plotters import *
+from .exporters import *
 
 # load custom exceptions
 from .exceptions import EmptyMeasuresError, NotAvailableVariantError, NotCompatibleTransformations
@@ -28,7 +29,7 @@ from .exceptions import EmptyMeasuresError, NotAvailableVariantError, NotCompati
 # Define EMDA class
 class EMDA:
 
-    def __init__(self, parameters, trajectory=None, variant_name=None, load_in_memory : bool = False, fix_jump : bool = False, unwrap : bool = False, wrap : bool = False):
+    def __init__(self, parameters, trajectory=None, variant_name=None, load_in_memory : bool = False, fix_jump : bool = False):#, unwrap : bool = False, wrap : bool = False):
         """
         DESCRIPTION:
             Function to initialise the EMDA class by loading the parameters and trajectory as a MDAnalysis universe and loading adders, analysers and plotters as internal methods.
@@ -44,10 +45,10 @@ class EMDA:
             - fix_jump:         boolean value for treating trajectory issues regarding the fitting of the protein in the solvent box. Useful when the protein's coordinates jump from one 
                                 side of the box to the oposite. In order to make it work properly, the protein should be OK at the first frame of the trajectory.
                                 It activates the use of the MDAnalysis' NoJump transformation class.
-            - unwrap:           boolean value for treating trajectory issues regarding the fitting of the system in the solvent box. Useful when the system is artifitially fitted in the 
+            X- unwrap:           boolean value for treating trajectory issues regarding the fitting of the system in the solvent box. Useful when the system is artifitially fitted in the 
                                 solvent box, so jumps appear. It is similar to the NoJump transformation (activated by setting fix_jump True), but more general.
                                 It activates the use of the MDAnalysis' unwrap transformation class.  Compatible with fix_jump but not with wrap.
-            - wrap:             boolean value for treating trajectory issues regarding the fitting of the system in the solvent box. Useful when the system is not fitted in the solvent box.
+            X- wrap:             boolean value for treating trajectory issues regarding the fitting of the system in the solvent box. Useful when the system is not fitted in the solvent box.
                                 It activates the use of the MDAnalysis' wrap transformation class. Compatible with fix_jump but not with unwrap.
 
         ATTRIBUTES:
@@ -74,24 +75,27 @@ class EMDA:
         """
 
         # dealing with transformations
-        if fix_jump and unwrap and wrap:
-            raise NotCompatibleTransformations
-        
-        elif fix_jump and unwrap and not wrap:
-            self.__transformations = [Unwrap(), NoJump()]
-        elif fix_jump and not unwrap and wrap:
-            self.__transformations = [Wrap(), NoJump()]
+        #if fix_jump and unwrap and wrap:
+        #    raise NotCompatibleTransformations
+        #
+        #elif fix_jump and unwrap and not wrap:
+        #    self.__transformations = [Unwrap(), NoJump()]
+        #elif fix_jump and not unwrap and wrap:
+        #    self.__transformations = [Wrap(), NoJump()]
 
-        elif not fix_jump and unwrap and wrap:
-            raise NotCompatibleTransformations
-        
-        elif fix_jump and not unwrap and not wrap:
+        #elif not fix_jump and unwrap and wrap:
+        #    raise NotCompatibleTransformations
+        #
+        #elif fix_jump and not unwrap and not wrap:
+        #    self.__transformations = NoJump()
+        #elif not fix_jump and unwrap and not wrap:
+        #    self.__transformations = Unwrap()
+        #elif not fix_jump and not unwrap and wrap:
+        #    self.__transformations = Wrap()
+
+
+        if fix_jump:
             self.__transformations = NoJump()
-        elif not fix_jump and unwrap and not wrap:
-            self.__transformations = Unwrap()
-        elif not fix_jump and not unwrap and wrap:
-            self.__transformations = Wrap()
-
         else :
             self.__transformations = None            
 
@@ -144,6 +148,11 @@ class EMDA:
             func
             for func in globals()
             if callable(globals()[func]) and func.startswith("plot_")
+        ]
+        external_functions += [
+            func
+            for func in globals()
+            if callable(globals()[func]) and func.startswith("export_")
         ]
 
         for func_name in external_functions:
@@ -527,8 +536,8 @@ class EMDA:
                     elif self.measures[measure].type == "contacts":
                         run_contacts(self, self.measures[measure], variant=variant, replica=replica)
 
-                    elif self.measures[measure].type == "protein_contacts":
-                        run_protein_contacts(self, self.measures[measure], variant=variant, replica=replica)
+                    elif self.measures[measure].type == "per_residue_contacts":
+                        run_per_residue_contacts(self, self.measures[measure], variant=variant, replica=replica)
 
                     elif self.measures[measure].type == "RMSD":
                         run_RMSD(self, self.measures[measure], variant=variant, replica=replica)

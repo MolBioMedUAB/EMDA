@@ -19,21 +19,14 @@ from scipy.stats import gaussian_kde
 import numpy as np
 import random
 
-
-# from numpy import maximum as max
-
 """
-TO BUILD in 0.2.0:
-    - [X] NACs
-    - [X] Contacts counter (how much contacts are in each frame)
-"""
-
-"""
-AVAILABLE:
+AVAILABLE ANALYSERS:
     - analyse_value:
     - analyse_contacts_frequency:
     - analyse_contacts_amount:
+    - analyse_contacts_presence:
     - analyse_NACs:
+    - analyse_probability_density: 
 """
 
 analyse_value_types = Literal['thres', 'threshold', 'tol', 'tolerance']
@@ -145,7 +138,7 @@ def analyse_contacts_frequency(self, name, measure, percentage : bool = False, n
                         )
         
         
-    elif self.measures[measure].type == "protein_contacts":
+    elif self.measures[measure].type == "per_residue_contacts":
         contacts_freqs = get_dictionary_structure(self.measures[measure].result, {})
         for variant in list(self.measures[measure].result.keys()):
             for replica in list(self.measures[measure].result[variant].keys()):
@@ -216,7 +209,7 @@ def analyse_contacts_frequency(self, name, measure, percentage : bool = False, n
     else :#
         raise NotCompatibleMeasureForAnalysisError
 
-    # protein_contacts-related code
+    # per_residue_contacts-related code
     #if self.measures[measure].options["mode"] == "protein":
     #    # create dict containing the residue name as key and a list as value. In this list, each contact in each frame will be stored
     #    total_contacts = {
@@ -279,7 +272,7 @@ def analyse_contacts_amount(self, name, measure):
                 for frame in self.measures[measure].result[variant][replica]:
                     contacts_amount[variant][replica].append(len(frame))
 
-    elif self.measures[measure].type == "protein_contacts":
+    elif self.measures[measure].type == "per_residue_contacts":
 
         # create dict containing the residue name as key and a list as value insite the variant/replica dict. In this list, each contact in each frame will be stored
         contacts_amount = get_dictionary_structure(self.measures[measure].result, [])
@@ -431,7 +424,6 @@ def analyse_NACs(self, name, analyses : list, merge_replicas : bool = False, inv
     )
 
 
-
 def analyse_probability_density(self, name, measures, bw_method = 'scott', get_basins : bool = True, num_of_points = None, print_results : bool = False):
     """
     DESCRIPTION:
@@ -445,6 +437,13 @@ def analyse_probability_density(self, name, measures, bw_method = 'scott', get_b
     SOURCE:
         Code from Bruno Victor's
     """
+
+    if self.measures[measures[0]].type not in ('distance', 'angle', 'dihedral', 'planar_angle', 'RMSD'):#, 'contacts_amount'):
+        raise NotCompatibleMeasureForAnalysisError(measure=measures[0])
+    
+    if self.measures[measures[1]].type not in ('distance', 'angle', 'dihedral', 'planar_angle', 'RMSD'):#, 'contacts_amount'):
+        raise NotCompatibleMeasureForAnalysisError(measure=measures[1])
+
 
     # Find maximum value in a 2D array of n x n elements
     def calcPmax(PDF, n):
@@ -684,9 +683,10 @@ def analyse_probability_density(self, name, measures, bw_method = 'scott', get_b
         measure_name=measures,
         result=result_,
         options = {
-            "bw_method"     : bw_method,
-            "get_basins"    : get_basins,
-            "num_of_points" : num_of_points,
-            "measure_types" : [self.measures[measures[0]].type, self.measures[measures[1]].type]
+            "bw_method"         : bw_method,
+            "get_basins"        : get_basins,
+            "num_of_points"     : num_of_points,
+            "measure_types"     : [self.measures[measures[0]].type, self.measures[measures[1]].type],
+            "selection_names"   : [','.join(self.measures[measures[0]].sel), ','.join(self.measures[measures[1]].sel)]
         }
     )

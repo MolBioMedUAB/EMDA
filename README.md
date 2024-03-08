@@ -30,17 +30,21 @@ The available measures are listed below:
 - __Distance of bridging waters between two sets of atoms__: identifies the closest water that is bridging between two sets of atoms and measures the distances to each
 - __RMSD__: measures the RMSD of a set of atoms (or the whole system) in reference of a frame of the structure
 - __Contacts__ of a group of atoms: identifies the contacts stablished by a selection in a given radius.
-- __Protein contacts__: gets all contacts stablished by each residue in a given radius along the trajectory.
+- __Per residue contacts__: gets all contacts stablished by each residue of a selection within a given radius along the trajectory.
 
 ### Analysers
 
 Some analysis can be performed from previous measures and they are stored as Analysis classes. In this case, each analysis has its own analyser. In opposition with measures, analysis are executed when requested. All the analysers functions' names start with the 'analyse_' string.
 
-The available analyis are listed below:
+The available analysis are listed below:
 - __value__: analyses the value of a frame-wise measure (like distance, for instance) and returns frame-wise list containing True if the value is between the given values or False if it is not.
 - __contacts_frequency__: analyses the contacts and returns a dictionary containing the contacts that take place and how many times it takes place (in an absolute or relative number).
 - __contacts_amounts__: analyses the contacts and returns a frame-wise list containing how many contacts a selection (or a residue) stablishes in each frame.
+- __contacts_presence__: analyses if a requested contact(s) is present and returns a boolean frame-wise list.
 - __NACs__ (near-attack conformations): analyses two or more analysed values (so a frame-wise boolean list) and returns the combination of all the values as a boolean frame-wise list.
+- __probability_density__: uses the probability density function to analyse two different measures (distance, angle, dihedral, planar angle or RMSD).
+
+
 
 
 ### Plotters
@@ -48,7 +52,10 @@ The available analyis are listed below:
 Some analysis or measures can be plotted. The plotters functions (named with the plot_ prefix) take the analysis or measures' result and returns a plot depending on the type of data.
 
 The available plotters are listed below:
-- __values__: plots a float-containing frame-wise list. A similar method has been implemented inside the Measure class.
+- __measure__: plots a float-containing frame-wise list. A similar method has been implemented inside the Measure class.
+- __plot_NACs__: plots number of NACs as a bar plot.
+- __contacts_frequency__: takes the result of a contacts_frequency analysis and plots each interaction as a bar plot.
+- __probability_densities__: plots the probability densities maps calculated using the probability density analyser.
 - __contacts_frequencies_diff__: external plotter (so it is not a method of the EMDA class). It takes two contacts_frequency (analyser) results (or two lists of), compares them so a bar plot is returned containing the contacts that are the most different between the two sets.
 
 ## Installation

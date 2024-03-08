@@ -52,7 +52,7 @@ def add_distance(self, name, sel1, sel2, type="min"):
     USAGE:
         EMDA.add_distance(name, sel1, sel2, type=['min' | 'max' | 'cog' | 'com'])
 
-    INPUT:
+    ARGUMENTS:
         - Name of the measurement
         - Two selections, which can contain more than one atom
         - type: min [default], com (center of mass) or cog (center of geometry)
@@ -84,7 +84,10 @@ def add_angle(self, name, sel1, sel2, sel3, units="deg", domain=360):
         This functions measures the angle between 3 specified atoms and returns the value between 0 and 360 degrees.
         The input selections have to be single atoms.
 
-    OPTIONS:
+    USAGE:
+        EMDA.add_angle(name, sel1, sel2, sel3, units=["deg" | "rad"], domain=[180 | 360])
+
+    ARGUMENTS:
         - Name of the measurement
         - units: option for selecting the output units of the dihedral
             - degree
@@ -135,7 +138,10 @@ def add_dihedral(self, name, sel1, sel2, sel3, sel4, units="degree", domain=360)
         This functions measures the dihedral angle between 4 specified atoms and returns the dihedral value between 0 and 360 degrees.
         The input selections have to be single atoms.
 
-    OPTIONS:
+    USAGE:
+        EMDA.add_angle(name, sel1, sel2, sel3, sel4, units=["deg" | "rad"], domain=[180 | 360])
+
+    ARGUMENTS:
         - units: option for selecting the output units of the dihedral
             - degree
             - rad
@@ -185,7 +191,10 @@ def add_planar_angle(self, name, sel1, sel2, units="deg", domain=360):
         This function measures the angle between two planes specified by three atoms each one and returns the angle.
         The input selections have to contain three atoms.
 
-    OPTIONS:
+    USAGE:
+        EMDA.add_planar_angle(name, sel1, sel2, units=["deg" | "rad"], domain=[180 | 360])
+
+    ARGUMENTS:
         - Name of the measurement
         - units: option for selecting the output units of the dihedral
             - degree
@@ -235,12 +244,18 @@ def add_contacts(
     sel,
     sel_env=3,
     interactions="all",
-    include_WAT=False,
-    measure_distances=True,
+    append_interaction=[],
+    include_WAT : bool = False,
+    measure_distances : bool = True,
 ):
     """
     DESCRIPTION:
         This function takes a Universe, a selection and a radius and returns the list of residues nearer than the specified radius.
+
+    USAGE:
+        EMDA.add_contacts(name, sel, sel_env, interactions=[all | polar | nonpolar | donorHbond | none ], 
+            append_interaction=resname | [ resnames ], include_WAT=[ True | False ], measure_distance=[ True | False ])
+    
 
     INPUT:
         - Name of the measurement
@@ -301,6 +316,12 @@ def add_contacts(
     if include_WAT == True:
         interactions += ["WAT", "HOH"]
 
+    if isinstance(append_interaction, str):
+        append_interaction = [append_interaction]
+    
+    interactions += append_interaction
+
+
 #    if sel == "protein":
 #        mode = "protein"
 #        self.select("protein", sel, sel_type=None)
@@ -319,35 +340,99 @@ def add_contacts(
     )
 
 
-def add_protein_contacts(
+def add_per_residue_contacts(
     self,
     name,
-    sel_env=3,
-    include_WAT=False,
-    measure_distances=False
+    sel_input='protein',
+    sel_env : float =3,
+    interactions = 'all',
+    append_interaction = [],
+    include_WAT : bool = False,
+    measure_distances : bool = False,
+    within_selection : bool = False,
 ):
     """
     DESCRIPTION:
         This function takes a adds the measure of the contacts of all residues in a protein
 
-    INPUT:
+    USAGE:
+        EMDA.add_contacts(name, sel, sel_env, interactions=[all | polar | nonpolar | donorHbond | none ], 
+            append_interaction=resname | [ resnames ], include_WAT=[ True | False ], measure_distance=[ True | False ],
+            within_selection=[ True | False ])
+
+    ARGUMENTS:
         - Name of the measurement
-        - sel_env      -> radius (in ang) around each residue
-        - 
-        - interactions -> type of interactions to be considered (all, polar, nonpolar, donorHbond, none). Custom
-                            interactions can be also analysed by passing a list of residues names
+        - sel_env:              radius (in ang) around each residue
+        - interactions:         type of interactions to be considered (all, polar, nonpolar, donorHbond, none). Custom
+                                    interactions can be also analysed by passing a list of residues names
+        - within_selection:     limits the exploration of the contacts in the given selection
 
 
     OUTPUT:
         - List of dictionaries containing the name and number of all interacting residues
     """
+
+    if isinstance(interactions, str):
+        if interactions not in ("all", "polar", "nonpolar", "donorHbond", "none"):
+            raise NotExistingInteractionError
+
+        else:
+            if interactions == "all":
+                interactions = [
+                    "ARG","HIS","HID","HIE","HIP","LYS",
+                    "ASP","ASH","GLU","GLH","SER","THR",
+                    "ASN","GLN","CYS","SEC","GLY","PRO",
+                    "ALA","ILE","LEU","MET","PHE","TRP",
+                    "TYR","VAL",
+                ]
+
+            elif interactions == "polar":
+                interactions = [
+                    "ARG","HIS","HID","HIE","HIP","LYS",
+                    "ASP","ASH","GLU","GLH","SER","THR",
+                    "ASN","GLN","CYS","SEC","TYR",
+                ]
+
+            elif interactions == "nonpolar":
+                interactions = [
+                    "CYS","SEC","GLY","PRO","ALA","ILE",
+                    "LEU","MET","PHE","TRP","TYR","VAL",
+                ]
+
+            elif interactions == "donorHbond":
+                interactions = [
+                    "ARG","HID","HIE","HIP","LYS","ASH",
+                    "GLH","SER","THR","ASN","GLN","CYS",
+                    "SEC","GLY","PRO","TYR",
+                ]
+
+            elif interactions == "none":
+                interactions = []
+
+    elif isinstance(interactions, list):
+        pass
+
+    else:
+        raise NotExistingInteractionError
+    
+    if include_WAT == True:
+        interactions += ["WAT", "HOH"]
+    
+    if isinstance(append_interaction, str):
+        append_interaction = [append_interaction]
+    
+    interactions += append_interaction
+
+
     self.measures[name] = self.Measure(
         name=name,
-        type="protein_contacts",
-        sel=['protein', sel_env],
+        type="per_residue_contacts",
+        sel=[sel_input, sel_env],
         options={
             "measure_dists": measure_distances,
-            "include_WAT" : include_WAT,
+            "interactions" : interactions,
+            #"include_WAT" : include_WAT,
+            "within_selection" : within_selection,
         },
         result=get_dictionary_structure(self.universe, []),
     )
@@ -357,6 +442,9 @@ def add_RMSD(self, name, sel, ref=0, center : bool = True, superposition : bool 
     """
     DESCRIPTION:
         This function outputs the RMSD of a selection
+
+    USAGE:
+        EMDA.add_RMSD(name, sel, ref=int, center=[ True | False ], superposition=[ True | False ], weights=[ None | "mass" ])
 
     INPUT:
         - name:     name of the measurement
