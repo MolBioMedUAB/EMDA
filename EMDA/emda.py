@@ -667,7 +667,6 @@ class EMDA:
         if format == None:
             format = file_name.split('.')[-1]
 
-        
         if format in  ('json'):
             from json import load
 
@@ -682,14 +681,21 @@ class EMDA:
 
         if len(to_load['measures']) > 0 and load_measure:
             for measure_name, measure in to_load['measures'].items():
-                
-                self.measures[measure_name] = self.Measure(
-                    name = measure['name'],
-                    type = measure['type'],
-                    sel  = measure['sel'],
-                    options = measure['options'],
-                    result = measure['result']
-                )
+
+                if measure_name in list(self.measures.keys()):
+                    for variant in list(measure['result'].keys()):
+                        self.measures[measure_name].result[variant] = {}
+                        for replica in list(measure['result'][variant].keys()):
+                            self.measures[measure_name].result[variant][replica] = measure['result'][variant][replica]
+
+                else :
+                    self.measures[measure_name] = self.Measure(
+                        name = measure['name'],
+                        type = measure['type'],
+                        sel  = measure['sel'],
+                        options = measure['options'],
+                        result = measure['result']
+                    )
 
             print('EMDA measures have been loaded!')
 
@@ -697,18 +703,31 @@ class EMDA:
         if len(to_load['analyses']) > 0 and load_analyses:
             for analysis_name, analysis in to_load['analyses'].items():
 
-                self.analyses[analysis_name] = self.Analysis(
-                    name = analysis['name'],
-                    type = analysis['type'],
-                    measure_name  = analysis['measure_name'],
-                    options = analysis['options'],
-                    result = analysis['result']
-                )
+                if analysis_name in list(self.analyses.keys()):
+                    for variant in list(analysis['result'].keys()):
+                        self.analyses[analysis_name].result[variant] = {}
+                        for replica in list(analysis['result'][variant].keys()):
+                            self.analyses[analysis_name].result[variant][replica] = analysis['result'][variant][replica]
+
+                else :
+                    self.analyses[analysis_name] = self.Analysis(
+                        name = analysis['name'],
+                        type = analysis['type'],
+                        measure_name  = analysis['measure_name'],
+                        options = analysis['options'],
+                        result = analysis['result']
+                    )
 
             print('EMDA analyses have been loaded!')
 
         if len(to_load['selections']) > 0 and load_selections:
-            self.selections = to_load['selections']
+            if len(self.selections) == 0:
+                self.selections = to_load['selections']
+
+            else :
+                for selection in to_load['selections']:
+                    if selection not in list(self.selections):
+                        self.selections[selection] = to_load['selections'][selection]
 
 
             print('EMDA selections have been loaded!')
