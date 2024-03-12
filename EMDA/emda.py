@@ -268,7 +268,7 @@ class EMDA:
 
 
     # create load_variant method
-    def load_variant(self, parameters, trajectory, name=None):
+    def load_variant(self, parameters, trajectory, variant_name=None):
         """
         DESCRIPTION:
             Method that allows adding one new variant to the EMDA class. Its key in the EMDA's universe attr's dictionary is automatically given as "V" and the number of variant in __variants attr.
@@ -279,10 +279,10 @@ class EMDA:
         self.__replicas += 1
 
         # set variant's name
-        if name == None:
+        if variant_name == None:
             new_variant  = f"V{self.__variants}"
         else :
-            new_variant = name
+            new_variant = variant_name
 
         self.universe[new_variant]   = {"R1" : Universe(parameters, trajectory, in_memory=self.__load_in_memory, transformations=deepcopy(self.__transformations))}
         self.parameters[new_variant] = parameters
