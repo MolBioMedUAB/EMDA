@@ -1,0 +1,9 @@
+cff-version: 1.1.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: Canyelles-Niño
+  given-names: Miquel
+orcid: https://orcid.org/0000-0002-8221-2781
+title:MolBioMedUAB/EMDA
+version: 0.3.4
+date-released: 2024-03-13
