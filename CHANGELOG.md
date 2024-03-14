@@ -14,6 +14,8 @@
 - Exporters created. export_trajectory has been created to export trajectories that have been transformed. Export_frame_by_analysis has been created to export single PDBs of the frames that satisfy the criteria imposed by an analysis such as value or NACs.
 
 
+## 0.3.1-0.3.4
+- Minor bugs fixed
 
 ## 0.3.0
 - Now only parameters are mandatory, so multiframe PDBs are accepted.
