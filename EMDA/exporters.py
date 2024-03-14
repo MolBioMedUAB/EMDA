@@ -99,36 +99,37 @@ def export_trajectory(self, variant, replica, out_name : str = None, split_in : 
     # load universe from EMDA
     universe = self.universe[variant][replica]
 
+    compatible_formats = ['dcd', 'xtc', 'trr', 'xyz', 'nc', 'pdb', 'crd', 'trz', 'mol2', 'coor', 'namdbin', 'in']
+
     # check/create out_name
     if out_name == None:
         if split_in > 1:
-            out_name == f"md_{variant}_{replica}_*.{format}"
+            out_name = f"md_{variant}_{replica}_*.{format}"
 
         elif split_in == 1:
-            out_name == f"md_{variant}_{replica}.{format}"
-
-    compatible_formats = ['dcd', 'xtc', 'trr', 'xyz', 'nc', 'pdb', 'crd', 'trz', 'mol2', 'coor', 'namdbin', 'in']
-
-    if '.' in out_name:
-        if out_name.split('.')[-1] not in compatible_formats:
-            if split_in == 1:
-                out_name = '.'.join([out_name, format])
-            else :
-                if '*' in out_name:
-                    out_name = '.'.join([out_name, format])
-                else :
-                    out_name = '.'.join([out_name + '_*', format])
-        
-        else :
-            if split_in >= 1:
-                if '*' not in out_name:
-                    out_name = '.'.join(out_name.split('.')[:-1]) + '_*' + out_name.split('.')[-1]
+            out_name = f"md_{variant}_{replica}.{format}"
 
     else :
-        if split_in >= 1:
-            out_name = out_name + '_*' + format
-        elif split_in == 1:
-            out_name = out_name + format
+        if '.' in out_name:
+            if out_name.split('.')[-1] not in compatible_formats:
+                if split_in == 1:
+                    out_name = '.'.join([out_name, format])
+                else :
+                    if '*' in out_name:
+                        out_name = '.'.join([out_name, format])
+                    else :
+                        out_name = '.'.join([out_name + '_*', format])
+            
+            else :
+                if split_in >= 1:
+                    if '*' not in out_name:
+                        out_name = '.'.join(out_name.split('.')[:-1]) + '_*' + out_name.split('.')[-1]
+
+        else :
+            if split_in >= 1:
+                out_name = out_name + '_*' + format
+            elif split_in == 1:
+                out_name = out_name + format
             
 
     if folder != None:
