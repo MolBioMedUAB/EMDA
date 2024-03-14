@@ -87,7 +87,7 @@ def plot_measure(self, measure_name, same_y : bool = True, same_x : bool = True,
             for r_num, replica in enumerate(list(measure_obj.result[variant].keys())):
 
                 if combine_replicas:
-                    axs[v_num].plot(
+                    axs[r_num].plot(
                     range(1, len(measure_obj.result[variant][replica])+1),
                     measure_obj.result[variant][replica],
                     c = f"C{v_num}",
@@ -95,12 +95,12 @@ def plot_measure(self, measure_name, same_y : bool = True, same_x : bool = True,
                     )
 
                     if r_num == 0 or axis_label_everywhere:
-                        axs[v_num].set_ylabel(y_labels[measure_obj.type])
+                        axs[r_num].set_ylabel(y_labels[measure_obj.type])
 
                     if v_num == variants-1 or axis_label_everywhere:
-                        axs[v_num].set_xlabel("Frame")
+                        axs[r_num].set_xlabel("Frame")
                         
-                    axs[v_num].set_title(f"{variant}, replicas {', '.join(list(measure_obj.result[variant].keys()))}")  
+                    axs[r_num].set_title(f"{variant}, replicas {', '.join(list(measure_obj.result[variant].keys()))}")
 
                 elif variants == 1:
                     axs[r_num].plot(
@@ -514,6 +514,24 @@ def plot_probability_densities(self, analysis_name, plot_minima : bool = True, p
     TODO:
         - [ ] fix global colorbar
     """
+    def lighten_color(color, amount=0.5):
+        """
+        Lightens the given color by multiplying (1-luminosity) by the given amount.
+        Input can be matplotlib color string, hex string, or RGB tuple.
+
+        Examples:
+        >> lighten_color('g', 0.3)
+        >> lighten_color('#F034A3', 0.6)
+        >> lighten_color((.3,.55,.1), 0.5)
+        """
+        import matplotlib.colors as mc
+        import colorsys
+        try:
+            c = mc.cnames[color]
+        except:
+            c = color
+        c = colorsys.rgb_to_hls(*mc.to_rgb(c))
+        return colorsys.hls_to_rgb(c[0], 1 - amount * (1 - c[1]), c[2])
 
     axis_labels = {
         "distance" : "Distance (Å)",
@@ -540,7 +558,6 @@ def plot_probability_densities(self, analysis_name, plot_minima : bool = True, p
             'measures' : 'k'
         }
 
-
     # Check if plotting as plotter or as class' method
     if analysis_name == None:
         analysis_obj = self
@@ -553,8 +570,8 @@ def plot_probability_densities(self, analysis_name, plot_minima : bool = True, p
 
     if isinstance(set_names_in_axis, bool):
         if set_names_in_axis:
-            x_axis = analysis_obj["options"]["selection_names"][0] + ' ' + axis_labels[analysis_obj.options["measure_types"][0]]
-            y_axis = analysis_obj["options"]["selection_names"][1] + ' ' + axis_labels[analysis_obj.options["measure_types"][1]]
+            x_axis = analysis_obj.options["selection_names"][0] + ' ' + axis_labels[analysis_obj.options["measure_types"][0]]
+            y_axis = analysis_obj.options["selection_names"][1] + ' ' + axis_labels[analysis_obj.options["measure_types"][1]]
 
         else :
             x_axis = axis_labels[analysis_obj.options["measure_types"][0]]
@@ -568,6 +585,13 @@ def plot_probability_densities(self, analysis_name, plot_minima : bool = True, p
     variants = len(analysis_obj.result)
 
     max_replicas = max([ len(analysis_obj.result[variant]) for variant in list(analysis_obj.result) ])
+
+    if self.analyses[analysis_name].options['merge_replicas']:
+        gray_scale = 1/max_replicas
+        
+        max_replicas = 1
+
+
 
     #fig, axs = plt.subplots(ncols=variants, nrows=max_replicas, sharey=same_y, sharex=same_x) --> axs[r_num, v_num]
     # plotting replicas in X axis and variant in Y axis
@@ -595,17 +619,25 @@ def plot_probability_densities(self, analysis_name, plot_minima : bool = True, p
             np.array(analysis_obj.result[variant][replica]['lscape'])[:,4],
             levels = levels_fill, cmap=color_map)
         
-        if plot_measures:
-            axs.scatter(
-                self.measures[analysis_obj.measure_name[0]].result[variant][replica],
-                self.measures[analysis_obj.measure_name[1]].result[variant][replica],
-                color=scatter_colors['measures'])
-
         if plot_minima:
             axs.scatter(
                 np.array(analysis_obj.result[variant][replica]['mins'])[:,1],
                 np.array(analysis_obj.result[variant][replica]['mins'])[:,2],
                 color=scatter_colors['minima'])
+
+        if plot_measures:
+            if self.analyses[analysis_name].options['merge_replicas']:
+                for r_num, replica in enumerate(list(analysis_obj.result[variant].keys())):
+                    axs.scatter(
+                        self.measures[analysis_obj.measure_name[0]].result[variant][replica],
+                        self.measures[analysis_obj.measure_name[1]].result[variant][replica],
+                        color=lighten_color('black', amount=(1-r_num*gray_scale)))
+
+            else :
+                axs.scatter(
+                    self.measures[analysis_obj.measure_name[0]].result[variant][replica],
+                    self.measures[analysis_obj.measure_name[1]].result[variant][replica],
+                    color=scatter_colors['measures'])
                         
         axs.set_xlabel(x_axis)
         axs.set_ylabel(y_axis)
@@ -651,7 +683,10 @@ def plot_probability_densities(self, analysis_name, plot_minima : bool = True, p
                     if v_num == variants-1 or axis_label_everywhere:
                         axs[r_num].set_xlabel(x_axis)
                         
-                    axs[r_num].set_title(f"{variant}, {replica}")  
+                    if self.analyses[analysis_name].options['merge_replicas']:
+                        axs[r_num].set_title(f"{variant}")
+                    else :
+                        axs[r_num].set_title(f"{variant}, {replica}")  
 
                     if colorbar_everywhere:
                         cbar = fig.colorbar(cntr, ax=axs[r_num], extend='max')
@@ -676,19 +711,28 @@ def plot_probability_densities(self, analysis_name, plot_minima : bool = True, p
                         axs[v_num, r_num].scatter(
                             np.array(analysis_obj.result[variant][replica]['mins'])[:,1],
                             np.array(analysis_obj.result[variant][replica]['mins'])[:,2],
-                            color='k')
+                            color=scatter_colors['minima'])
                         
+                    if plot_measures:
+                        if self.analyses[analysis_name].options['merge_replicas']:
+                            for r_num, replica in enumerate(list(analysis_obj.result[variant].keys())):
+                                axs.scatter(
+                                self.measures[analysis_obj.measure_name[0]].result[variant][replica],
+                                self.measures[analysis_obj.measure_name[1]].result[variant][replica],
+                                color=lighten_color('black', amount=(1-r_num*gray_scale)))
+
+                        else :
+                            axs[v_num, r_num].scatter(
+                                self.measures[analysis_obj.measure_name[0]].result[variant][replica],
+                                self.measures[analysis_obj.measure_name[1]].result[variant][replica],
+                                color=scatter_colors['measures'])
+
                     if plot_measures:
                         axs[v_num, r_num].scatter(
                             self.measures[analysis_obj.measure_name[0]].result[variant][replica],
                             self.measures[analysis_obj.measure_name[1]].result[variant][replica],
                             color=scatter_colors['measures'])
-
-                    if plot_minima:
-                        axs[v_num, r_num].scatter(
-                            np.array(analysis_obj.result[variant][replica]['mins'])[:,1],
-                            np.array(analysis_obj.result[variant][replica]['mins'])[:,2],
-                            color=scatter_colors['minima'])
+                        
  
                     if r_num == 0 or axis_label_everywhere:
                         axs[v_num, r_num].set_ylabel(y_axis)
@@ -700,7 +744,12 @@ def plot_probability_densities(self, analysis_name, plot_minima : bool = True, p
                         cbar = fig.colorbar(cntr, ax=axs[v_num, r_num], extend='max')
                         cbar.set_label('E/RT')
                     
-                    axs[v_num, r_num].set_title(f"{variant}, {replica}")
+                    if self.analyses[analysis_name].options['merge_replicas']:
+                        axs[v_num, r_num].set_title(f"{variant}")
+                    else :
+                        axs[v_num, r_num].set_title(f"{variant}, {replica}")
+
+
 
 
 
