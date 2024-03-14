@@ -397,7 +397,6 @@ def analyse_NACs(self, name, analyses : list, invert : list = False):
 
 
     results = get_dictionary_structure(self.analyses[analyses[0]].result, []) 
-    print(results)
     for variant in list(self.analyses[analyses[0]].result.keys()):
         for replica in list(self.analyses[analyses[0]].result[variant].keys()):
             #result_ = True
@@ -406,7 +405,6 @@ def analyse_NACs(self, name, analyses : list, invert : list = False):
                 for analysis in analyses:
                     # check if analysis name is false or different
                     if invert == False:
-                        print(frame, self.analyses[analysis].result[variant][replica][frame])
                         result_ = result_ and self.analyses[analysis].result[variant][replica][frame]
                     
                     else :
@@ -416,7 +414,6 @@ def analyse_NACs(self, name, analyses : list, invert : list = False):
                         elif analysis in invert:
                             result_ = result_ and not self.analyses[analysis].result[variant][replica][frame]
                     
-                print('combined', frame, result_)
                 results[variant][replica].append(result_)
                     
 
