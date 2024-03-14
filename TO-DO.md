@@ -12,6 +12,12 @@
 - [ ] Add more formats to frame exporter.
 - [ ] Add multivariant/multireplica to exporters.
 
+- [ ] Add clusterisation of MDs
+
+- [ ] Add plot measures from frames as scatter in PDF plots
+- [ ] 3D plots for PDF
+- [ ] 2D plots for PDF that compare X/Y with depth.
+- [ ] Find how to plot PDFs without tri
 
 ## PER SECTION
 ### CONTACTS/PROTEIN_CONTACTS
