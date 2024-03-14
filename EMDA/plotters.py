@@ -503,7 +503,7 @@ def plot_contacts_frequency(
 
 
 
-def plot_probability_densities(self, analysis_name, plot_minima : bool = True,same_y : bool = True, same_x : bool = True, axis_label_everywhere : bool = False, colorbar_everywhere : bool = True, width_per_replica : float = 4, height_per_variant : float = 4, color_map='RdBu_r', set_names_in_axis = False, out_name=False):
+def plot_probability_densities(self, analysis_name, plot_minima : bool = True, plot_measures : bool = True, same_y : bool = True, same_x : bool = True, axis_label_everywhere : bool = False, colorbar_everywhere : bool = True, width_per_replica : float = 4, height_per_variant : float = 4, color_map='RdBu_r', show_contour_lines : bool = True, set_names_in_axis = False,  levels_lines : int = 25, levels_fill : int = 25, out_name=False):
     """
     DESCRIPTION:
         Plotter for probability density maps.
@@ -523,6 +523,23 @@ def plot_probability_densities(self, analysis_name, plot_minima : bool = True,sa
         "dihedral" : "Dihedral angle (°)",
         "contacts_amount": "Number of contacts"
     }
+
+    if plot_minima and plot_measures:
+        scatter_colors = {
+            'minima'   : 'w',
+            'measures' : 'k'
+        }
+
+    elif plot_minima and not plot_measures:
+        scatter_colors = {
+            'minima'   : 'k',
+        }
+    
+    elif not plot_minima and plot_measures:
+        scatter_colors = {
+            'measures' : 'k'
+        }
+
 
     # Check if plotting as plotter or as class' method
     if analysis_name == None:
@@ -566,27 +583,34 @@ def plot_probability_densities(self, analysis_name, plot_minima : bool = True,sa
         variant = list(analysis_obj.result.keys())[0]
         replica = list(analysis_obj.result[variant].keys())[0]
 
-        axs.tricontour(
-            np.array(analysis_obj.result[variant][replica]['lscape'])[:,0],
-            np.array(analysis_obj.result[variant][replica]['lscape'])[:,1],
-            np.array(analysis_obj.result[variant][replica]['lscape'])[:,4],
-            levels = 25, linewidths=0.5, colors='k')
+        if show_contour_lines:
+            axs.tricontour(
+                np.array(analysis_obj.result[variant][replica]['lscape'])[:,0],
+                np.array(analysis_obj.result[variant][replica]['lscape'])[:,1],
+                np.array(analysis_obj.result[variant][replica]['lscape'])[:,4],
+                levels = levels_lines, linewidths=0.5, colors='k')
         cntr = axs.tricontourf(
             np.array(analysis_obj.result[variant][replica]['lscape'])[:,0],
             np.array(analysis_obj.result[variant][replica]['lscape'])[:,1],
             np.array(analysis_obj.result[variant][replica]['lscape'])[:,4],
-            levels = 25, cmap=color_map)
+            levels = levels_fill, cmap=color_map)
         
+        if plot_measures:
+            axs.scatter(
+                self.measures[analysis_obj.measure_name[0]].result[variant][replica],
+                self.measures[analysis_obj.measure_name[1]].result[variant][replica],
+                color=scatter_colors['measures'])
+
         if plot_minima:
             axs.scatter(
                 np.array(analysis_obj.result[variant][replica]['mins'])[:,1],
                 np.array(analysis_obj.result[variant][replica]['mins'])[:,2],
-                color='k')
-
+                color=scatter_colors['minima'])
+                        
         axs.set_xlabel(x_axis)
         axs.set_ylabel(y_axis)
 
-        cbar = fig.colorbar(cntr, ax=axs)
+        cbar = fig.colorbar(cntr, ax=axs, extend='max')
         cbar.set_label('E/RT')
 
     else :
@@ -597,22 +621,29 @@ def plot_probability_densities(self, analysis_name, plot_minima : bool = True,sa
         for v_num, variant in enumerate(list(analysis_obj.result.keys())):
             for r_num, replica in enumerate(list(analysis_obj.result[variant].keys())):
                 if variants == 1:
-                    axs[r_num].tricontour(
-                        np.array(analysis_obj.result[variant][replica]['lscape'])[:,0],
-                        np.array(analysis_obj.result[variant][replica]['lscape'])[:,1],
-                        np.array(analysis_obj.result[variant][replica]['lscape'])[:,4],
-                        levels = 25, linewidths=0.5, colors='k')
+                    if show_contour_lines:
+                        axs[r_num].tricontour(
+                            np.array(analysis_obj.result[variant][replica]['lscape'])[:,0],
+                            np.array(analysis_obj.result[variant][replica]['lscape'])[:,1],
+                            np.array(analysis_obj.result[variant][replica]['lscape'])[:,4],
+                            levels = levels_lines, linewidths=0.5, colors='k')
                     cntr = axs[r_num].tricontourf(
                         np.array(analysis_obj.result[variant][replica]['lscape'])[:,0],
                         np.array(analysis_obj.result[variant][replica]['lscape'])[:,1],
                         np.array(analysis_obj.result[variant][replica]['lscape'])[:,4],
-                        levels = 25, cmap=color_map)
+                        levels = levels_fill, cmap=color_map)
                     
+                    if plot_measures:
+                        axs[r_num].scatter(
+                            self.measures[analysis_obj.measure_name[0]].result[variant][replica],
+                            self.measures[analysis_obj.measure_name[1]].result[variant][replica],
+                            color=scatter_colors['measures'])
+
                     if plot_minima:
                         axs[r_num].scatter(
                             np.array(analysis_obj.result[variant][replica]['mins'])[:,1],
                             np.array(analysis_obj.result[variant][replica]['mins'])[:,2],
-                            color='k')
+                            color=scatter_colors['minima'])
 
                     if r_num == 0 or axis_label_everywhere:
                         axs[r_num].set_ylabel(y_axis)
@@ -623,27 +654,41 @@ def plot_probability_densities(self, analysis_name, plot_minima : bool = True,sa
                     axs[r_num].set_title(f"{variant}, {replica}")  
 
                     if colorbar_everywhere:
-                        cbar = fig.colorbar(cntr, ax=axs[r_num])
+                        cbar = fig.colorbar(cntr, ax=axs[r_num], extend='max')
                         cbar.set_label('E/RT')
 
 
                 else :
-                    axs[v_num, r_num].tricontour(
-                        np.array(analysis_obj.result[variant][replica]['lscape'])[:,0],
-                        np.array(analysis_obj.result[variant][replica]['lscape'])[:,1],
-                        np.array(analysis_obj.result[variant][replica]['lscape'])[:,4],
-                        levels = 25, linewidths=0.5, colors='k')
+                    if show_contour_lines:
+                        axs[v_num, r_num].tricontour(
+                            np.array(analysis_obj.result[variant][replica]['lscape'])[:,0],
+                            np.array(analysis_obj.result[variant][replica]['lscape'])[:,1],
+                            np.array(analysis_obj.result[variant][replica]['lscape'])[:,4],
+                            levels = levels_lines, linewidths=0.5, colors='k')
+                        
                     cntr = axs[v_num, r_num].tricontourf(
                         np.array(analysis_obj.result[variant][replica]['lscape'])[:,0],
                         np.array(analysis_obj.result[variant][replica]['lscape'])[:,1],
                         np.array(analysis_obj.result[variant][replica]['lscape'])[:,4],
-                        levels = 25, cmap=color_map)
+                        levels = levels_fill, cmap=color_map)
                     
                     if plot_minima:
                         axs[v_num, r_num].scatter(
                             np.array(analysis_obj.result[variant][replica]['mins'])[:,1],
                             np.array(analysis_obj.result[variant][replica]['mins'])[:,2],
                             color='k')
+                        
+                    if plot_measures:
+                        axs[v_num, r_num].scatter(
+                            self.measures[analysis_obj.measure_name[0]].result[variant][replica],
+                            self.measures[analysis_obj.measure_name[1]].result[variant][replica],
+                            color=scatter_colors['measures'])
+
+                    if plot_minima:
+                        axs[v_num, r_num].scatter(
+                            np.array(analysis_obj.result[variant][replica]['mins'])[:,1],
+                            np.array(analysis_obj.result[variant][replica]['mins'])[:,2],
+                            color=scatter_colors['minima'])
  
                     if r_num == 0 or axis_label_everywhere:
                         axs[v_num, r_num].set_ylabel(y_axis)
@@ -652,7 +697,7 @@ def plot_probability_densities(self, analysis_name, plot_minima : bool = True,sa
                         axs[v_num, r_num].set_xlabel(x_axis)
                     
                     if colorbar_everywhere:
-                        cbar = fig.colorbar(cntr, ax=axs[v_num, r_num])
+                        cbar = fig.colorbar(cntr, ax=axs[v_num, r_num], extend='max')
                         cbar.set_label('E/RT')
                     
                     axs[v_num, r_num].set_title(f"{variant}, {replica}")
@@ -660,7 +705,7 @@ def plot_probability_densities(self, analysis_name, plot_minima : bool = True,sa
 
 
     if not colorbar_everywhere:
-        cbar = fig.colorbar(cntr)
+        cbar = fig.colorbar(cntr, ax=axs[v_num, r_num], extend='max')
         cbar.set_label('E/RT')
 
     if analysis_name == None:
