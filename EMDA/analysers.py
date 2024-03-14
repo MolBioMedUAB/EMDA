@@ -426,7 +426,7 @@ def analyse_NACs(self, name, analyses : list, invert : list = False):
     )
 
 
-def analyse_probability_density(self, name, measures, bw_method = 'scott', get_basins : bool = True, num_of_points = None, print_results : bool = False):
+def analyse_probability_density(self, name, measures, bw_method = 'scott', get_basins : bool = True, num_of_points = None, merge_replicas : bool = True, print_results : bool = False):
     """
     DESCRIPTION:
         Analyser for getting the probability map for a certain event (distance, for instance).
@@ -669,15 +669,34 @@ def analyse_probability_density(self, name, measures, bw_method = 'scott', get_b
     result_ = get_dictionary_structure(self.measures[measures[0]].result, {'lscape' : [], 'data' : [], 'mins' : []})
     #datas   = get_dictionary_structure(self.measures[measures[0]].result, [])
     #mins    = get_dictionary_structure(self.measures[measures[0]].result, [])
-    for variant in list(self.measures[measures[0]].result.keys()):
-        for replica in list(self.measures[measures[0]].result[variant].keys()):
+
+    if merge_replicas:
+        for variant in list(self.measures[measures[0]].result.keys()):
+            measure1, measure2 = [], []
+            
+            for replica in list(self.measures[measures[0]].result[variant].keys()):
+                measure1 += self.measures[measures[0]].result[variant][replica]
+                measure2 += self.measures[measures[1]].result[variant][replica]
+
+            replica = "R1"
             result_[variant][replica]['lscape'], result_[variant][replica]['data'], result_[variant][replica]['mins'] = run(
-                measure1=self.measures[measures[0]].result[variant][replica],
-                measure2=self.measures[measures[1]].result[variant][replica],
-                bw_method='scott',
-                get_basins=get_basins,
-                num_of_points=num_of_points,
-            )
+                    measure1=measure1,
+                    measure2=measure2,
+                    bw_method='scott',
+                    get_basins=get_basins,
+                    num_of_points=num_of_points,
+                )
+
+    elif not merge_replicas:
+        for variant in list(self.measures[measures[0]].result.keys()):
+            for replica in list(self.measures[measures[0]].result[variant].keys()):
+                result_[variant][replica]['lscape'], result_[variant][replica]['data'], result_[variant][replica]['mins'] = run(
+                    measure1=self.measures[measures[0]].result[variant][replica],
+                    measure2=self.measures[measures[1]].result[variant][replica],
+                    bw_method='scott',
+                    get_basins=get_basins,
+                    num_of_points=num_of_points,
+                )
 
     self.analyses[name] = self.Analysis(
         name=name,
@@ -689,6 +708,7 @@ def analyse_probability_density(self, name, measures, bw_method = 'scott', get_b
             "get_basins"        : get_basins,
             "num_of_points"     : num_of_points,
             "measure_types"     : [self.measures[measures[0]].type, self.measures[measures[1]].type],
-            "selection_names"   : [','.join(self.measures[measures[0]].sel), ','.join(self.measures[measures[1]].sel)]
+            "selection_names"   : [','.join(self.measures[measures[0]].sel), ','.join(self.measures[measures[1]].sel)],
+            "merge_replicas"    : merge_replicas
         }
     )
