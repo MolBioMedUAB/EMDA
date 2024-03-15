@@ -613,94 +613,129 @@ def plot_probability_densities(self, analysis_name, plot_minima : bool = True, p
         cbar = fig.colorbar(cntr, ax=axs, extend='max')
         cbar.set_label('E/RT')
 
-    else :
-        # If there's only one replica, treat it as merged
-        if max_replicas == 1:
-            combine_replicas = True
+
+    elif variants == 1:
+
+        for r_num, replica in enumerate(list(analysis_obj.result[variant].keys())):
+            if show_contour_lines:
+                axs[r_num].tricontour(
+                    np.array(analysis_obj.result[variant][replica]['lscape'])[:,0],
+                    np.array(analysis_obj.result[variant][replica]['lscape'])[:,1],
+                    np.array(analysis_obj.result[variant][replica]['lscape'])[:,4],
+                    levels = levels_lines, linewidths=0.5, colors='k')
+            cntr = axs[r_num].tricontourf(
+                np.array(analysis_obj.result[variant][replica]['lscape'])[:,0],
+                np.array(analysis_obj.result[variant][replica]['lscape'])[:,1],
+                np.array(analysis_obj.result[variant][replica]['lscape'])[:,4],
+                levels = levels_fill, cmap=color_map)
+            
+            if plot_measures:
+                axs[r_num].scatter(
+                    self.measures[analysis_obj.measure_name[0]].result[variant][replica],
+                    self.measures[analysis_obj.measure_name[1]].result[variant][replica],
+                    color=scatter_colors['measures'])
+
+            if plot_minima:
+                axs[r_num].scatter(
+                    np.array(analysis_obj.result[variant][replica]['mins'])[:,1],
+                    np.array(analysis_obj.result[variant][replica]['mins'])[:,2],
+                    color=scatter_colors['minima'])
+
+            if r_num == 0 or axis_label_everywhere:
+                axs[r_num].set_ylabel(y_axis)
+
+            if v_num == variants-1 or axis_label_everywhere:
+                axs[r_num].set_xlabel(x_axis)
+                
+            axs[r_num].set_title(f"{variant}, {replica}")  
+
+            if colorbar_everywhere:
+                cbar = fig.colorbar(cntr, ax=axs[r_num], extend='max')
+                cbar.set_label('E/RT')
+
+
+    elif max_replicas == 1:
+        r_num, replica = 0, 'R1'
 
         for v_num, variant in enumerate(list(analysis_obj.result.keys())):
+            if show_contour_lines:
+                axs[v_num].tricontour(
+                    np.array(analysis_obj.result[variant][replica]['lscape'])[:,0],
+                    np.array(analysis_obj.result[variant][replica]['lscape'])[:,1],
+                    np.array(analysis_obj.result[variant][replica]['lscape'])[:,4],
+                    levels = levels_lines, linewidths=0.5, colors='k')
+            cntr = axs[v_num].tricontourf(
+                np.array(analysis_obj.result[variant][replica]['lscape'])[:,0],
+                np.array(analysis_obj.result[variant][replica]['lscape'])[:,1],
+                np.array(analysis_obj.result[variant][replica]['lscape'])[:,4],
+                levels = levels_fill, cmap=color_map)
+            
+            if plot_measures:
+                axs[v_num].scatter(
+                    self.measures[analysis_obj.measure_name[0]].result[variant][replica],
+                    self.measures[analysis_obj.measure_name[1]].result[variant][replica],
+                    color=scatter_colors['measures'])
+
+            if plot_minima:
+                axs[v_num].scatter(
+                    np.array(analysis_obj.result[variant][replica]['mins'])[:,1],
+                    np.array(analysis_obj.result[variant][replica]['mins'])[:,2],
+                    color=scatter_colors['minima'])
+
+            if r_num == 0 or axis_label_everywhere:
+                axs[v_num].set_ylabel(y_axis)
+
+            if v_num == variants-1 or axis_label_everywhere:
+                axs[v_num].set_xlabel(x_axis)
+                
+            axs[v_num].set_title(f"{variant}, {replica}")  
+
+            if colorbar_everywhere:
+                cbar = fig.colorbar(cntr, ax=axs[v_num], extend='max')
+                cbar.set_label('E/RT')
+
+
+
+
+    else :
+        for v_num, variant in enumerate(list(analysis_obj.result.keys())):
             for r_num, replica in enumerate(list(analysis_obj.result[variant].keys())):
-                if variants == 1:
-                    if show_contour_lines:
-                        axs[r_num].tricontour(
-                            np.array(analysis_obj.result[variant][replica]['lscape'])[:,0],
-                            np.array(analysis_obj.result[variant][replica]['lscape'])[:,1],
-                            np.array(analysis_obj.result[variant][replica]['lscape'])[:,4],
-                            levels = levels_lines, linewidths=0.5, colors='k')
-                    cntr = axs[r_num].tricontourf(
+                if show_contour_lines:
+                    axs[v_num, r_num].tricontour(
                         np.array(analysis_obj.result[variant][replica]['lscape'])[:,0],
                         np.array(analysis_obj.result[variant][replica]['lscape'])[:,1],
                         np.array(analysis_obj.result[variant][replica]['lscape'])[:,4],
-                        levels = levels_fill, cmap=color_map)
+                        levels = levels_lines, linewidths=0.5, colors='k')
                     
-                    if plot_measures:
-                        axs[r_num].scatter(
-                            self.measures[analysis_obj.measure_name[0]].result[variant][replica],
-                            self.measures[analysis_obj.measure_name[1]].result[variant][replica],
-                            color=scatter_colors['measures'])
-
-                    if plot_minima:
-                        axs[r_num].scatter(
-                            np.array(analysis_obj.result[variant][replica]['mins'])[:,1],
-                            np.array(analysis_obj.result[variant][replica]['mins'])[:,2],
-                            color=scatter_colors['minima'])
-
-                    if r_num == 0 or axis_label_everywhere:
-                        axs[r_num].set_ylabel(y_axis)
-
-                    if v_num == variants-1 or axis_label_everywhere:
-                        axs[r_num].set_xlabel(x_axis)
-                        
-                    axs[r_num].set_title(f"{variant}, {replica}")  
-
-                    if colorbar_everywhere:
-                        cbar = fig.colorbar(cntr, ax=axs[r_num], extend='max')
-                        cbar.set_label('E/RT')
-
-
-                else :
-                    if show_contour_lines:
-                        axs[v_num, r_num].tricontour(
-                            np.array(analysis_obj.result[variant][replica]['lscape'])[:,0],
-                            np.array(analysis_obj.result[variant][replica]['lscape'])[:,1],
-                            np.array(analysis_obj.result[variant][replica]['lscape'])[:,4],
-                            levels = levels_lines, linewidths=0.5, colors='k')
-                        
-                    cntr = axs[v_num, r_num].tricontourf(
-                        np.array(analysis_obj.result[variant][replica]['lscape'])[:,0],
-                        np.array(analysis_obj.result[variant][replica]['lscape'])[:,1],
-                        np.array(analysis_obj.result[variant][replica]['lscape'])[:,4],
-                        levels = levels_fill, cmap=color_map)
+                cntr = axs[v_num, r_num].tricontourf(
+                    np.array(analysis_obj.result[variant][replica]['lscape'])[:,0],
+                    np.array(analysis_obj.result[variant][replica]['lscape'])[:,1],
+                    np.array(analysis_obj.result[variant][replica]['lscape'])[:,4],
+                    levels = levels_fill, cmap=color_map)
                     
-                    if plot_minima:
-                        axs[v_num, r_num].scatter(
-                            np.array(analysis_obj.result[variant][replica]['mins'])[:,1],
-                            np.array(analysis_obj.result[variant][replica]['mins'])[:,2],
-                            color='k')
-                        
-                    if plot_measures:
-                        axs[v_num, r_num].scatter(
-                            self.measures[analysis_obj.measure_name[0]].result[variant][replica],
-                            self.measures[analysis_obj.measure_name[1]].result[variant][replica],
-                            color=scatter_colors['measures'])
+                if plot_measures:
+                    axs[v_num, r_num].scatter(
+                        self.measures[analysis_obj.measure_name[0]].result[variant][replica],
+                        self.measures[analysis_obj.measure_name[1]].result[variant][replica],
+                        color=scatter_colors['measures'])
 
-                    if plot_minima:
-                        axs[v_num, r_num].scatter(
-                            np.array(analysis_obj.result[variant][replica]['mins'])[:,1],
-                            np.array(analysis_obj.result[variant][replica]['mins'])[:,2],
-                            color=scatter_colors['minima'])
- 
-                    if r_num == 0 or axis_label_everywhere:
-                        axs[v_num, r_num].set_ylabel(y_axis)
-                    
-                    if v_num == variants-1 or axis_label_everywhere:
-                        axs[v_num, r_num].set_xlabel(x_axis)
-                    
-                    if colorbar_everywhere:
-                        cbar = fig.colorbar(cntr, ax=axs[v_num, r_num], extend='max')
-                        cbar.set_label('E/RT')
-                    
-                    axs[v_num, r_num].set_title(f"{variant}, {replica}")
+                if plot_minima:
+                    axs[v_num, r_num].scatter(
+                        np.array(analysis_obj.result[variant][replica]['mins'])[:,1],
+                        np.array(analysis_obj.result[variant][replica]['mins'])[:,2],
+                        color=scatter_colors['minima'])
+
+                if r_num == 0 or axis_label_everywhere:
+                    axs[v_num, r_num].set_ylabel(y_axis)
+                
+                if v_num == variants-1 or axis_label_everywhere:
+                    axs[v_num, r_num].set_xlabel(x_axis)
+                
+                if colorbar_everywhere:
+                    cbar = fig.colorbar(cntr, ax=axs[v_num, r_num], extend='max')
+                    cbar.set_label('E/RT')
+                
+                axs[v_num, r_num].set_title(f"{variant}, {replica}")
 
 
 
