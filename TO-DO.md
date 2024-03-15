@@ -13,15 +13,18 @@
 - [ ] Add multivariant/multireplica to exporters.
 
 - [ ] Add clusterisation of MDs
+- [ ] Add fusion of replicas
 
 - [ ] Add plot measures from frames as scatter in PDF plots
 - [ ] 3D plots for PDF
 - [ ] 2D plots for PDF that compare X/Y with depth.
 - [ ] Find how to plot PDFs without tri
+- [ ] Make scatter dot size customisable
+- [ ] Add merged replicas to multivariant including coloring for scatters in different replicas
 
 ## PER SECTION
 ### CONTACTS/PROTEIN_CONTACTS
-- [ ] Add the possibility to give a selection instead of the whole protein. It has to have more than one residue.
+
 - [ ] Add other options besides distances to be calculated between conctacting groups such as contacting area, etc.
 
 

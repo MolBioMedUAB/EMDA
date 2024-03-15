@@ -10,8 +10,8 @@ from dataclasses import dataclass, field
 from MDAnalysis import Universe
 
 from MDAnalysis.transformations.nojump import NoJump
-#from MDAnalysis.transformations.wrap import unwrap as Unwrap
-#from MDAnalysis.transformations.wrap import wrap as Wrap
+from MDAnalysis.transformations.wrap import unwrap as mda_unwrap
+#from MDAnalysis.transformations.wrap import wrap as mda_wrap
 
 # load internal EMDA classes and functions
 from .selection import parse_selection, check_selection
@@ -29,7 +29,7 @@ from .exceptions import EmptyMeasuresError, NotAvailableVariantError, NotCompati
 # Define EMDA class
 class EMDA:
 
-    def __init__(self, parameters, trajectory=None, variant_name=None, load_in_memory : bool = False, fix_jump : bool = False):#, unwrap : bool = False, wrap : bool = False):
+    def __init__(self, parameters, trajectory=None, variant_name=None, load_in_memory : bool = False, guess_bonds : bool = False, fix_jump : bool = False, unwrap : bool = False):#, wrap : bool = False):
         """
         DESCRIPTION:
             Function to initialise the EMDA class by loading the parameters and trajectory as a MDAnalysis universe and loading adders, analysers and plotters as internal methods.
@@ -102,6 +102,8 @@ class EMDA:
         # set load_in_memory attr
         self.__load_in_memory = load_in_memory
 
+        self.__unwrap = unwrap
+        self.__guess_bonds = guess_bonds
 
         # Check variant's name and give it if None
         if variant_name == None:
@@ -110,7 +112,7 @@ class EMDA:
         # Load the first variant and replica
         if isinstance(parameters, str) and trajectory == None:
             self.universe = { variant_name : 
-                                { "R1" : Universe(parameters, in_memory=self.__load_in_memory, transformations=deepcopy(self.__transformations) ) }
+                                { "R1" : Universe(parameters, in_memory=self.__load_in_memory, transformations=deepcopy(self.__transformations), all_coordinates=True, guess_bonds=guess_bonds) }
                             }
 
             self.parameters = { variant_name : parameters } 
@@ -119,11 +121,16 @@ class EMDA:
 
         elif isinstance(parameters, str) and isinstance(trajectory, (str, list)):
             self.universe = { variant_name : 
-                             { "R1" : Universe(parameters, trajectory, in_memory=self.__load_in_memory, transformations=deepcopy(self.__transformations)) }
+                             { "R1" : Universe(parameters, trajectory, in_memory=self.__load_in_memory, transformations=deepcopy(self.__transformations), guess_bonds=guess_bonds) }
                             }
             self.parameters = { variant_name : parameters } 
             self.__variants = 1
             self.__replicas = 1
+
+        if unwrap:
+            ag = self.universe[variant_name]["R1"]
+            transform = mda_unwrap(ag.atoms)
+            self.universe[variant_name]["R1"].trajectory.add_transformations(transform)
         
         print("Trajectory has been loaded!")
 
@@ -265,6 +272,12 @@ class EMDA:
 
             else :
                 raise NotCompatibleAnalysisForPlotterError
+            
+    def unwrapping(self, variant, replica):
+
+        ag = self.universe[variant][replica]
+        transform = mda_unwrap(ag.atoms)
+        self.universe[variant][replica].trajectory.add_transformations(transform)
 
 
     # create load_variant method
@@ -284,12 +297,15 @@ class EMDA:
         else :
             new_variant = variant_name
 
-        self.universe[new_variant]   = {"R1" : Universe(parameters, trajectory, in_memory=self.__load_in_memory, transformations=deepcopy(self.__transformations))}
+        self.universe[new_variant]   = {"R1" : Universe(parameters, trajectory, in_memory=self.__load_in_memory, transformations=deepcopy(self.__transformations), guess_bonds=self.__guess_bonds)}
         self.parameters[new_variant] = parameters
 
         # Adds new variant and replica to existing measures
         for measure in list(self.measures.keys()):
                 self.measures[measure].result[new_variant] = {"R1" : []}
+
+        if self.__unwrap:
+            self.unwrapping(variant=new_variant, replica="R1")
 
         print(f"{new_variant} variant has been loaded!")
 
@@ -311,11 +327,14 @@ class EMDA:
         # load new replica and name it as R + last_repllica_number+1
         new_replica = int(max(list(self.universe[variant_name].keys()))[1:]) + 1
 
-        self.universe[variant_name][f"R{new_replica}"] = Universe(self.parameters[variant_name], trajectory, in_memory=self.__load_in_memory, transformations=deepcopy(self.__transformations))
+        self.universe[variant_name][f"R{new_replica}"] = Universe(self.parameters[variant_name], trajectory, in_memory=self.__load_in_memory, transformations=deepcopy(self.__transformations), guess_bonds=self.__guess_bonds)
 
         # Adds new variant and replica to existing measures
         for measure in list(self.measures.keys()):
             self.measures[measure].result[variant_name][f"R{new_replica}"] = []
+
+        if self.__unwrap:
+            self.unwrapping(variant=variant_name, replica=f"R{new_replica}")
         
         print(f"A new replica has been loaded to variant {variant_name}!")
 
