@@ -310,7 +310,7 @@ class EMDA:
         print(f"{new_variant} variant has been loaded!")
 
     # create load_trajectory method
-    def load_trajectory(self, trajectory, variant_name='last'):
+    def load_replica(self, trajectory, parameters=None, variant_name='last'):
         """
         DESCRIPTION:
             Method that allows adding one more replica to a pre-existing variant in th EMDA class.
@@ -327,7 +327,10 @@ class EMDA:
         # load new replica and name it as R + last_repllica_number+1
         new_replica = int(max(list(self.universe[variant_name].keys()))[1:]) + 1
 
-        self.universe[variant_name][f"R{new_replica}"] = Universe(self.parameters[variant_name], trajectory, in_memory=self.__load_in_memory, transformations=deepcopy(self.__transformations), guess_bonds=self.__guess_bonds)
+        if parameters == None:
+            self.universe[variant_name][f"R{new_replica}"] = Universe(self.parameters[variant_name], trajectory, in_memory=self.__load_in_memory, transformations=deepcopy(self.__transformations), guess_bonds=self.__guess_bonds)
+        else :
+            self.universe[variant_name][f"R{new_replica}"] = Universe(parameters, trajectory, in_memory=self.__load_in_memory, transformations=deepcopy(self.__transformations), guess_bonds=self.__guess_bonds)
 
         # Adds new variant and replica to existing measures
         for measure in list(self.measures.keys()):
