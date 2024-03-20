@@ -18,9 +18,9 @@
 - [ ] Add plot measures from frames as scatter in PDF plots
 - [ ] 3D plots for PDF
 - [ ] 2D plots for PDF that compare X/Y with depth.
-- [ ] Find how to plot PDFs without tri
-- [ ] Make scatter dot size customisable
-- [ ] Add merged replicas to multivariant including coloring for scatters in different replicas
+- [ ] ~~Find how to plot PDFs without tri~~
+- [X] Make scatter dot size customisable
+- [X] Add merged replicas to multivariant including coloring for scatters in different replicas
 
 ## PER SECTION
 ### CONTACTS/PROTEIN_CONTACTS
