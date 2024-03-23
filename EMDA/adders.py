@@ -479,6 +479,10 @@ def add_RMSD(self, name, sel, ref=0, center : bool = True, superposition : bool 
             for replica in list(self.universe[variant].keys()):
                 self.universe[variant][replica].trajectory[ref]
                 refs[variant][replica] = self.universe[variant][replica].select_atoms(self.selections[sel]).positions.copy()
+
+    else :
+        refs = get_dictionary_structure(self.universe, ref)
+
     
 
     self.measures[name] = self.Measure(
