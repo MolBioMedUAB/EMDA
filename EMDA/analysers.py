@@ -435,10 +435,10 @@ def analyse_probability_density(self, name, measures, bw_method = 'scott', get_b
         - measures:     list of two measures to be taken into consideration
         - bw_method:    [ scott | silverman | float ] method to calculate the estimator bandwidth. More info at https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.gaussian_kde.html
         - get_basins:   gets the minima get_density_v4.py script.
-
-    SOURCE:
-        Code from Bruno Victor's
     """
+
+    #SOURCE:
+    #    Code from Bruno Victor
 
     if self.measures[measures[0]].type not in ('distance', 'angle', 'dihedral', 'planar_angle', 'RMSD'):#, 'contacts_amount'):
         raise NotCompatibleMeasureForAnalysisError(measure=measures[0])
