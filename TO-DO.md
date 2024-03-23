@@ -22,6 +22,8 @@
 - [X] Make scatter dot size customisable
 - [X] Add merged replicas to multivariant including coloring for scatters in different replicas
 
+- [ ] Add measures reducer (so a new measure is obtained stepping n measures)
+
 ## PER SECTION
 ### CONTACTS/PROTEIN_CONTACTS
 
