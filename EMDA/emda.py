@@ -45,7 +45,7 @@ class EMDA:
             - fix_jump:         boolean value for treating trajectory issues regarding the fitting of the protein in the solvent box. Useful when the protein's coordinates jump from one 
                                 side of the box to the oposite. In order to make it work properly, the protein should be OK at the first frame of the trajectory.
                                 It activates the use of the MDAnalysis' NoJump transformation class.
-            X- unwrap:           boolean value for treating trajectory issues regarding the fitting of the system in the solvent box. Useful when the system is artifitially fitted in the 
+            - unwrap:           boolean value for treating trajectory issues regarding the fitting of the system in the solvent box. Useful when the system is artifitially fitted in the 
                                 solvent box, so jumps appear. It is similar to the NoJump transformation (activated by setting fix_jump True), but more general.
                                 It activates the use of the MDAnalysis' unwrap transformation class.  Compatible with fix_jump but not with wrap.
             X- wrap:             boolean value for treating trajectory issues regarding the fitting of the system in the solvent box. Useful when the system is not fitted in the solvent box.
@@ -120,8 +120,16 @@ class EMDA:
             self.__replicas = 1
 
         elif isinstance(parameters, str) and isinstance(trajectory, (str, list)):
+            
+            if parameters.endswith('.parm7'):
+                from parmed import load_file
+                parameters_ = load_file(parameters)
+
+            else :
+                parameters_ = parameters
+
             self.universe = { variant_name : 
-                             { "R1" : Universe(parameters, trajectory, in_memory=self.__load_in_memory, transformations=deepcopy(self.__transformations), guess_bonds=guess_bonds) }
+                             { "R1" : Universe(parameters_, trajectory, in_memory=self.__load_in_memory, transformations=deepcopy(self.__transformations), guess_bonds=guess_bonds) }
                             }
             self.parameters = { variant_name : parameters } 
             self.__variants = 1
@@ -297,7 +305,14 @@ class EMDA:
         else :
             new_variant = variant_name
 
-        self.universe[new_variant]   = {"R1" : Universe(parameters, trajectory, in_memory=self.__load_in_memory, transformations=deepcopy(self.__transformations), guess_bonds=self.__guess_bonds)}
+        if parameters.endswith('.parm7'):
+            from parmed import load_file
+            parameters_ = load_file(parameters)
+
+        else :
+            parameters_ = parameters
+
+        self.universe[new_variant]   = {"R1" : Universe(parameters_, trajectory, in_memory=self.__load_in_memory, transformations=deepcopy(self.__transformations), guess_bonds=self.__guess_bonds)}
         self.parameters[new_variant] = parameters
 
         # Adds new variant and replica to existing measures
@@ -328,9 +343,16 @@ class EMDA:
         new_replica = int(max(list(self.universe[variant_name].keys()))[1:]) + 1
 
         if parameters == None:
-            self.universe[variant_name][f"R{new_replica}"] = Universe(self.parameters[variant_name], trajectory, in_memory=self.__load_in_memory, transformations=deepcopy(self.__transformations), guess_bonds=self.__guess_bonds)
+            if self.parameters[variant_name].endswith('.pamr7'):
+                from parmed import load_file
+                parameters_ = load_file(parameters)
+
+            else :
+                parameters_ = self.parameters[variant_name]
         else :
-            self.universe[variant_name][f"R{new_replica}"] = Universe(parameters, trajectory, in_memory=self.__load_in_memory, transformations=deepcopy(self.__transformations), guess_bonds=self.__guess_bonds)
+            parameters_ = parameters
+            
+        self.universe[variant_name][f"R{new_replica}"] = Universe(parameters_, trajectory, in_memory=self.__load_in_memory, transformations=deepcopy(self.__transformations), guess_bonds=self.__guess_bonds)
 
         # Adds new variant and replica to existing measures
         for measure in list(self.measures.keys()):
