@@ -165,7 +165,7 @@ def plot_measure(self, measure_name, same_y : bool = True, same_x : bool = True,
 
 
 
-def plot_NACs(self, analysis_name, merge_replicas=False, percentage=False, error_bar=True, bar_width=0.1, width=None, title=None, out_name=False):
+def plot_NACs(self, analysis_name, merge_replicas=False, percentage=False, error_bar=True, bar_width=0.1, width=None, title=None, out_name=False, sort=True):
     """
     DESCRIPTION:
         Function for plotting NACs (or value-type Analysis) as a bar plot where all the variants are compared
@@ -196,14 +196,21 @@ def plot_NACs(self, analysis_name, merge_replicas=False, percentage=False, error
     # run code if merging replicas
     if merge_replicas:
         max_replicas = max([ len(analysis_obj.result[variant]) for variant in list(analysis_obj.result) ])
+        avgs = {}
         for v_num, variant in enumerate(list(analysis_obj.result.keys())):
             # calculate the avg value for the bar (it height)
             if percentage:
-                avgs = average([analysis_obj.result[variant][replica].count(True)*100/len(analysis_obj.result[variant][replica]) for replica in list(analysis_obj.result[variant].keys())])
+                avgs[variant] = average([analysis_obj.result[variant][replica].count(True)*100/len(analysis_obj.result[variant][replica]) for replica in list(analysis_obj.result[variant].keys())])
             elif not percentage:
-                avgs = average([analysis_obj.result[variant][replica].count(True) for replica in list(analysis_obj.result[variant].keys())])
+                avgs[variant] = average([analysis_obj.result[variant][replica].count(True) for replica in list(analysis_obj.result[variant].keys())])
 
             # plot a bar for each replica
+
+        if sort:
+            import operator
+            avgs = dict(sorted(avgs.items(), key=operator.itemgetter(1), reverse=True))
+            
+        for v_num, variant in enumerate(list(analysis_obj.result.keys())):
             ax.bar(variant, avgs, bar_width*max_replicas, color = f"C{v_num}")
             if error_bar and max_replicas != 1:
                 ax.errorbar(variant, avgs, 
