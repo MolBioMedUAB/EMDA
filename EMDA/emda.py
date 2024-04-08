@@ -271,7 +271,7 @@ class EMDA:
             return self.__str__()
         
         # define plotting method
-        def plot(self, analysis_name=None, merge_replicas=False, percentage=False, error_bar=True, bar_width=None, width=None, errorbar_width=5 , width_per_replica=4, height_per_variant=4, sort=True, add_reference=None, residue_label_rotation=0, title=None, same_y=True, same_x=True, axis_label_everywhere=False, residue_label_rotation=45, out_name=False):
+        def plot(self, analysis_name=None, merge_replicas=False, percentage=False, error_bar=True, bar_width=None, width=None, errorbar_width=5 , width_per_replica=4, height_per_variant=4, sort=True, add_reference=None, residue_label_rotation=0, title=None, same_y=True, same_x=True, axis_label_everywhere=False, out_name=False):
             if self.type in ('value', 'NACs'):
                 if bar_width == None:
                     bar_width = 0.1
