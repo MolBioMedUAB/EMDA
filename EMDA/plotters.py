@@ -209,8 +209,10 @@ def plot_NACs(self, analysis_name, merge_replicas=False, percentage=False, error
         if sort:
             import operator
             avgs = dict(sorted(avgs.items(), key=operator.itemgetter(1), reverse=True))
+
+            print(avgs)
             
-        for v_num, variant in enumerate(list(analysis_obj.result.keys())):
+        for v_num, variant in enumerate(avgs):
             ax.bar(variant, avgs[variant], bar_width*max_replicas, color = f"C{v_num}")
             if error_bar and max_replicas != 1:
                 ax.errorbar(variant, avgs[variant], 
