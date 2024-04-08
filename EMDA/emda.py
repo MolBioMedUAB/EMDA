@@ -271,11 +271,11 @@ class EMDA:
             return self.__str__()
         
         # define plotting method
-        def plot(self, analysis_name=None, merge_replicas=False, percentage=False, error_bar=True, bar_width=None, width=None, errorbar_width=5 , width_per_replica=4, height_per_variant=4, title=None, same_y=True, same_x=True, axis_label_everywhere=False, residue_label_rotation=45, out_name=False):
+        def plot(self, analysis_name=None, merge_replicas=False, percentage=False, error_bar=True, bar_width=None, width=None, errorbar_width=5 , width_per_replica=4, height_per_variant=4, sort=True, title=None, same_y=True, same_x=True, axis_label_everywhere=False, residue_label_rotation=45, out_name=False):
             if self.type in ('value', 'NACs'):
                 if bar_width == None:
                     bar_width = 0.1
-                plot_NACs(self, analysis_name=analysis_name, merge_replicas=merge_replicas, percentage=percentage, error_bar=error_bar, bar_width=bar_width, width=width, title=title, out_name=out_name)
+                plot_NACs(self, analysis_name=analysis_name, merge_replicas=merge_replicas, percentage=percentage, error_bar=error_bar, sort=True, bar_width=bar_width, width=width, title=title, out_name=out_name)
             
             elif self.type in ('contacts_amount') and self.options['mode'] in ('contacts'):
                 plot_measure(self, measure_name=None, same_y=same_y, same_x=same_x, axis_label_everywhere=axis_label_everywhere, combine_replicas=merge_replicas, out_name=out_name)
