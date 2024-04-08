@@ -143,6 +143,10 @@ class EMDA:
             
             print("Trajectory has been loaded!")
 
+        else :    
+            self.__variants = 0
+            self.__replicas = 0
+
         # set missing attributes
         self.selections = {}
         self.measures = {}
