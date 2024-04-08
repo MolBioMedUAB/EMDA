@@ -165,7 +165,7 @@ def plot_measure(self, measure_name, same_y : bool = True, same_x : bool = True,
 
 
 
-def plot_NACs(self, analysis_name, merge_replicas=False, percentage=False, error_bar=True, bar_width=0.1, width=None, title=None, out_name=False, sort=True, add_reference=None):
+def plot_NACs(self, analysis_name, merge_replicas=False, percentage=False, error_bar=True, bar_width=0.1, width=None, title=None, out_name=False, sort=True, add_reference=None, residue_label_rotation=0):
     """
     DESCRIPTION:
         Function for plotting NACs (or value-type Analysis) as a bar plot where all the variants are compared
@@ -209,8 +209,6 @@ def plot_NACs(self, analysis_name, merge_replicas=False, percentage=False, error
         if sort:
             import operator
             avgs = dict(sorted(avgs.items(), key=operator.itemgetter(1), reverse=True))
-
-            print(avgs)
             
         for v_num, variant in enumerate(avgs):
             ax.bar(variant, avgs[variant], bar_width*max_replicas, color = f"C{v_num}")
@@ -228,6 +226,10 @@ def plot_NACs(self, analysis_name, merge_replicas=False, percentage=False, error
 
             else :
                 print('Requested reference is not available.')
+
+        if width/len(avgs) < 0.15 and residue_label_rotation == 0:
+            residue_label_rotation = 90
+        
 
 
     elif not merge_replicas: 
@@ -296,6 +298,8 @@ def plot_NACs(self, analysis_name, merge_replicas=False, percentage=False, error
         
     ax.grid(axis='x')
     ax.set_xlabel('Variant')
+
+    fig.autofmt_xdate(rotation=residue_label_rotation)
         
     if out_name != False and isinstance(out_name, str):
         if not out_name.endswith((".png", ".jpg", ".jpeg", ".tiff")):
