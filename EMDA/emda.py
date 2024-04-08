@@ -144,6 +144,8 @@ class EMDA:
             print("Trajectory has been loaded!")
 
         else :    
+            self.universe   = {}   
+            self.parameters = {}
             self.__variants = 0
             self.__replicas = 0
 
