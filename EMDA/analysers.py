@@ -29,8 +29,8 @@ AVAILABLE ANALYSERS:
     - analyse_probability_density: 
 """
 
-analyse_value_types = Literal['thres', 'threshold', 'tol', 'tolerance']
-def analyse_value(self, name, measure, val1, val2=0, mode : analyse_value_types = "thres"):
+__analyse_value_types = Literal['thres', 'threshold', 'tol', 'tolerance']
+def analyse_value(self, name, measure, val1, val2=0, mode : __analyse_value_types = "thres"):
     """
     DESCRIPTION:
         Analyser for checking if a value in the frame is between to given values. Threshold (a upper and lower (default is 0) limits) \
@@ -300,8 +300,8 @@ def analyse_contacts_amount(self, name, measure):
         result=contacts_amount,
     )
 
-analyse_contacts_presence_mode_types = Literal['all', 'any']
-def analyse_contacts_presence(self, name, measure, contact, mode : analyse_contacts_presence_mode_types = 'all'):
+__analyse_contacts_presence_mode_types = Literal['all', 'any']
+def analyse_contacts_presence(self, name, measure, contact, mode : __analyse_contacts_presence_mode_types = 'all'):
     """
     DESCRIPTION:
         Analyser for checking if a contacts or contacts is/are present in a contacts analysis. If the contact is present, a True is returned-.
