@@ -29,7 +29,7 @@ from .exceptions import EmptyMeasuresError, NotAvailableVariantError, NotCompati
 # Define EMDA class
 class EMDA:
 
-    def __init__(self, parameters, trajectory=None, variant_name=None, load_in_memory : bool = False, guess_bonds : bool = False, fix_jump : bool = False, unwrap : bool = False):#, wrap : bool = False):
+    def __init__(self, parameters=None, trajectory=None, variant_name=None, load_in_memory : bool = False, guess_bonds : bool = False, fix_jump : bool = False, unwrap : bool = False):#, wrap : bool = False):
         """
         DESCRIPTION:
             Function to initialise the EMDA class by loading the parameters and trajectory as a MDAnalysis universe and loading adders, analysers and plotters as internal methods.
@@ -109,38 +109,39 @@ class EMDA:
         if variant_name == None:
             variant_name = "V1"
 
-        # Load the first variant and replica
-        if isinstance(parameters, str) and trajectory == None:
-            self.universe = { variant_name : 
-                                { "R1" : Universe(parameters, in_memory=self.__load_in_memory, transformations=deepcopy(self.__transformations), all_coordinates=True, guess_bonds=guess_bonds) }
-                            }
+        if parameters != None:
+            # Load the first variant and replica
+            if isinstance(parameters, str) and trajectory == None:
+                self.universe = { variant_name : 
+                                    { "R1" : Universe(parameters, in_memory=self.__load_in_memory, transformations=deepcopy(self.__transformations), all_coordinates=True, guess_bonds=guess_bonds) }
+                                }
 
-            self.parameters = { variant_name : parameters } 
-            self.__variants = 1
-            self.__replicas = 1
+                self.parameters = { variant_name : parameters } 
+                self.__variants = 1
+                self.__replicas = 1
 
-        elif isinstance(parameters, str) and isinstance(trajectory, (str, list)):
+            elif isinstance(parameters, str) and isinstance(trajectory, (str, list)):
+                
+                if parameters.endswith('.parm7'):
+                    from parmed import load_file
+                    parameters_ = load_file(parameters)
+
+                else :
+                    parameters_ = parameters
+
+                self.universe = { variant_name : 
+                                { "R1" : Universe(parameters_, trajectory, in_memory=self.__load_in_memory, transformations=deepcopy(self.__transformations), guess_bonds=guess_bonds) }
+                                }
+                self.parameters = { variant_name : parameters } 
+                self.__variants = 1
+                self.__replicas = 1
+
+            if unwrap:
+                ag = self.universe[variant_name]["R1"]
+                transform = mda_unwrap(ag.atoms)
+                self.universe[variant_name]["R1"].trajectory.add_transformations(transform)
             
-            if parameters.endswith('.parm7'):
-                from parmed import load_file
-                parameters_ = load_file(parameters)
-
-            else :
-                parameters_ = parameters
-
-            self.universe = { variant_name : 
-                             { "R1" : Universe(parameters_, trajectory, in_memory=self.__load_in_memory, transformations=deepcopy(self.__transformations), guess_bonds=guess_bonds) }
-                            }
-            self.parameters = { variant_name : parameters } 
-            self.__variants = 1
-            self.__replicas = 1
-
-        if unwrap:
-            ag = self.universe[variant_name]["R1"]
-            transform = mda_unwrap(ag.atoms)
-            self.universe[variant_name]["R1"].trajectory.add_transformations(transform)
-        
-        print("Trajectory has been loaded!")
+            print("Trajectory has been loaded!")
 
         # set missing attributes
         self.selections = {}
@@ -554,7 +555,7 @@ class EMDA:
             first_cycle = True
             for ts in tqdm(self.universe[variant][replica].trajectory[starts[variant][replica] : ends[variant][replica] : steps[variant][replica]],
                            desc=f"Measuring variant {variant}, replica {replica}",
-                           unit="Frame"
+                           unit=" frame"
                         ):
                 
                 # measures cycle
@@ -620,13 +621,13 @@ class EMDA:
                 print('single variant, multireplica')
                 for replica in tqdm(list(self.universe[variant].keys()),
                                     desc="Replica",
-                                    unit="rep"
+                                    unit=" repl"
                                 ):
                     run_measures(self, measures=measures, variant=variant, replica=replica)
 
         else :
             # variants cycle
-            for variant in tqdm(list(self.universe.keys()), desc='Variants', unit='var'):
+            for variant in tqdm(list(self.universe.keys()), desc='Variants', unit=' var'):
                 if verbose:
                     print(f"Starting variant {variant} ")
                 # replicas cycle
