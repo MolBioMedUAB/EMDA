@@ -165,7 +165,7 @@ def plot_measure(self, measure_name, same_y : bool = True, same_x : bool = True,
 
 
 
-def plot_NACs(self, analysis_name, merge_replicas=False, percentage=False, error_bar=True, bar_width=0.1, width=None, title=None, out_name=False, sort=True):
+def plot_NACs(self, analysis_name, merge_replicas=False, percentage=False, error_bar=True, bar_width=0.1, width=None, title=None, out_name=False, sort=True, add_reference=None):
     """
     DESCRIPTION:
         Function for plotting NACs (or value-type Analysis) as a bar plot where all the variants are compared
@@ -211,14 +211,22 @@ def plot_NACs(self, analysis_name, merge_replicas=False, percentage=False, error
             avgs = dict(sorted(avgs.items(), key=operator.itemgetter(1), reverse=True))
             
         for v_num, variant in enumerate(list(analysis_obj.result.keys())):
-            ax.bar(variant, avgs, bar_width*max_replicas, color = f"C{v_num}")
+            ax.bar(variant, avgs[variant], bar_width*max_replicas, color = f"C{v_num}")
             if error_bar and max_replicas != 1:
-                ax.errorbar(variant, avgs, 
+                ax.errorbar(variant, avgs[variant], 
                         yerr=std([analysis_obj.result[variant][replica].count(True) for replica in list(analysis_obj.result[variant].keys())]), 
                         color = f"k",
                         solid_capstyle='butt',
                         capsize=bar_width*72 # in to pt is 72, 5 is to make it wider
                         )
+                
+        if add_reference != None:
+            if add_reference in list(analysis_obj.result.keys()):
+                ax.axhline(avgs[add_reference], color='k')
+
+            else :
+                print('Requested reference is not available.')
+
 
     elif not merge_replicas: 
         # Step 1: Process data
