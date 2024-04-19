@@ -87,7 +87,7 @@ def plot_measure(self, measure_name, same_y : bool = True, same_x : bool = True,
             for r_num, replica in enumerate(list(measure_obj.result[variant].keys())):
 
                 if combine_replicas:
-                    axs[r_num].plot(
+                    axs[v_num].plot(
                     range(1, len(measure_obj.result[variant][replica])+1),
                     measure_obj.result[variant][replica],
                     c = f"C{v_num}",
@@ -95,12 +95,12 @@ def plot_measure(self, measure_name, same_y : bool = True, same_x : bool = True,
                     )
 
                     if r_num == 0 or axis_label_everywhere:
-                        axs[r_num].set_ylabel(y_labels[measure_obj.type])
+                        axs[v_num].set_ylabel(y_labels[measure_obj.type])
 
                     if v_num == variants-1 or axis_label_everywhere:
-                        axs[r_num].set_xlabel("Frame")
+                        axs[v_num].set_xlabel("Frame")
                         
-                    axs[r_num].set_title(f"{variant}, replicas {', '.join(list(measure_obj.result[variant].keys()))}")
+                    axs[v_num].set_title(f"{variant}, replicas {', '.join(list(measure_obj.result[variant].keys()))}")
 
                 elif variants == 1:
                     axs[r_num].plot(
@@ -144,6 +144,9 @@ def plot_measure(self, measure_name, same_y : bool = True, same_x : bool = True,
 
     if measure_name == None:
         fig.suptitle("Plots for " + r"$\bf{%s}$" % self.name.replace('_', '\_') +  " Measure")
+
+    elif measure_name == '' or measure_name == False:
+        pass
 
     else :
         fig.suptitle("Plots for " + r"$\bf{%s}$" % measure_name.replace('_', '\_') +  " Measure")
@@ -217,7 +220,7 @@ def plot_NACs(self, analysis_name, merge_replicas=False, percentage=False, error
                         yerr=std([analysis_obj.result[variant][replica].count(True) for replica in list(analysis_obj.result[variant].keys())]), 
                         color = f"k",
                         solid_capstyle='butt',
-                        capsize=bar_width*72 # in to pt is 72, 5 is to make it wider
+                        capsize=bar_width*72 # in to pt factor is 72, 5 is to make it wider
                         )
                 
         if add_reference != None:
@@ -429,11 +432,12 @@ def plot_contacts_frequency(
                             capsize=errorbar_width #capsize #bar_width*5 #72/2 # in to pt is 72, 5 is to make it wider
                         )
 
-                    #if r_num == 0 or axis_label_everywhere:
+                    #if axis_label_everywhere:
                     #    axs[v_num].set_ylabel(y_labels[analysis_obj.type])
 
                     if v_num == variants-1 or axis_label_everywhere:
                         axs[v_num].set_xlabel("Residue")
+                        axs[v_num].tick_params(axis='both', which='both')
                         
                     #axs[v_num].set_xticks(rotation=45)
                     axs[v_num].set_title(f"{variant}, average of replicas {', '.join(list(analysis_obj.result[variant].keys()))}")  
