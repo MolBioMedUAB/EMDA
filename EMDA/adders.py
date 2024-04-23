@@ -488,9 +488,9 @@ def add_radius_of_gyration(self, name, sel, fix_pbc=False):
 
     """
 
-    for sel in (sel):
-        if sel not in self.selections:
-            raise NotExistingSelectionError
+    #for sel in (sel):
+    #    if sel not in self.selections:
+    #        raise NotExistingSelectionError
 
     self.measures[name] = self.Measure(
         name=name,
