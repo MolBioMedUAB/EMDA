@@ -474,7 +474,7 @@ def add_per_residue_contacts(
 #        result=get_dictionary_structure(self.universe, []),
 #    )
 
-def add_radius_of_gyration(self, name, sel, fix_pbc=False):
+def add_radius_of_gyration(self, name, sel, wrap=False):
     """
     DESCRIPTION:
         This functions measures the radius of gyration of a given selection.
@@ -496,7 +496,7 @@ def add_radius_of_gyration(self, name, sel, fix_pbc=False):
         name=name,
         type="radius_of_gyration",
         sel=[sel],
-        options={"fix_pbc" : fix_pbc},
+        options={"wrap" : wrap},
         result=get_dictionary_structure(self.universe, []),
     )
 

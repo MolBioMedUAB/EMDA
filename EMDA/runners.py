@@ -148,7 +148,7 @@ def run_radius_of_gyration(self, Measure, variant, replica):
     Measure.result[variant][replica].append(
         calc_radius_of_gyration( 
             self.universe[variant][replica].select_atoms(self.selections[Measure.sel[0]]),
-            fix_pbc=Measure.options["fix_pbc"]
+            fix_pbc=Measure.options["wrap"]
         )
     )
 

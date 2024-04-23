@@ -357,9 +357,9 @@ def calc_RMSD(sel, ref, superposition):
     return float(rmsd)
 
 
-def calc_radius_of_gyration(sel, fix_pbc):
+def calc_radius_of_gyration(sel, wrap):
 
-    return sel.radius_of_gyration(pbc=fix_pbc)
+    return sel.radius_of_gyration(wrap=wrap)
 
 
 def calc_distWATbridge(
