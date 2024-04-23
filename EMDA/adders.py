@@ -496,7 +496,7 @@ def add_radius_of_gyration(self, name, sel, fix_pbc=False):
         name=name,
         type="radius_of_gyration",
         sel=[sel],
-        options={"fix_pbc"},
+        options={"fix_pbc" : fix_pbc},
         result=get_dictionary_structure(self.universe, []),
     )
 
