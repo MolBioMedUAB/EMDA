@@ -593,6 +593,9 @@ class EMDA:
                     elif self.measures[measure].type == "RMSD":
                         run_RMSD(self, self.measures[measure], variant=variant, replica=replica)
 
+                    elif self.measures[measure].type == "radius_of_gyration":
+                        run_radius_of_gyration(self, self.measures[measure], variant=variant, replica=replica)
+
                     elif self.measures[measure].type == "distWATbridge":
                         run_distWATbridge(self, self.measures[measure], variant=variant, replica=replica)
 
