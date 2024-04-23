@@ -349,23 +349,25 @@ def add_per_residue_contacts(
     append_interaction = [],
     include_WAT : bool = False,
     measure_distances : bool = False,
-    within_selection : bool = False,
+    inside_selection : bool = False,
+    to_other_sel : str = '',
 ):
     """
     DESCRIPTION:
-        This function takes a adds the measure of the contacts of all residues in a protein
+        This function adds the measure of the contacts of all residues in a protein or a selection and returns the selection of each residue
 
     USAGE:
-        EMDA.add_contacts(name, sel, sel_env, interactions=[all | polar | nonpolar | donorHbond | none ], 
+        EMDA.add_per_residue_contacts(name, sel, sel_env, interactions=[all | polar | nonpolar | donorHbond | none ], 
             append_interaction=resname | [ resnames ], include_WAT=[ True | False ], measure_distance=[ True | False ],
-            within_selection=[ True | False ])
+            inside_selection=[ True | False ])
 
     ARGUMENTS:
         - Name of the measurement
         - sel_env:              radius (in ang) around each residue
         - interactions:         type of interactions to be considered (all, polar, nonpolar, donorHbond, none). Custom
                                     interactions can be also analysed by passing a list of residues names
-        - within_selection:     limits the exploration of the contacts in the given selection
+        - inside_selection:     limits the exploration of the contacts in the given selection
+        - to_other_sel:         limits the exploration of the contacts to a second selection
 
 
     OUTPUT:
@@ -432,10 +434,72 @@ def add_per_residue_contacts(
             "measure_dists": measure_distances,
             "interactions" : interactions,
             #"include_WAT" : include_WAT,
-            "within_selection" : within_selection,
+            "inside_selection" : inside_selection,
         },
         result=get_dictionary_structure(self.universe, []),
     )
+
+
+#def add_contacts_between_selections(
+#    self,
+#    name,
+#    sel1,
+#    sel2,
+#    measure_distances : bool = False,
+#):
+#    """
+#    DESCRIPTION:
+#        This function takes two selections and measures the contacts between the residues of each selection.
+#
+#    USAGE:
+#        EMDA.add_contacts_between_selections(name, sel1, sel2, measure_distances=True)
+#
+#    ARGUMENTS:
+#        - Name of the measurement
+#        - sel_env:              radius (in ang) around each residue
+#        - measure_distances:    boolean value for measuring or not the distance between each contact
+#
+#
+#    OUTPUT:
+#        - List of dictionaries containing the name and number of all interacting residues
+#    """
+#
+#    self.measures[name] = self.Measure(
+#        name=name,
+#        type="contacts_between_sel",
+#        sel=[sel1, sel2],
+#        options={
+#            "measure_dists": measure_distances,
+#        },
+#        result=get_dictionary_structure(self.universe, []),
+#    )
+
+def add_radius_of_gyration(self, name, sel, fix_pbc=False):
+    """
+    DESCRIPTION:
+        This functions measures the radius of gyration of a given selection.
+
+    USAGE:
+        EMDA.add_radius_of_gyration(name, sel)
+
+    ARGUMENTS:
+        - Name of the measurement
+        - fix_pbc:  Moves all atoms within the unitary cell.
+
+    """
+
+    for sel in (sel):
+        if sel not in self.selections:
+            raise NotExistingSelectionError
+
+    self.measures[name] = self.Measure(
+        name=name,
+        type="radius_of_gyration",
+        sel=[sel],
+        options={"fix_pbc"},
+        result=get_dictionary_structure(self.universe, []),
+    )
+
     
 
 def add_RMSD(self, name, sel, ref=0, center : bool = True, superposition : bool = True, weights = None ):

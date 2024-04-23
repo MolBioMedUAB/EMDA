@@ -32,7 +32,8 @@ def plot_measure(self, measure_name, same_y : bool = True, same_x : bool = True,
         "angle" : "Angle (°)",
         "planar_angle" : "Planar angle (°)",
         "dihedral" : "Dihedral angle (°)",
-        "contacts_amount": "Number of contacts"
+        "contacts_amount": "Number of contacts",
+        "radius_of_gyration" : "Radius of Gyration (Å)"
     }
 
     # Check if plotting as plotter or as class' method
@@ -42,7 +43,7 @@ def plot_measure(self, measure_name, same_y : bool = True, same_x : bool = True,
         measure_obj = self.measures[measure_name]
 
     
-    if measure_obj.type not in ("distance", "angle", "dihedral", "RMSD", "planar_angle", "contacts_amount"):
+    if measure_obj.type not in ("distance", "angle", "dihedral", "RMSD", "planar_angle", "contacts_amount", "radius_of_gyration"):
         raise NotCompatibleMeasureForPlotterError
     if measure_obj.type == "contacts_amounts" and measure_obj.options["mode"] not in ("contacts"):
         raise NotCompatibleMeasureForPlotterError
@@ -317,7 +318,7 @@ def plot_NACs(self, analysis_name, merge_replicas=False, percentage=False, error
 
 def plot_contacts_frequency(
         #self, analysis_name, fill_empty=False, width_plot=0.5, out_name=None
-        self, analysis_name, same_y : bool = True, same_x : bool = True, axis_label_everywhere : bool =False, merge_replicas : bool =False, error_bar=True, bar_width=0.8, errorbar_width=5 , width_per_replica : float = 4, height_per_variant : float = 4, residue_label_rotation=45, out_name=False
+        self, analysis_name, variants='all', same_y : bool = True, same_x : bool = True, axis_label_everywhere : bool =False, merge_replicas : bool =False, error_bar=True, bar_width=0.8, errorbar_width=5 , width_per_replica : float = 4, height_per_variant : float = 4, residue_label_rotation=45, out_name=False
         ):
     """
     DESCRIPTION:

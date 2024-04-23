@@ -277,7 +277,7 @@ def calc_contacts_selection(
 
 
 def calc_per_residue_contacts(
-    universe, sel, sel_env, interactions, measure_distances=False, within_selection=False,
+    universe, sel, sel_env, interactions, measure_distances=False, inside_selection=False,
 ):
 
     contacts = {}
@@ -289,12 +289,12 @@ def calc_per_residue_contacts(
         # if the residue does not belong to the protein, skip it
         #    continue
 
-        if within_selection:
+        if inside_selection:
             residue_env = sel.atoms.select_atoms(
                 f"around {sel_env} group select", select=residue.atoms
             )
 
-        elif not within_selection:
+        elif not inside_selection:
             residue_env = universe.select_atoms(
                 f"around {sel_env} group select", select=residue.atoms
             )
@@ -308,6 +308,38 @@ def calc_per_residue_contacts(
 
     return contacts
 
+
+#def calc_contacts_between_sel(
+#    universe, sel1, sel2, measure_distances=False,
+#):
+###################################################
+#    contacts = {}
+#
+#
+#    #    for residue in sel.atoms.select_atoms('protein').residues:
+#    for residue in sel.residues:
+#        # if residue.resname not in protein_residues:
+#        # if the residue does not belong to the protein, skip it
+#        #    continue
+#
+#        if within_selection:
+#            residue_env = sel.atoms.select_atoms(
+#                f"around {sel_env} group select", select=residue.atoms
+#            )
+#
+#        elif not within_selection:
+#            residue_env = universe.select_atoms(
+#                f"around {sel_env} group select", select=residue.atoms
+#            )
+#
+#        contacts[residue.resname + str(residue.resid)] = calc_contacts_selection(
+#            sel=residue.atoms,
+#            sel_env=residue_env,
+#            interactions=interactions,
+#            measure_distances=measure_distances,
+#        )
+#
+#    return contacts
 
 def calc_RMSD(sel, ref, superposition):
 
@@ -323,6 +355,11 @@ def calc_RMSD(sel, ref, superposition):
         )
 
     return float(rmsd)
+
+
+def calc_radius_of_gyration(sel, fix_pbc):
+
+    return sel.radius_of_gyration(pbc=fix_pbc)
 
 
 def calc_distWATbridge(
