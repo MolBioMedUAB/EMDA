@@ -145,6 +145,8 @@ def run_radius_of_gyration(self, Measure, variant, replica):
         Runner for radius of gyration measurement.
     """
 
+    print(self.universe[variant][replica].select_atoms(self.selections[Measure.sel[0]]))
+
     Measure.result[variant][replica].append(
         calc_radius_of_gyration( 
             self.universe[variant][replica].select_atoms(self.selections[Measure.sel[0]]),
