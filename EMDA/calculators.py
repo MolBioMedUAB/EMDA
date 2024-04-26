@@ -51,8 +51,8 @@ def calc_planar_angle(
 ):
     from numpy import arccos, sqrt
 
-    plane_A = build_plane(plane_A)
-    plane_B = build_plane(plane_B)
+    plane_A = build_plane(plane_A.positions)
+    plane_B = build_plane(plane_B.positions)
 
     ang = arccos(
         (plane_A[0] * plane_B[0] + plane_A[1] * plane_B[1] + plane_A[2] * plane_B[2])
