@@ -326,6 +326,7 @@ def plot_contacts_frequency(
 
     TODO:
         - [ ] Add normalisation to max per replica
+        - [ ] Add threshold for not plotting values under the requested on
     """
 
 
