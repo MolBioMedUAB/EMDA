@@ -144,9 +144,13 @@ class EMDA:
             print("Trajectory has been loaded!")
 
         else :    
-            self.universe   = { variant_name : 
+            if trajectory != None:
+                self.universe   = { variant_name : 
                                     { "R1" : Universe(trajectory, in_memory=self.__load_in_memory, transformations=deepcopy(self.__transformations), all_coordinates=True, guess_bonds=guess_bonds) }
                                 }
+            elif trajectory == None:
+                self.universe = {}
+                
             self.parameters = {}
             self.__variants = 0
             self.__replicas = 0
