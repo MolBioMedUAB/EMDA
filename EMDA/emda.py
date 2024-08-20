@@ -330,7 +330,15 @@ class EMDA:
         else :
             parameters_ = parameters
 
-        self.universe[new_variant]   = {"R1" : Universe(parameters_, trajectory, in_memory=self.__load_in_memory, transformations=deepcopy(self.__transformations), guess_bonds=self.__guess_bonds)}
+        if parameters == None:
+            if isinstance(trajectory, list):
+                self.universe[new_variant]   = {"R1" : Universe(trajectory[0], trajectory, in_memory=self.__load_in_memory, transformations=deepcopy(self.__transformations), guess_bonds=self.__guess_bonds)}
+            else :
+                self.universe[new_variant]   = {"R1" : Universe(parameters_, trajectory, in_memory=self.__load_in_memory, transformations=deepcopy(self.__transformations), guess_bonds=self.__guess_bonds)}
+
+        else :
+            self.universe[new_variant]   = {"R1" : Universe(parameters_, trajectory, in_memory=self.__load_in_memory, transformations=deepcopy(self.__transformations), guess_bonds=self.__guess_bonds)}
+        
         self.parameters[new_variant] = parameters
 
         # Adds new variant and replica to existing measures
