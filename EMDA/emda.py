@@ -11,7 +11,8 @@ from MDAnalysis import Universe
 
 from MDAnalysis.transformations.nojump import NoJump
 from MDAnalysis.transformations.wrap import unwrap as mda_unwrap
-#from MDAnalysis.transformations.wrap import wrap as mda_wrap
+
+# from MDAnalysis.transformations.wrap import wrap as mda_wrap
 
 # load internal EMDA classes and functions
 from .selection import parse_selection, check_selection
@@ -23,36 +24,49 @@ from .plotters import *
 from .exporters import *
 
 # load custom exceptions
-from .exceptions import EmptyMeasuresError, NotAvailableVariantError, NotCompatibleTransformations
+from .exceptions import (
+    EmptyMeasuresError,
+    NotAvailableVariantError,
+    NotCompatibleTransformations,
+)
 
 
 # Define EMDA class
 class EMDA:
 
-    def __init__(self, parameters=None, trajectory=None, variant_name=None, load_in_memory : bool = False, guess_bonds : bool = False, fix_jump : bool = False, unwrap : bool = False):#, wrap : bool = False):
+    def __init__(
+        self,
+        parameters=None,
+        trajectory=None,
+        variant_name=None,
+        load_in_memory: bool = False,
+        guess_bonds: bool = False,
+        fix_jump: bool = False,
+        unwrap: bool = False,
+    ):  # , wrap : bool = False):
         """
         DESCRIPTION:
             Function to initialise the EMDA class by loading the parameters and trajectory as a MDAnalysis universe and loading adders, analysers and plotters as internal methods.
 
         ARGUMENTS:
-            - parameters:       name of the file containing the parameters and/or topology or the PDB containing the topology and coordinates (it can be multimodel). Any format accepted 
+            - parameters:       name of the file containing the parameters and/or topology or the PDB containing the topology and coordinates (it can be multimodel). Any format accepted
                                 by MDAnalysis can be loaded (more information: https://docs.mdanalysis.org/stable/documentation_pages/topology/init.html)
                                 Each parameters' file corresponds to a variant of the system. More variants can be added using the load_variant method.
-            - trajectory:       name of the file or list of the names of the files that contain the coordinates along the trajectory. 
+            - trajectory:       name of the file or list of the names of the files that contain the coordinates along the trajectory.
                                 Each list of files corresponds to a replica. More replicas can be added using the load_replica method.
             - variant_name:     custom name for the loaded variant. If not specified, the standard "V1" name will be used.
             - load_in_memory:   boolean value that triggers the loading of the trajectory(ies) in memory. This results in faster measures but can consume all available memory.
-            - fix_jump:         boolean value for treating trajectory issues regarding the fitting of the protein in the solvent box. Useful when the protein's coordinates jump from one 
+            - fix_jump:         boolean value for treating trajectory issues regarding the fitting of the protein in the solvent box. Useful when the protein's coordinates jump from one
                                 side of the box to the oposite. In order to make it work properly, the protein should be OK at the first frame of the trajectory.
                                 It activates the use of the MDAnalysis' NoJump transformation class.
-            - unwrap:           boolean value for treating trajectory issues regarding the fitting of the system in the solvent box. Useful when the system is artifitially fitted in the 
+            - unwrap:           boolean value for treating trajectory issues regarding the fitting of the system in the solvent box. Useful when the system is artifitially fitted in the
                                 solvent box, so jumps appear. It is similar to the NoJump transformation (activated by setting fix_jump True), but more general.
                                 It activates the use of the MDAnalysis' unwrap transformation class.  Compatible with fix_jump but not with wrap.
             X- wrap:             boolean value for treating trajectory issues regarding the fitting of the system in the solvent box. Useful when the system is not fitted in the solvent box.
                                 It activates the use of the MDAnalysis' wrap transformation class. Compatible with fix_jump but not with unwrap.
 
         ATTRIBUTES:
-            - parameters:           name of the parameters and topology file as a dict containing the name of variant(s) and replica(s) 
+            - parameters:           name of the parameters and topology file as a dict containing the name of variant(s) and replica(s)
             - universe:             MDAnalysis Universe object containing the parameters and trajectory set as input of the class
             - selections:           Dictionary containing as key the name (ID) of a selection and the MDAnalysis AtomGroup object as value
             - measures:             Dictionary containing as key the name (ID) of a measure and the EMDA's Measure object as value
@@ -75,29 +89,28 @@ class EMDA:
         """
 
         # dealing with transformations
-        #if fix_jump and unwrap and wrap:
+        # if fix_jump and unwrap and wrap:
         #    raise NotCompatibleTransformations
         #
-        #elif fix_jump and unwrap and not wrap:
+        # elif fix_jump and unwrap and not wrap:
         #    self.__transformations = [Unwrap(), NoJump()]
-        #elif fix_jump and not unwrap and wrap:
+        # elif fix_jump and not unwrap and wrap:
         #    self.__transformations = [Wrap(), NoJump()]
 
-        #elif not fix_jump and unwrap and wrap:
+        # elif not fix_jump and unwrap and wrap:
         #    raise NotCompatibleTransformations
         #
-        #elif fix_jump and not unwrap and not wrap:
+        # elif fix_jump and not unwrap and not wrap:
         #    self.__transformations = NoJump()
-        #elif not fix_jump and unwrap and not wrap:
+        # elif not fix_jump and unwrap and not wrap:
         #    self.__transformations = Unwrap()
-        #elif not fix_jump and not unwrap and wrap:
+        # elif not fix_jump and not unwrap and wrap:
         #    self.__transformations = Wrap()
-
 
         if fix_jump:
             self.__transformations = NoJump()
-        else :
-            self.__transformations = None            
+        else:
+            self.__transformations = None
 
         # set load_in_memory attr
         self.__load_in_memory = load_in_memory
@@ -112,47 +125,83 @@ class EMDA:
         if parameters != None:
             # Load the first variant and replica
             if isinstance(parameters, str) and trajectory == None:
-                self.universe = { variant_name : 
-                                    { "R1" : Universe(parameters, in_memory=self.__load_in_memory, transformations=deepcopy(self.__transformations), all_coordinates=True, guess_bonds=guess_bonds) }
-                                }
+                self.universe = {
+                    variant_name: {
+                        "R1": Universe(
+                            parameters,
+                            in_memory=self.__load_in_memory,
+                            transformations=deepcopy(self.__transformations),
+                            all_coordinates=True,
+                            guess_bonds=guess_bonds,
+                        )
+                    }
+                }
 
-                self.parameters = { variant_name : parameters } 
+                self.parameters = {variant_name: parameters}
                 self.__variants = 1
                 self.__replicas = 1
 
             elif isinstance(parameters, str) and isinstance(trajectory, (str, list)):
-                
-                if parameters.endswith('.parm7'):
+
+                if parameters.endswith(".parm7"):
                     from parmed import load_file
+
                     parameters_ = load_file(parameters)
 
-                else :
+                else:
                     parameters_ = parameters
 
-                self.universe = { variant_name : 
-                                { "R1" : Universe(parameters_, trajectory, in_memory=self.__load_in_memory, transformations=deepcopy(self.__transformations), guess_bonds=guess_bonds) }
-                                }
-                self.parameters = { variant_name : parameters } 
+                self.universe = {
+                    variant_name: {
+                        "R1": Universe(
+                            parameters_,
+                            trajectory,
+                            in_memory=self.__load_in_memory,
+                            transformations=deepcopy(self.__transformations),
+                            guess_bonds=guess_bonds,
+                        )
+                    }
+                }
+                self.parameters = {variant_name: parameters}
                 self.__variants = 1
                 self.__replicas = 1
 
             if unwrap:
                 ag = self.universe[variant_name]["R1"]
                 transform = mda_unwrap(ag.atoms)
-                self.universe[variant_name]["R1"].trajectory.add_transformations(transform)
-            
+                self.universe[variant_name]["R1"].trajectory.add_transformations(
+                    transform
+                )
+
             print("Trajectory has been loaded!")
 
-        else :    
+        else:
             if trajectory != None:
                 if isinstance(trajectory, list):
-                    self.universe   = { variant_name : 
-                                    { "R1" : Universe(trajectory[0], trajectory, in_memory=self.__load_in_memory, transformations=deepcopy(self.__transformations), all_coordinates=False, guess_bonds=guess_bonds) }
-                                }
-                else :
-                    self.universe   = { variant_name : 
-                                    { "R1" : Universe(trajectory, in_memory=self.__load_in_memory, transformations=deepcopy(self.__transformations), all_coordinates=True, guess_bonds=guess_bonds) }
-                                }
+                    self.universe = {
+                        variant_name: {
+                            "R1": Universe(
+                                trajectory[0],
+                                trajectory,
+                                in_memory=self.__load_in_memory,
+                                transformations=deepcopy(self.__transformations),
+                                all_coordinates=False,
+                                guess_bonds=guess_bonds,
+                            )
+                        }
+                    }
+                else:
+                    self.universe = {
+                        variant_name: {
+                            "R1": Universe(
+                                trajectory,
+                                in_memory=self.__load_in_memory,
+                                transformations=deepcopy(self.__transformations),
+                                all_coordinates=True,
+                                guess_bonds=guess_bonds,
+                            )
+                        }
+                    }
             elif trajectory == None:
                 self.universe = {}
 
@@ -164,7 +213,6 @@ class EMDA:
         self.selections = {}
         self.measures = {}
         self.analyses = {}
-
 
         # Automatically add all imported functions from adders.py and from analysers.py as EMDA methods
         external_functions = [
@@ -190,7 +238,6 @@ class EMDA:
 
         for func_name in external_functions:
             setattr(EMDA, func_name, globals()[func_name])
-
 
     # create Measure dataclass
     @dataclass
@@ -225,33 +272,55 @@ class EMDA:
             print_ += f"\tSel:    {self.sel}\n"
             print_ += f"\tStatus: \n"
 
-            #status = get_dictionary_structure(self.result, False)
+            # status = get_dictionary_structure(self.result, False)
             for variant in list(self.result.keys()):
                 for replica in list(self.result[variant]):
                     if len(self.result[variant][replica]) > 0:
                         print_ += f"\t\t{variant}, {replica}: Calculated\n"
-                        #status[variant][replica] = "Calculated"
-                    else :
+                        # status[variant][replica] = "Calculated"
+                    else:
                         print_ += f"\t\t{variant}, {replica}: Not calculated\n"
-                        #status[variant][replica] = "Not calculated"
- 
+                        # status[variant][replica] = "Not calculated"
+
             return print_
 
         def __repr__(self):
             return self.__str__()
-        
-        # define plotting method
-        def plot(self, same_y : bool = True, same_x : bool = True, axis_label_everywhere=False, combine_replicas=False, out_name=None):
-            plot_measure(self, measure_name=None, same_y=same_y, same_x=same_x, axis_label_everywhere=axis_label_everywhere, combine_replicas=combine_replicas, out_name=out_name)
 
-        def average(self, measure_name=None, round_decimals=3, std=True, return_data=False):
+        # define plotting method
+        def plot(
+            self,
+            same_y: bool = True,
+            same_x: bool = True,
+            axis_label_everywhere=False,
+            combine_replicas=False,
+            out_name=None,
+        ):
+            plot_measure(
+                self,
+                measure_name=None,
+                same_y=same_y,
+                same_x=same_x,
+                axis_label_everywhere=axis_label_everywhere,
+                combine_replicas=combine_replicas,
+                out_name=out_name,
+            )
+
+        def average(
+            self, round_decimals=3, std=True, return_data=False
+        ):
             """
             DESCRIPTION:
                 Calculates the average of the measure's results. It is not implemented yet.
             """
 
-            average(self, measure_name=measure_name, round_decimals=round_decimals, std=std, return_data=return_data)
-            
+            average(
+                self,
+                measure_name=None,
+                round_decimals=round_decimals,
+                std=std,
+                return_data=return_data,
+            )
 
     # create Analysis dataclass
     @dataclass
@@ -270,7 +339,7 @@ class EMDA:
         METHODS:
             - plot:     Creates a simple plot of the calculated measures. Only available for distance, angle, dihedral, planar_angle, and RMSD types
         """
-        
+
         # set class' attrs
         name: str
         type: str
@@ -289,31 +358,88 @@ class EMDA:
 
         def __repr__(self):
             return self.__str__()
-        
+
         # define plotting method
-        def plot(self, analysis_name=None, merge_replicas=False, percentage=False, error_bar=True, bar_width=None, width=None, errorbar_width=5 , width_per_replica=4, height_per_variant=4, sort=True, add_reference=None, residue_label_rotation=0, title=None, same_y=True, same_x=True, axis_label_everywhere=False, out_name=False):
-            if self.type in ('value', 'NACs'):
+        def plot(
+            self,
+            analysis_name=None,
+            merge_replicas=False,
+            percentage=False,
+            error_bar=True,
+            bar_width=None,
+            width=None,
+            errorbar_width=5,
+            width_per_replica=4,
+            height_per_variant=4,
+            sort=True,
+            add_reference=None,
+            residue_label_rotation=0,
+            title=None,
+            same_y=True,
+            same_x=True,
+            axis_label_everywhere=False,
+            out_name=False,
+        ):
+            if self.type in ("value", "NACs"):
                 if bar_width == None:
                     bar_width = 0.1
-                plot_NACs(self, analysis_name=analysis_name, merge_replicas=merge_replicas, percentage=percentage, error_bar=error_bar, sort=sort, add_reference=add_reference, residue_label_rotation=residue_label_rotation, bar_width=bar_width, width=width, title=title, out_name=out_name)
-            
-            elif self.type in ('contacts_amount') and self.options['mode'] in ('contacts'):
-                plot_measure(self, measure_name=None, same_y=same_y, same_x=same_x, axis_label_everywhere=axis_label_everywhere, combine_replicas=merge_replicas, out_name=out_name)
+                plot_NACs(
+                    self,
+                    analysis_name=analysis_name,
+                    merge_replicas=merge_replicas,
+                    percentage=percentage,
+                    error_bar=error_bar,
+                    sort=sort,
+                    add_reference=add_reference,
+                    residue_label_rotation=residue_label_rotation,
+                    bar_width=bar_width,
+                    width=width,
+                    title=title,
+                    out_name=out_name,
+                )
 
-            elif self.type in ("contacts_frequency") and self.options['mode'] in ('contacts'):
+            elif self.type in ("contacts_amount") and self.options["mode"] in (
+                "contacts"
+            ):
+                plot_measure(
+                    self,
+                    measure_name=None,
+                    same_y=same_y,
+                    same_x=same_x,
+                    axis_label_everywhere=axis_label_everywhere,
+                    combine_replicas=merge_replicas,
+                    out_name=out_name,
+                )
+
+            elif self.type in ("contacts_frequency") and self.options["mode"] in (
+                "contacts"
+            ):
                 if bar_width == None:
                     bar_width = 0.8
-                plot_contacts_frequency(self, analysis_name=analysis_name, same_y=same_y, same_x=same_x, axis_label_everywhere=axis_label_everywhere, merge_replicas=merge_replicas, error_bar=error_bar, bar_width=bar_width, errorbar_width=errorbar_width, width_per_replica=width_per_replica, height_per_variant=height_per_variant, residue_label_rotation=residue_label_rotation, out_name=out_name)
+                plot_contacts_frequency(
+                    self,
+                    analysis_name=analysis_name,
+                    same_y=same_y,
+                    same_x=same_x,
+                    axis_label_everywhere=axis_label_everywhere,
+                    merge_replicas=merge_replicas,
+                    error_bar=error_bar,
+                    bar_width=bar_width,
+                    errorbar_width=errorbar_width,
+                    width_per_replica=width_per_replica,
+                    height_per_variant=height_per_variant,
+                    residue_label_rotation=residue_label_rotation,
+                    out_name=out_name,
+                )
 
-            else :
+            else:
                 raise NotCompatibleAnalysisForPlotterError
-            
+
     def unwrapping(self, variant, replica):
 
         ag = self.universe[variant][replica]
         transform = mda_unwrap(ag.atoms)
         self.universe[variant][replica].trajectory.add_transformations(transform)
-
 
     # create load_variant method
     def load_variant(self, parameters, trajectory, variant_name=None):
@@ -328,31 +454,56 @@ class EMDA:
 
         # set variant's name
         if variant_name == None:
-            new_variant  = f"V{self.__variants}"
-        else :
+            new_variant = f"V{self.__variants}"
+        else:
             new_variant = variant_name
 
-        if parameters != None and parameters.endswith('.parm7'):
+        if parameters != None and parameters.endswith(".parm7"):
             from parmed import load_file
+
             parameters_ = load_file(parameters)
 
-        else :
+        else:
             parameters_ = parameters
 
         if parameters == None:
             if isinstance(trajectory, list):
-                self.universe[new_variant]   = {"R1" : Universe(trajectory[0], trajectory, in_memory=self.__load_in_memory, transformations=deepcopy(self.__transformations), guess_bonds=self.__guess_bonds)}
-            else :
-                self.universe[new_variant]   = {"R1" : Universe(parameters_, trajectory, in_memory=self.__load_in_memory, transformations=deepcopy(self.__transformations), guess_bonds=self.__guess_bonds)}
+                self.universe[new_variant] = {
+                    "R1": Universe(
+                        trajectory[0],
+                        trajectory,
+                        in_memory=self.__load_in_memory,
+                        transformations=deepcopy(self.__transformations),
+                        guess_bonds=self.__guess_bonds,
+                    )
+                }
+            else:
+                self.universe[new_variant] = {
+                    "R1": Universe(
+                        parameters_,
+                        trajectory,
+                        in_memory=self.__load_in_memory,
+                        transformations=deepcopy(self.__transformations),
+                        guess_bonds=self.__guess_bonds,
+                    )
+                }
 
-        else :
-            self.universe[new_variant]   = {"R1" : Universe(parameters_, trajectory, in_memory=self.__load_in_memory, transformations=deepcopy(self.__transformations), guess_bonds=self.__guess_bonds)}
-        
+        else:
+            self.universe[new_variant] = {
+                "R1": Universe(
+                    parameters_,
+                    trajectory,
+                    in_memory=self.__load_in_memory,
+                    transformations=deepcopy(self.__transformations),
+                    guess_bonds=self.__guess_bonds,
+                )
+            }
+
         self.parameters[new_variant] = parameters
 
         # Adds new variant and replica to existing measures
         for measure in list(self.measures.keys()):
-                self.measures[measure].result[new_variant] = {"R1" : []}
+            self.measures[measure].result[new_variant] = {"R1": []}
 
         if self.__unwrap:
             self.unwrapping(variant=new_variant, replica="R1")
@@ -360,17 +511,17 @@ class EMDA:
         print(f"{new_variant} variant has been loaded!")
 
     # create load_trajectory method
-    def load_replica(self, trajectory, parameters=None, variant_name='last'):
+    def load_replica(self, trajectory, parameters=None, variant_name="last"):
         """
         DESCRIPTION:
             Method that allows adding one more replica to a pre-existing variant in th EMDA class.
         """
 
         # check variant name where replica has to be loaded
-        if variant_name == 'last':
+        if variant_name == "last":
             variant_name = list(self.universe.keys())[-1]
 
-        else :
+        else:
             if variant_name not in list(self.parameters.keys()):
                 raise NotAvailableVariantError
 
@@ -378,16 +529,23 @@ class EMDA:
         new_replica = int(max(list(self.universe[variant_name].keys()))[1:]) + 1
 
         if parameters == None:
-            if self.parameters[variant_name].endswith('.pamr7'):
+            if self.parameters[variant_name].endswith(".pamr7"):
                 from parmed import load_file
+
                 parameters_ = load_file(parameters)
 
-            else :
+            else:
                 parameters_ = self.parameters[variant_name]
-        else :
+        else:
             parameters_ = parameters
-            
-        self.universe[variant_name][f"R{new_replica}"] = Universe(parameters_, trajectory, in_memory=self.__load_in_memory, transformations=deepcopy(self.__transformations), guess_bonds=self.__guess_bonds)
+
+        self.universe[variant_name][f"R{new_replica}"] = Universe(
+            parameters_,
+            trajectory,
+            in_memory=self.__load_in_memory,
+            transformations=deepcopy(self.__transformations),
+            guess_bonds=self.__guess_bonds,
+        )
 
         # Adds new variant and replica to existing measures
         for measure in list(self.measures.keys()):
@@ -395,9 +553,8 @@ class EMDA:
 
         if self.__unwrap:
             self.unwrapping(variant=variant_name, replica=f"R{new_replica}")
-        
-        print(f"A new replica has been loaded to variant {variant_name}!")
 
+        print(f"A new replica has been loaded to variant {variant_name}!")
 
     # function for creating selections (AtomGroups) as a dictionary inside EMDA class
     def select(
@@ -417,10 +574,12 @@ class EMDA:
             sel_input = name
 
         # Creates the selection for all variants
-        self.selections[name] = parse_selection(sel_input=sel_input, sel_type=sel_type, no_backbone=no_backbone)
+        self.selections[name] = parse_selection(
+            sel_input=sel_input, sel_type=sel_type, no_backbone=no_backbone
+        )
 
     # method for checking if a selection has no (or the actual number) atoms
-    def check_selections(self, selection, verbose : bool = False):
+    def check_selections(self, selection, verbose: bool = False):
         """
         DESCRIPTION:
             Method for checking the length of each selection to check it is correct.
@@ -434,10 +593,9 @@ class EMDA:
                 len_ = check_selection(univ, self.selections[selection])
                 if verbose:
                     print(f"Variant {variant}, Replica {replica} has {len_} atoms.")
-                else :
+                else:
                     if len == 0:
                         print(f"Variant {variant}, Replica {replica} has {len_} atoms.")
-
 
     # create method for printing available adders
     def print_available_adders(self):
@@ -492,7 +650,6 @@ class EMDA:
             "Use '>>> help(EMDA.add_***)' to get the complete information of an adder."
         )
 
-    
     # create method for running the measurements
     def run(
         self,
@@ -504,7 +661,7 @@ class EMDA:
         end=-1,
         verbose=False,
         sleep_time=0,
-    ): 
+    ):
         """
         DESCRIPTION:
             Run all the measurements configured in self.measures
@@ -523,8 +680,8 @@ class EMDA:
         # Check that there is at least one measure set
         if len(self.measures) == 0:
             raise EmptyMeasuresError
-        
-        else :
+
+        else:
             pass
 
         # Creates a dict with the same structure as universe. If end is -1, the lenght of each trajectory is read and
@@ -534,12 +691,12 @@ class EMDA:
             for replica, u in self.universe[variant].items():
                 if end == -1 or end > len(u.trajectory):
                     ends[variant][replica] = len(u.trajectory)
-                else :  
+                else:
                     ends[variant][replica] = end
 
         # Creates a dict with the same structure as universe for starts and step.
-        starts = get_dictionary_structure(self.universe, start-1)
-        steps  = get_dictionary_structure(self.universe, step)
+        starts = get_dictionary_structure(self.universe, start - 1)
+        steps = get_dictionary_structure(self.universe, step)
 
         # Convert exclude to list to append precalculated measures if recalculate is False.
         ## If it is True, set measure's result as empty list, so it is overwritten.
@@ -549,8 +706,8 @@ class EMDA:
         elif isinstance(exclude, str):
             excludes = get_dictionary_structure(self.universe, [exclude])
         ###
-            
-        # Checks if there is contents in results and resets the list 
+
+        # Checks if there is contents in results and resets the list
         recalculates = get_dictionary_structure(self.universe, [])
         if isinstance(recalculate, str):
             recalculates = get_dictionary_structure(self.universe, [recalculate])
@@ -580,18 +737,25 @@ class EMDA:
             measures = get_dictionary_structure(self.universe, set())
             for variant in list(self.universe.keys()):
                 for replica in list(self.universe[variant].keys()):
-                    measures[variant][replica] = set(set(self.measures.keys()) - set(excludes[variant][replica]))
+                    measures[variant][replica] = set(
+                        set(self.measures.keys()) - set(excludes[variant][replica])
+                    )
 
         # define function for running measure depending on its type
         def run_measures(self, measures, variant, replica):
 
             # trajectory cycle
             first_cycle = True
-            for ts in tqdm(self.universe[variant][replica].trajectory[starts[variant][replica] : ends[variant][replica] : steps[variant][replica]],
-                           desc=f"Measuring variant {variant}, replica {replica}",
-                           unit=" frame"
-                        ):
-                
+            for ts in tqdm(
+                self.universe[variant][replica].trajectory[
+                    starts[variant][replica] : ends[variant][replica] : steps[variant][
+                        replica
+                    ]
+                ],
+                desc=f"Measuring variant {variant}, replica {replica}",
+                unit=" frame",
+            ):
+
                 # measures cycle
                 for measure in measures[variant][replica]:
                     """
@@ -601,37 +765,87 @@ class EMDA:
                     """
 
                     if self.measures[measure].type == "distance":
-                        run_distance(self, self.measures[measure], variant=variant, replica=replica)
+                        run_distance(
+                            self,
+                            self.measures[measure],
+                            variant=variant,
+                            replica=replica,
+                        )
 
                     elif self.measures[measure].type == "angle":
-                        run_angle(self, self.measures[measure], variant=variant, replica=replica)
+                        run_angle(
+                            self,
+                            self.measures[measure],
+                            variant=variant,
+                            replica=replica,
+                        )
 
                     elif self.measures[measure].type == "dihedral":
-                        run_dihedral(self, self.measures[measure], variant=variant, replica=replica)
+                        run_dihedral(
+                            self,
+                            self.measures[measure],
+                            variant=variant,
+                            replica=replica,
+                        )
 
                     elif self.measures[measure].type == "planar_angle":
-                        run_planar_angle(self, self.measures[measure], variant=variant, replica=replica)
+                        run_planar_angle(
+                            self,
+                            self.measures[measure],
+                            variant=variant,
+                            replica=replica,
+                        )
 
                     elif self.measures[measure].type == "contacts":
-                        run_contacts(self, self.measures[measure], variant=variant, replica=replica)
+                        run_contacts(
+                            self,
+                            self.measures[measure],
+                            variant=variant,
+                            replica=replica,
+                        )
 
                     elif self.measures[measure].type == "per_residue_contacts":
-                        run_per_residue_contacts(self, self.measures[measure], variant=variant, replica=replica)
+                        run_per_residue_contacts(
+                            self,
+                            self.measures[measure],
+                            variant=variant,
+                            replica=replica,
+                        )
 
                     elif self.measures[measure].type == "RMSD":
-                        run_RMSD(self, self.measures[measure], variant=variant, replica=replica)
+                        run_RMSD(
+                            self,
+                            self.measures[measure],
+                            variant=variant,
+                            replica=replica,
+                        )
 
                     elif self.measures[measure].type == "radius_of_gyration":
-                        run_radius_of_gyration(self, self.measures[measure], variant=variant, replica=replica)
+                        run_radius_of_gyration(
+                            self,
+                            self.measures[measure],
+                            variant=variant,
+                            replica=replica,
+                        )
 
                     elif self.measures[measure].type == "distWATbridge":
-                        run_distWATbridge(self, self.measures[measure], variant=variant, replica=replica)
+                        run_distWATbridge(
+                            self,
+                            self.measures[measure],
+                            variant=variant,
+                            replica=replica,
+                        )
 
                     elif self.measures[measure].type == "pka":
                         if first_cycle:
                             check_folder(self.measures[measure].options["pdb_folder"])
 
-                        run_pka(self, self.measures[measure], variant=variant, replica=replica)
+                        run_pka(
+                            self,
+                            self.measures[measure],
+                            variant=variant,
+                            replica=replica,
+                        )
 
                     else:
                         if first_cycle:
@@ -647,24 +861,26 @@ class EMDA:
             # remove ts variable to restart the trajectory cycle. Maybe it is not necessary
             del ts
 
-
         # run the measurements. Depending on the amount of variants and replicas, different progressbars will be shown
         if len(self.universe) == 1:
             variant = list(self.universe.keys())[0]
             if len(self.universe[variant]) == 1:
                 replica = list(self.universe[variant].keys())[0]
                 run_measures(self, measures=measures, variant=variant, replica=replica)
-            else :
-                print('single variant, multireplica')
-                for replica in tqdm(list(self.universe[variant].keys()),
-                                    desc="Replica",
-                                    unit=" repl"
-                                ):
-                    run_measures(self, measures=measures, variant=variant, replica=replica)
+            else:
+                print("single variant, multireplica")
+                for replica in tqdm(
+                    list(self.universe[variant].keys()), desc="Replica", unit=" repl"
+                ):
+                    run_measures(
+                        self, measures=measures, variant=variant, replica=replica
+                    )
 
-        else :
+        else:
             # variants cycle
-            for variant in tqdm(list(self.universe.keys()), desc='Variants', unit=' var'):
+            for variant in tqdm(
+                list(self.universe.keys()), desc="Variants", unit=" var"
+            ):
                 if verbose:
                     print(f"Starting variant {variant} ")
                 # replicas cycle
@@ -672,74 +888,89 @@ class EMDA:
                 for replica in list(self.universe[variant].keys()):
                     r_num += 1
                     if verbose:
-                        print(f"Starting replica {replica} ({r_num} of {len(self.universe[variant].keys())})")
-                    run_measures(self, measures=measures, variant=variant, replica=replica)
+                        print(
+                            f"Starting replica {replica} ({r_num} of {len(self.universe[variant].keys())})"
+                        )
+                    run_measures(
+                        self, measures=measures, variant=variant, replica=replica
+                    )
 
+    save_format_types = Literal["json", "yaml", "yml", "pkl", "pickle"]
 
-
-
-    save_format_types = Literal['json', 'yaml', 'yml', 'pkl', 'pickle']
-    def save(self, out_name : str = 'EMDA', out_format : save_format_types = 'pkl', save_measure : bool = True, save_analyses : bool = True, save_selections : bool = True):
+    def save(
+        self,
+        out_name: str = "EMDA",
+        out_format: save_format_types = "pkl",
+        save_measure: bool = True,
+        save_analyses: bool = True,
+        save_selections: bool = True,
+    ):
         """
         DESCRIPTION:
             EMDA's method for saving into a pickle file the result attribute of a Measure class or an Analysis class.
         """
 
-        if out_format not in ('json', 'yaml', 'yml', 'pkl', 'pickle'):
+        if out_format not in ("json", "yaml", "yml", "pkl", "pickle"):
             raise TypeError
-        
-        if save_measure :
+
+        if save_measure:
             measures = {}
             for measure_name, measure_class in self.measures.items():
                 measures[measure_name] = {
-                    'name'      : measure_class.name,
-                    'type'      : measure_class.type,
-                    'sel'       : measure_class.sel,
-                    'options'   : measure_class.options,
-                    'result'    : measure_class.result
+                    "name": measure_class.name,
+                    "type": measure_class.type,
+                    "sel": measure_class.sel,
+                    "options": measure_class.options,
+                    "result": measure_class.result,
                 }
 
-        if save_analyses :
+        if save_analyses:
             analyses = {}
             for analysis_name, analysis_class in self.analyses.items():
                 analyses[analysis_name] = {
-                    'name'          : analysis_class.name,
-                    'type'          : analysis_class.type,
-                    'measure_name'  : analysis_class.measure_name,
-                    'options'       : analysis_class.options,
-                    'result'        : analysis_class.result
+                    "name": analysis_class.name,
+                    "type": analysis_class.type,
+                    "measure_name": analysis_class.measure_name,
+                    "options": analysis_class.options,
+                    "result": analysis_class.result,
                 }
 
-
         to_save = {
-            'measures'      : measures,
-            'analyses'      : analyses,
-            'selections'    : self.selections
+            "measures": measures,
+            "analyses": analyses,
+            "selections": self.selections,
         }
 
-
-        if out_format in  ('json'):
+        if out_format in ("json"):
             from json import dump
 
-            with open(f"{out_name}.{out_format}", 'w') as out_file:
+            with open(f"{out_name}.{out_format}", "w") as out_file:
                 dump(to_save, out_file)
 
-        elif out_format in ('yml', 'yaml'):
+        elif out_format in ("yml", "yaml"):
             from yaml import safe_dump as dump
 
-            with open(f"{out_name}.{out_format}", 'w') as out_file:
+            with open(f"{out_name}.{out_format}", "w") as out_file:
                 dump(to_save, out_file)
-            
-        elif out_format in ('pkl', 'pickle'):
+
+        elif out_format in ("pkl", "pickle"):
             from pickle import dump, HIGHEST_PROTOCOL
-            
-            with open(f"{out_name}.{out_format}", 'wb') as out_file:
+
+            with open(f"{out_name}.{out_format}", "wb") as out_file:
                 dump(to_save, out_file, protocol=HIGHEST_PROTOCOL)
 
-        print(f"EMDA's measures and analyses have been saved as {out_name}.{out_format}")
+        print(
+            f"EMDA's measures and analyses have been saved as {out_name}.{out_format}"
+        )
 
-
-    def load(self, file_name, format : str = None, load_measure : bool = True, load_analyses : bool = True, load_selections : bool = True):
+    def load(
+        self,
+        file_name,
+        format: str = None,
+        load_measure: bool = True,
+        load_analyses: bool = True,
+        load_selections: bool = True,
+    ):
         """
         DESCRIPTION:
             Method for loading pre-stored EMDA's measurements and analyses. Please, load the trajectories before loading the stored measures and analyses.
@@ -747,70 +978,71 @@ class EMDA:
         """
 
         if format == None:
-            format = file_name.split('.')[-1]
+            format = file_name.split(".")[-1]
 
-        if format in  ('json'):
+        if format in ("json"):
             from json import load
 
-        elif format in ('yml', 'yaml'):
+        elif format in ("yml", "yaml"):
             from yaml import safe_load as load
 
-        elif format in ('pkl', 'pickle'):
+        elif format in ("pkl", "pickle"):
             from pickle import load
 
-        with open(file_name, 'rb') as in_file:
+        with open(file_name, "rb") as in_file:
             to_load = load(in_file)
 
-        if len(to_load['measures']) > 0 and load_measure:
-            for measure_name, measure in to_load['measures'].items():
+        if len(to_load["measures"]) > 0 and load_measure:
+            for measure_name, measure in to_load["measures"].items():
 
                 if measure_name in list(self.measures.keys()):
-                    for variant in list(measure['result'].keys()):
+                    for variant in list(measure["result"].keys()):
                         self.measures[measure_name].result[variant] = {}
-                        for replica in list(measure['result'][variant].keys()):
-                            self.measures[measure_name].result[variant][replica] = measure['result'][variant][replica]
+                        for replica in list(measure["result"][variant].keys()):
+                            self.measures[measure_name].result[variant][replica] = (
+                                measure["result"][variant][replica]
+                            )
 
-                else :
+                else:
                     self.measures[measure_name] = self.Measure(
-                        name = measure['name'],
-                        type = measure['type'],
-                        sel  = measure['sel'],
-                        options = measure['options'],
-                        result = measure['result']
+                        name=measure["name"],
+                        type=measure["type"],
+                        sel=measure["sel"],
+                        options=measure["options"],
+                        result=measure["result"],
                     )
 
-            print('EMDA measures have been loaded!')
+            print("EMDA measures have been loaded!")
 
-
-        if len(to_load['analyses']) > 0 and load_analyses:
-            for analysis_name, analysis in to_load['analyses'].items():
+        if len(to_load["analyses"]) > 0 and load_analyses:
+            for analysis_name, analysis in to_load["analyses"].items():
 
                 if analysis_name in list(self.analyses.keys()):
-                    for variant in list(analysis['result'].keys()):
+                    for variant in list(analysis["result"].keys()):
                         self.analyses[analysis_name].result[variant] = {}
-                        for replica in list(analysis['result'][variant].keys()):
-                            self.analyses[analysis_name].result[variant][replica] = analysis['result'][variant][replica]
+                        for replica in list(analysis["result"][variant].keys()):
+                            self.analyses[analysis_name].result[variant][replica] = (
+                                analysis["result"][variant][replica]
+                            )
 
-                else :
+                else:
                     self.analyses[analysis_name] = self.Analysis(
-                        name = analysis['name'],
-                        type = analysis['type'],
-                        measure_name  = analysis['measure_name'],
-                        options = analysis['options'],
-                        result = analysis['result']
+                        name=analysis["name"],
+                        type=analysis["type"],
+                        measure_name=analysis["measure_name"],
+                        options=analysis["options"],
+                        result=analysis["result"],
                     )
 
-            print('EMDA analyses have been loaded!')
+            print("EMDA analyses have been loaded!")
 
-        if len(to_load['selections']) > 0 and load_selections:
+        if len(to_load["selections"]) > 0 and load_selections:
             if len(self.selections) == 0:
-                self.selections = to_load['selections']
+                self.selections = to_load["selections"]
 
-            else :
-                for selection in to_load['selections']:
+            else:
+                for selection in to_load["selections"]:
                     if selection not in list(self.selections):
-                        self.selections[selection] = to_load['selections'][selection]
+                        self.selections[selection] = to_load["selections"][selection]
 
-
-            print('EMDA selections have been loaded!')
-
+            print("EMDA selections have been loaded!")
