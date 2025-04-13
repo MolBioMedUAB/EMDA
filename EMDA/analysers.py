@@ -950,4 +950,5 @@ def averager(self, measure_name, round_decimals=3, std=3, return_data=False):
                         ),
                     )
 
-    return data
+    if return_data:
+        return data
