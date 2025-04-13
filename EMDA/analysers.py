@@ -886,7 +886,7 @@ def analyse_probability_density(
     )
 
 
-def averager(self, measure_name, round_decimals=3, std=3, return_data=False):
+def averager(self, measure_name, round_decimals=3, std=3, print_labels=True, return_data=False):
 
     # Check if plotting as plotter or as class' method
     if measure_name == None:
@@ -910,7 +910,18 @@ def averager(self, measure_name, round_decimals=3, std=3, return_data=False):
 
     for v_num, variant in enumerate(list(measure_obj.result.keys())):
         for r_num, replica in enumerate(list(measure_obj.result[variant].keys())):
-            if std:
+            if std and print_labels:
+                print(
+                    f'{variant} - {replica}:',
+                    round(
+                        np.average(measure_obj.result[variant][replica]), round_decimals
+                    ),
+                    "±",
+                    round(np.std(measure_obj.result[variant][replica]), round_decimals),
+                    "Å",
+                )
+
+            elif std and not print_labels:
                 print(
                     round(
                         np.average(measure_obj.result[variant][replica]), round_decimals
@@ -920,7 +931,16 @@ def averager(self, measure_name, round_decimals=3, std=3, return_data=False):
                     "Å",
                 )
 
-            else:
+            elif not std and print_labels:
+                print(
+                    f'{variant} - {replica}:',
+                    round(
+                        np.average(measure_obj.result[variant][replica]), round_decimals
+                    ),
+                    "Å",
+                )
+
+            elif not std and not print_labels:
                 print(
                     round(
                         np.average(measure_obj.result[variant][replica]), round_decimals

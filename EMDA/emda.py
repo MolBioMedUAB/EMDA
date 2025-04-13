@@ -307,7 +307,7 @@ class EMDA:
             )
 
         def average(
-            self, round_decimals=3, std=True, return_data=False
+            self, round_decimals=3, std=True, print_labels=True, return_data=False
         ):
             """
             DESCRIPTION:
@@ -319,6 +319,7 @@ class EMDA:
                 measure_name=None,
                 round_decimals=round_decimals,
                 std=std,
+                print_labels=print_labels,
                 return_data=return_data,
             )
 
