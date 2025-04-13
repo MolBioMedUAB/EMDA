@@ -233,6 +233,13 @@ class EMDA:
         def plot(self, same_y : bool = True, same_x : bool = True, axis_label_everywhere=False, combine_replicas=False, out_name=None):
             plot_measure(self, measure_name=None, same_y=same_y, same_x=same_x, axis_label_everywhere=axis_label_everywhere, combine_replicas=combine_replicas, out_name=out_name)
 
+        def average(self, measure_name=None, round_decimals=3, std=True):
+            """
+            DESCRIPTION:
+                Calculates the average of the measure's results. It is not implemented yet.
+            """
+            pass
+
     # create Analysis dataclass
     @dataclass
     class Analysis:
