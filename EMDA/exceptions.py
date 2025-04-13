@@ -191,6 +191,22 @@ class NotCompatibleMeasureForPlotterError(Exception):
 
     pass
 
+class NotCompatibleMeasureForAverageError(Exception):
+    """
+    Raised when the measure to analyse is not of an accepted type by the analyser.
+    """
+
+    def __init__(self, measure=None):
+        if measure == None:
+            Exception.__init__(
+                self, "The input measure is not compatible with the chosen analysis."
+            )
+        else :
+            Exception.__init__(
+                self, f"The input measure ({measure}) is not compatible with the chosen analysis."
+            )
+    pass
+
 class NotCompatibleContactsFormatError(Exception):
     """
     Raised when the contacts format is not the new one.
@@ -278,4 +294,7 @@ class NotCompatibleTransformations(Exception):
             self, 
             "The requested transformations cannot be combined. Check the class' documentation."
         )
+
+
+
 

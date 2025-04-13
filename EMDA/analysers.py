@@ -3,7 +3,9 @@ from .exceptions import (
     NotCompatibleMeasureForAnalysisError,
     NotAvailableOptionError,
     NotAvailableAnalysisError,
-    NotAvailableMeasureError
+    NotAvailableMeasureError,
+    NotCompatibleMeasureForAverageError,
+    #NotCompatibleMeasureForPlotterError
 )
 from .exceptions import (
     NotCompatibleAnalysisForAnalysisError,
@@ -712,3 +714,56 @@ def analyse_probability_density(self, name, measures, bw_method = 'scott', get_b
             "merge_replicas"    : merge_replicas
         }
     )
+
+
+
+
+def average(self, measure_name, round_decimals=3, std=3, return_data=False):
+
+    # Check if plotting as plotter or as class' method
+    if measure_name == None:
+        measure_obj = self
+    else :
+        measure_obj = self.measures[measure_name]
+
+    
+    if measure_obj.type not in ("distance", "angle", "dihedral", "RMSD", "planar_angle", "contacts_amount", "radius_of_gyration"):
+        raise NotCompatibleMeasureForAverageError
+    
+    if return_data:
+        data = get_dictionary_structure(measure_obj.result, [])
+
+
+    for v_num, variant in enumerate(list(measure_obj.result.keys())):
+        for r_num, replica in enumerate(list(measure_obj.result[variant].keys())):
+            if std :
+                print(
+                round(np.average(measure_obj.result[variant][replica]), round_decimals),
+                '±',
+                round(np.std(measure_obj.result[variant][replica]), round_decimals),
+                'Å'
+                )
+            
+            else :
+                print(
+                    round(np.average(measure_obj.result[variant][replica]), round_decimals),
+                    'Å'
+                )
+
+            if return_data:
+                if std:
+                    data[variant][replica].append(
+                        (
+                            round(np.average(measure_obj.result[variant][replica]), round_decimals),
+                            round(np.std(measure_obj.result[variant][replica]), round_decimals),
+                        )
+                    )
+                else :
+                    data[variant][replica].append(
+                            round(np.average(measure_obj.result[variant][replica]), round_decimals),
+                    )
+
+
+                
+    return data
+
