@@ -314,7 +314,7 @@ class EMDA:
                 Calculates the average of the measure's results. It is not implemented yet.
             """
 
-            average(
+            averager(
                 self,
                 measure_name=None,
                 round_decimals=round_decimals,

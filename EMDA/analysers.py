@@ -5,7 +5,7 @@ from .exceptions import (
     NotAvailableAnalysisError,
     NotAvailableMeasureError,
     NotCompatibleMeasureForAverageError,
-    #NotCompatibleMeasureForPlotterError
+    # NotCompatibleMeasureForPlotterError
 )
 from .exceptions import (
     NotCompatibleAnalysisForAnalysisError,
@@ -31,8 +31,12 @@ AVAILABLE ANALYSERS:
     - analyse_probability_density: 
 """
 
-__analyse_value_types = Literal['thres', 'threshold', 'tol', 'tolerance']
-def analyse_value(self, name, measure, val1, val2=0, mode : __analyse_value_types = "thres"):
+__analyse_value_types = Literal["thres", "threshold", "tol", "tolerance"]
+
+
+def analyse_value(
+    self, name, measure, val1, val2=0, mode: __analyse_value_types = "thres"
+):
     """
     DESCRIPTION:
         Analyser for checking if a value in the frame is between to given values. Threshold (a upper and lower (default is 0) limits) \
@@ -54,20 +58,27 @@ def analyse_value(self, name, measure, val1, val2=0, mode : __analyse_value_type
 
     # If measure, check type and return the Measure as obj
     if measure in list(self.measures.keys()):
-        if self.measures[measure].type not in ("distance", "angle", "dihedral", "planar_angle"):
+        if self.measures[measure].type not in (
+            "distance",
+            "angle",
+            "dihedral",
+            "planar_angle",
+        ):
             raise NotCompatibleMeasureForAnalysisError
-        
+
         obj = self.measures[measure]
-    
+
     # If analysis, check type and return the Analysis as obj
     elif measure in list(self.analyses.keys()):
-        if self.analyses[measure].type in ("contacts_amounts") and self.analyses[measure].options["mode"] in ("contacts"):
+        if self.analyses[measure].type in ("contacts_amounts") and self.analyses[
+            measure
+        ].options["mode"] in ("contacts"):
             pass
-        else :
+        else:
             raise NotCompatibleAnalysisForAnalysisError
-        
+
         obj = self.analyses[measure]
-        
+
     # define max and min values depending on mode,
     if mode.lower() in ("tol", "tolerance"):
         min_val, max_val = val1 - val2, val1 + val2
@@ -77,7 +88,7 @@ def analyse_value(self, name, measure, val1, val2=0, mode : __analyse_value_type
 
     else:
         raise NotAvailableOptionError
-    
+
     # Analyse results
     results = get_dictionary_structure(obj.result, [])
     for variant in list(obj.result.keys()):
@@ -85,14 +96,19 @@ def analyse_value(self, name, measure, val1, val2=0, mode : __analyse_value_type
             for result in obj.result[variant][replica]:
                 results[variant][replica].append(min_val < result < max_val)
 
-
     # save result
     self.analyses[name] = self.Analysis(
         name=name, type="value", measure_name=measure, result=results, options={}
     )
 
 
-def analyse_contacts_frequency(self, name, measure, percentage : bool = False, normalise_to_most_frequent : bool = False):
+def analyse_contacts_frequency(
+    self,
+    name,
+    measure,
+    percentage: bool = False,
+    normalise_to_most_frequent: bool = False,
+):
     """
     DESCRIPTION:
         Analyser for calculating the frequency (in absolute value or %) of the calculated contacts.
@@ -124,22 +140,27 @@ def analyse_contacts_frequency(self, name, measure, percentage : bool = False, n
                 if percentage and not normalise_to_most_frequent:
                     for residue in list(contacts_freqs[variant][replica].keys()):
                         contacts_freqs[variant][replica][residue] = (
-                            contacts_freqs[variant][replica][residue] * 100 / len(self.measures[measure].result[variant][replica])
+                            contacts_freqs[variant][replica][residue]
+                            * 100
+                            / len(self.measures[measure].result[variant][replica])
                         )
 
                 elif not percentage and normalise_to_most_frequent:
                     for residue in list(contacts_freqs[variant][replica].keys()):
-                        contacts_freqs[variant][replica][residue] = (
-                            contacts_freqs[variant][replica][residue] / max(contacts_freqs[variant][replica].values())
+                        contacts_freqs[variant][replica][residue] = contacts_freqs[
+                            variant
+                        ][replica][residue] / max(
+                            contacts_freqs[variant][replica].values()
                         )
 
                 elif percentage and normalise_to_most_frequent:
                     for residue in list(contacts_freqs[variant][replica].keys()):
                         contacts_freqs[variant][replica][residue] = (
-                            contacts_freqs[variant][replica][residue] * 100/ max(contacts_freqs[variant][replica].values())
+                            contacts_freqs[variant][replica][residue]
+                            * 100
+                            / max(contacts_freqs[variant][replica].values())
                         )
-        
-        
+
     elif self.measures[measure].type == "per_residue_contacts":
         contacts_freqs = get_dictionary_structure(self.measures[measure].result, {})
         for variant in list(self.measures[measure].result.keys()):
@@ -147,7 +168,10 @@ def analyse_contacts_frequency(self, name, measure, percentage : bool = False, n
 
                 # create dict containing the residue name as key and a list as value. In this list, each contact in each frame will be stored
                 total_contacts = {
-                    resid: [] for resid in list(self.measures[measure].result[variant][replica][0].keys())
+                    resid: []
+                    for resid in list(
+                        self.measures[measure].result[variant][replica][0].keys()
+                    )
                 }
 
                 for frame in self.measures[measure].result[variant][replica]:
@@ -156,75 +180,113 @@ def analyse_contacts_frequency(self, name, measure, percentage : bool = False, n
 
                 contacts_freqs[variant][replica] = {}
                 for residue in list(total_contacts.keys()):
-                
+
                     if percentage and not normalise_to_most_frequent:
                         contacts_freqs[variant][replica][residue] = {
-                            residue_from_tot : total_contacts[residue].count(residue_from_tot) * 100 / len(self.measures[measure].result[variant][replica]) for residue_from_tot in list(set(list(total_contacts[residue])))
+                            residue_from_tot: total_contacts[residue].count(
+                                residue_from_tot
+                            )
+                            * 100
+                            / len(self.measures[measure].result[variant][replica])
+                            for residue_from_tot in list(
+                                set(list(total_contacts[residue]))
+                            )
                         }
 
                     elif not percentage or normalise_to_most_frequent:
                         contacts_freqs[variant][replica][residue] = {
-                            residue_from_tot: total_contacts[residue].count(residue_from_tot) for residue_from_tot in list(set(list(total_contacts[residue])))
+                            residue_from_tot: total_contacts[residue].count(
+                                residue_from_tot
+                            )
+                            for residue_from_tot in list(
+                                set(list(total_contacts[residue]))
+                            )
                         }
 
                 if normalise_to_most_frequent:
                     if percentage:
                         max_value = 0
                         for residue in list(contacts_freqs[variant][replica].keys()):
-                            if max_value < max(list(contacts_freqs[variant][replica][residue].values())): 
-                                max_value = max(list(contacts_freqs[variant][replica][residue].values()))
+                            if max_value < max(
+                                list(contacts_freqs[variant][replica][residue].values())
+                            ):
+                                max_value = max(
+                                    list(
+                                        contacts_freqs[variant][replica][
+                                            residue
+                                        ].values()
+                                    )
+                                )
 
                         for residue in list(contacts_freqs[variant][replica].keys()):
-                            for residue_ in list(contacts_freqs[variant][replica][residue].keys()):
-                                contacts_freqs[variant][replica][residue][residue_] = contacts_freqs[variant][replica][residue][residue_] * 100 / max_value
+                            for residue_ in list(
+                                contacts_freqs[variant][replica][residue].keys()
+                            ):
+                                contacts_freqs[variant][replica][residue][residue_] = (
+                                    contacts_freqs[variant][replica][residue][residue_]
+                                    * 100
+                                    / max_value
+                                )
 
                     elif not percentage:
                         max_value = 0
                         for residue in list(contacts_freqs[variant][replica].keys()):
-                            if max_value < max(list(contacts_freqs[variant][replica][residue].values())): 
-                                max_value = max(list(contacts_freqs[variant][replica][residue].values()))
+                            if max_value < max(
+                                list(contacts_freqs[variant][replica][residue].values())
+                            ):
+                                max_value = max(
+                                    list(
+                                        contacts_freqs[variant][replica][
+                                            residue
+                                        ].values()
+                                    )
+                                )
 
-
-                        #max(list(contacts_freqs[variant][replica].values()))
+                        # max(list(contacts_freqs[variant][replica].values()))
                         for residue in list(contacts_freqs[variant][replica].keys()):
-                            for residue_ in list(contacts_freqs[variant][replica][residue].keys()):
-                                contacts_freqs[variant][replica][residue][residue_] = contacts_freqs[variant][replica][residue][residue_] / max_value
+                            for residue_ in list(
+                                contacts_freqs[variant][replica][residue].keys()
+                            ):
+                                contacts_freqs[variant][replica][residue][residue_] = (
+                                    contacts_freqs[variant][replica][residue][residue_]
+                                    / max_value
+                                )
 
-                    #if percentage and not normalise_to_most_frequent:
+                    # if percentage and not normalise_to_most_frequent:
                     #    for residue in list(contacts_freqs[variant][replica].keys()):
                     #        contacts_freqs[variant][replica][residue] = (
                     #            contacts_freqs[variant][replica][residue] * 100 / len(self.measures[measure].result[variant][replica])
                     #        )
-#
-                    #elif not percentage and normalise_to_most_frequent:
-                    #    for residue in list(contacts_freqs[variant][replica].keys()):
-                    #        contacts_freqs[variant][replica][residue] = (
-                    #            contacts_freqs[variant][replica][residue] / max(contacts_freqs[variant][replica].values())
-                    #        )
-#
-                    #elif percentage and normalise_to_most_frequent:
-                    #    for residue in list(contacts_freqs[variant][replica].keys()):
-                    #        contacts_freqs[variant][replica][residue] = (
-                    #            contacts_freqs[variant][replica][residue] * 100/ max(contacts_freqs[variant][replica].values())
-                    #        )
-#
-    else :#
+    #
+    # elif not percentage and normalise_to_most_frequent:
+    #    for residue in list(contacts_freqs[variant][replica].keys()):
+    #        contacts_freqs[variant][replica][residue] = (
+    #            contacts_freqs[variant][replica][residue] / max(contacts_freqs[variant][replica].values())
+    #        )
+    #
+    # elif percentage and normalise_to_most_frequent:
+    #    for residue in list(contacts_freqs[variant][replica].keys()):
+    #        contacts_freqs[variant][replica][residue] = (
+    #            contacts_freqs[variant][replica][residue] * 100/ max(contacts_freqs[variant][replica].values())
+    #        )
+    #
+    else:  #
         raise NotCompatibleMeasureForAnalysisError
 
     # per_residue_contacts-related code
-    #if self.measures[measure].options["mode"] == "protein":
+    # if self.measures[measure].options["mode"] == "protein":
     #    # create dict containing the residue name as key and a list as value. In this list, each contact in each frame will be stored
     #    total_contacts = {
     #        resid: [] for resid in list(self.measures[measure].result[0].keys())
     #    }
-#
+    #
     #    for frame in self.measures[measure].result:
     #        for resid in list(total_contacts.keys()):
     #            total_contacts[resid] += list(frame[resid].keys())
-#
+    #
     #    contacts_freq = {}
     #    for residue in list(total_contacts.keys()):
-#
+    #
     #        if percentage:
     #            contacts_freq[residue] = {
     #                residue_from_tot: total_contacts[residue].count(residue_from_tot)
@@ -232,16 +294,12 @@ def analyse_contacts_frequency(self, name, measure, percentage : bool = False, n
     #                / len(self.measures[measure].result)
     #                for residue_from_tot in list(set(list(total_contacts[residue])))
     #            }
-#
+    #
     #        elif not percentage:
     #            contacts_freq[residue] = {
     #                residue_from_tot: total_contacts[residue].count(residue_from_tot)
     #                for residue_from_tot in list(set(list(total_contacts[residue])))
     #            }
-
-
-    
-        
 
     self.analyses[name] = self.Analysis(
         name=name,
@@ -265,8 +323,8 @@ def analyse_contacts_amount(self, name, measure):
             A frame-wise list containing the number of contacts for each frame.
     """
 
-    if self.measures[measure].type  == "contacts":
-        
+    if self.measures[measure].type == "contacts":
+
         contacts_amount = get_dictionary_structure(self.measures[measure].result, [])
         for variant in list(self.measures[measure].result.keys()):
             for replica in list(self.measures[measure].result[variant].keys()):
@@ -283,14 +341,20 @@ def analyse_contacts_amount(self, name, measure):
 
                 for frame in self.measures[measure].result[variant][replica]:
                     contacts_amount[variant][replica].append(
-                        {resid: [] for resid in list(self.measures[measure].result[variant][replica][0].keys())}
+                        {
+                            resid: []
+                            for resid in list(
+                                self.measures[measure]
+                                .result[variant][replica][0]
+                                .keys()
+                            )
+                        }
                     )
                     for resid in list(contacts_amount[variant][replica][-1].keys()):
                         contacts_amount[variant][replica][-1][resid] = len(frame[resid])
 
-    else :
+    else:
         raise NotCompatibleMeasureForAnalysisError
-
 
     self.analyses[name] = self.Analysis(
         name=name,
@@ -302,8 +366,13 @@ def analyse_contacts_amount(self, name, measure):
         result=contacts_amount,
     )
 
-__analyse_contacts_presence_mode_types = Literal['all', 'any']
-def analyse_contacts_presence(self, name, measure, contact, mode : __analyse_contacts_presence_mode_types = 'all'):
+
+__analyse_contacts_presence_mode_types = Literal["all", "any"]
+
+
+def analyse_contacts_presence(
+    self, name, measure, contact, mode: __analyse_contacts_presence_mode_types = "all"
+):
     """
     DESCRIPTION:
         Analyser for checking if a contacts or contacts is/are present in a contacts analysis. If the contact is present, a True is returned-.
@@ -316,31 +385,35 @@ def analyse_contacts_presence(self, name, measure, contact, mode : __analyse_con
     """
 
     # check the type of the measure type
-    if self.measures[measure].type not in ('contacts'):
+    if self.measures[measure].type not in ("contacts"):
         raise NotCompatibleMeasureForAnalysisError
-    
+
     # fix contact list if str is input
     if isinstance(contact, (str, int)):
         contact = [str(contact)]
-    
+
     result = get_dictionary_structure(self.measures[measure].result, [])
     for variant in list(self.measures[measure].result.keys()):
         for replica in list(self.measures[measure].result[variant].keys()):
             for frame in range(len(self.measures[measure].result[variant][replica])):
-                contacting = [ contacting_resid[3:] for contacting_resid in list(self.measures[measure].result[variant][replica][frame].keys())]
+                contacting = [
+                    contacting_resid[3:]
+                    for contacting_resid in list(
+                        self.measures[measure].result[variant][replica][frame].keys()
+                    )
+                ]
                 result_ = []
                 for c in contact:
                     if c in contacting:
                         result_.append(True)
-                    else :
+                    else:
                         result_.append(False)
 
-                if mode == 'all':
+                if mode == "all":
                     result[variant][replica].append(all(result_))
-                elif mode == 'any':
+                elif mode == "any":
                     result[variant][replica].append(any(result_))
 
-            
     self.analyses[name] = self.Analysis(
         name=name,
         type="contacts_presence",
@@ -352,9 +425,8 @@ def analyse_contacts_presence(self, name, measure, contact, mode : __analyse_con
     )
 
 
-#def analyse_NACs(self, name, analyses : list, merge_replicas : bool = False, invert : list = False):
-def analyse_NACs(self, name, analyses : list, invert : list = False):
-
+# def analyse_NACs(self, name, analyses : list, merge_replicas : bool = False, invert : list = False):
+def analyse_NACs(self, name, analyses: list, invert: list = False):
     """
     DESCRIPTION:
         Metaanalyser (analyses two or more analyses) for combining boolean-output Analysis. It reads the boolean value corresponding to each analysis and returns True if all are True.
@@ -368,7 +440,7 @@ def analyse_NACs(self, name, analyses : list, invert : list = False):
 
     # Check if input analyses are of the proper type
     if len(analyses) < 2:
-        raise NotEnoughDataError(2) 
+        raise NotEnoughDataError(2)
 
     for analysis in analyses:
         if self.analyses[analysis].type not in ("value", "contacts_presence"):
@@ -381,54 +453,85 @@ def analyse_NACs(self, name, analyses : list, invert : list = False):
                     f"{invert_} is not in analyses, so it's value will not be inverted."
                 )
 
-    #if not merge_replicas:
+    # if not merge_replicas:
 
     lengths = get_dictionary_structure(self.analyses[analyses[0]].result, {})
 
     for variant in list(self.analyses[analyses[0]].result.keys()):
         for replica in list(self.analyses[analyses[0]].result[variant].keys()):
             # Check if all analyses in same replica have the same number of frames
-            lengths[variant][replica] = get_most_frequent([ len(self.analyses[analysis].result[variant][replica]) for analysis in analyses ])
-            
-            # Check those replicas with different length
-            not_equal = [ analysis for analysis in analyses if len(self.analyses[analysis].result[variant][replica]) != lengths[variant][replica] ]
+            lengths[variant][replica] = get_most_frequent(
+                [
+                    len(self.analyses[analysis].result[variant][replica])
+                    for analysis in analyses
+                ]
+            )
 
+            # Check those replicas with different length
+            not_equal = [
+                analysis
+                for analysis in analyses
+                if len(self.analyses[analysis].result[variant][replica])
+                != lengths[variant][replica]
+            ]
 
     if len(not_equal) != 0:
         raise NotEqualLenghtsError(list_names=not_equal)
 
-
-    results = get_dictionary_structure(self.analyses[analyses[0]].result, []) 
+    results = get_dictionary_structure(self.analyses[analyses[0]].result, [])
     for variant in list(self.analyses[analyses[0]].result.keys()):
         for replica in list(self.analyses[analyses[0]].result[variant].keys()):
-            #result_ = True
-            for frame in range(len(self.analyses[analyses[0]].result[variant][replica])):
+            # result_ = True
+            for frame in range(
+                len(self.analyses[analyses[0]].result[variant][replica])
+            ):
                 result_ = True
                 for analysis in analyses:
                     # check if analysis name is false or different
                     if invert == False:
-                        result_ = result_ and self.analyses[analysis].result[variant][replica][frame]
-                    
-                    else :
+                        result_ = (
+                            result_
+                            and self.analyses[analysis].result[variant][replica][frame]
+                        )
+
+                    else:
                         # check if analysis name is in invert or not
                         if analysis not in invert:
-                            result_ = result_ and self.analyses[analysis].result[variant][replica][frame]
+                            result_ = (
+                                result_
+                                and self.analyses[analysis].result[variant][replica][
+                                    frame
+                                ]
+                            )
                         elif analysis in invert:
-                            result_ = result_ and not self.analyses[analysis].result[variant][replica][frame]
-                    
+                            result_ = (
+                                result_
+                                and not self.analyses[analysis].result[variant][
+                                    replica
+                                ][frame]
+                            )
+
                 results[variant][replica].append(result_)
-                    
 
     self.analyses[name] = self.Analysis(
         name=name,
         type="NACs",
         measure_name=analyses,
         result=results,
-        options = {}#"merge_replicas" : merge_replicas}
+        options={},  # "merge_replicas" : merge_replicas}
     )
 
 
-def analyse_probability_density(self, name, measures, bw_method = 'scott', get_basins : bool = True, num_of_points = None, merge_replicas : bool = True, print_results : bool = False):
+def analyse_probability_density(
+    self,
+    name,
+    measures,
+    bw_method="scott",
+    get_basins: bool = True,
+    num_of_points=None,
+    merge_replicas: bool = True,
+    print_results: bool = False,
+):
     """
     DESCRIPTION:
         Analyser for getting the probability map for a certain event (distance, for instance).
@@ -439,15 +542,26 @@ def analyse_probability_density(self, name, measures, bw_method = 'scott', get_b
         - get_basins:   gets the minima get_density_v4.py script.
     """
 
-    #SOURCE:
+    # SOURCE:
     #    Code from Bruno Victor
 
-    if self.measures[measures[0]].type not in ('distance', 'angle', 'dihedral', 'planar_angle', 'RMSD'):#, 'contacts_amount'):
+    if self.measures[measures[0]].type not in (
+        "distance",
+        "angle",
+        "dihedral",
+        "planar_angle",
+        "RMSD",
+    ):  # , 'contacts_amount'):
         raise NotCompatibleMeasureForAnalysisError(measure=measures[0])
-    
-    if self.measures[measures[1]].type not in ('distance', 'angle', 'dihedral', 'planar_angle', 'RMSD'):#, 'contacts_amount'):
-        raise NotCompatibleMeasureForAnalysisError(measure=measures[1])
 
+    if self.measures[measures[1]].type not in (
+        "distance",
+        "angle",
+        "dihedral",
+        "planar_angle",
+        "RMSD",
+    ):  # , 'contacts_amount'):
+        raise NotCompatibleMeasureForAnalysisError(measure=measures[1])
 
     # Find maximum value in a 2D array of n x n elements
     def calcPmax(PDF, n):
@@ -465,21 +579,28 @@ def analyse_probability_density(self, name, measures, bw_method = 'scott', get_b
         for i in range(n):
             for j in range(n):
                 if PDF[i][j] > 0:
-                    e = -math.log(PDF[i][j]/pmax)
+                    e = -math.log(PDF[i][j] / pmax)
                 else:
                     e = 10000
-                
+
                 if print_results:
-                    print(X[i][j], Y[i][j], PDF[i][j],
+                    print(
+                        X[i][j],
+                        Y[i][j],
+                        PDF[i][j],
                         pdf_hist[i][j] / len(x) / (xbin_width * ybin_width),
-                        e
+                        e,
                     )
-                
-                lscape.append([
-                    X[i][j], Y[i][j], PDF[i][j],
-                    pdf_hist[i][j] / len(x) / (xbin_width * ybin_width),
-                    e
-                ])
+
+                lscape.append(
+                    [
+                        X[i][j],
+                        Y[i][j],
+                        PDF[i][j],
+                        pdf_hist[i][j] / len(x) / (xbin_width * ybin_width),
+                        e,
+                    ]
+                )
             if print_results:
                 print()
 
@@ -496,7 +617,6 @@ def analyse_probability_density(self, name, measures, bw_method = 'scott', get_b
             yys.append(i)
         return xxs, yys
 
-
     # Getbasins - an index value will be atributed to each node in a n x n
     # grid
     def getBasins(PDF, xxs, yys, x, y, nData):
@@ -509,7 +629,6 @@ def analyse_probability_density(self, name, measures, bw_method = 'scott', get_b
         for i in ndx_sample:
             all_min.append(getSingleBasin(i, PDF, xxs, yys, x, y))
         return all_min, ndx_sample
-
 
     # Several getBasins (used by getBasins main function)
     def getSingleBasin(ndx, PDF, xxs, yys, x, y):
@@ -528,9 +647,9 @@ def analyse_probability_density(self, name, measures, bw_method = 'scott', get_b
         for i in [-1, 0, 1]:
             for j in [-1, 0, 1]:
                 try:
-                    if PDF[x+i][y+j] > PDF[new_node[0]][new_node[1]]:
+                    if PDF[x + i][y + j] > PDF[new_node[0]][new_node[1]]:
                         cnt = True
-                        new_node = [x+i, y+j]
+                        new_node = [x + i, y + j]
                 except IndexError:
                     None
         ##
@@ -539,16 +658,14 @@ def analyse_probability_density(self, name, measures, bw_method = 'scott', get_b
         else:
             return new_node
 
-
     # Find closest bin in xxs and yys
     def findClosestNode(xxs, yys, x, y):
         i = findClosest1D(xxs, x)
         j = findClosest1D(yys, y)
         return [i, j]
 
-
     # Find closest bin in 1D
-    def findClosest1D(arr, val, min_dist = 1000000):
+    def findClosest1D(arr, val, min_dist=1000000):
         closest = 0
         for i in range(len(arr)):
             d = abs(arr[i] - val)
@@ -557,7 +674,6 @@ def analyse_probability_density(self, name, measures, bw_method = 'scott', get_b
                 closest = i
         return closest
 
-
     # Gen a list of minumum values without repetitions
     def genMinList(all_min):
         min_list = []
@@ -565,11 +681,11 @@ def analyse_probability_density(self, name, measures, bw_method = 'scott', get_b
             if mini not in min_list:
                 min_list.append(mini)
         min_probs = calcMinProbs(all_min, min_list)
-        new_min_list = [mini for _, mini in sorted(zip(min_probs, min_list),
-                                                reverse=True)]
+        new_min_list = [
+            mini for _, mini in sorted(zip(min_probs, min_list), reverse=True)
+        ]
         new_min_probs = sorted(min_probs, reverse=True)
         return new_min_list, new_min_probs
-
 
     # Calculate probabilities of each minimum
     def calcMinProbs(all_min, min_list):
@@ -580,16 +696,21 @@ def analyse_probability_density(self, name, measures, bw_method = 'scott', get_b
             for j in all_min:
                 if i == j:
                     cnt += 1
-            probs.append(cnt/n)
+            probs.append(cnt / n)
         return probs
 
-
-    def run(measure1, measure2, bw_method = bw_method, get_basins = get_basins, num_of_points = None):
+    def run(
+        measure1,
+        measure2,
+        bw_method=bw_method,
+        get_basins=get_basins,
+        num_of_points=None,
+    ):
         """
         DESCRIPTION:
             Function for running the analysis for one variant and replica
         """
-        
+
         if num_of_points == None:
             num_of_points = len(measure1)
 
@@ -607,10 +728,10 @@ def analyse_probability_density(self, name, measures, bw_method = 'scott', get_b
         values = np.vstack([measure1, measure2])
         xbin_width = (xmax - xmin) / int(num_of_points)
         ybin_width = (ymax - ymin) / int(num_of_points)
-        
+
         kernel = gaussian_kde(values, bw_method=bwm)
         # Save kernel variable into a binary file
-        #pickle.dump(kernel, open("Pickle_dump-kernel.p", "wb" ) )
+        # pickle.dump(kernel, open("Pickle_dump-kernel.p", "wb" ) )
 
         X, Y = np.mgrid[xmin:xmax:npoints, ymin:ymax:npoints]
         positions = np.vstack([X.ravel(), Y.ravel()])
@@ -618,84 +739,127 @@ def analyse_probability_density(self, name, measures, bw_method = 'scott', get_b
 
         edgesx = np.arange(xmin, xmax + xbin_width, xbin_width)
         edgesy = np.arange(ymin, ymax + ybin_width, ybin_width)
-        pdf_hist, edgesx, edgesy = np.histogram2d(measure1, measure2, bins=(edgesx, edgesy))
+        pdf_hist, edgesx, edgesy = np.histogram2d(
+            measure1, measure2, bins=(edgesx, edgesy)
+        )
 
         pmax = calcPmax(PDF, int(num_of_points))
 
         # OUTPUT landscape
-        lscape = writeLscape(int(num_of_points), PDF, xbin_width, ybin_width, pmax, X=X, Y=Y, pdf_hist=pdf_hist, x=measure1)
+        lscape = writeLscape(
+            int(num_of_points),
+            PDF,
+            xbin_width,
+            ybin_width,
+            pmax,
+            X=X,
+            Y=Y,
+            pdf_hist=pdf_hist,
+            x=measure1,
+        )
 
         data = []
         mins = []
         if get_basins:
             xxs, yys = genAxes(X, Y)
-            
-            all_min, ndx_sample = getBasins(PDF, xxs, yys, measure1, measure2, int(num_of_points))
-            
+
+            all_min, ndx_sample = getBasins(
+                PDF, xxs, yys, measure1, measure2, int(num_of_points)
+            )
+
             min_list, min_probs = genMinList(all_min)
 
             # OUTPUT information for all data points
             for i in range(len(all_min)):
                 for j in range(len(min_list)):
                     if all_min[i] == min_list[j]:
-                        node = findClosestNode(xxs, yys, measure1[ndx_sample[i]],
-                                            measure2[ndx_sample[i]])
-                        
+                        node = findClosestNode(
+                            xxs, yys, measure1[ndx_sample[i]], measure2[ndx_sample[i]]
+                        )
+
                         if print_results:
-                            print("DATA", j, measure1[ndx_sample[i]], measure2[ndx_sample[i]],
-                                -math.log(PDF[node[0]][node[1]]/pmax))
-                        
-                        data.append([j, measure1[ndx_sample[i]], measure2[ndx_sample[i]],
-                            -math.log(PDF[node[0]][node[1]]/pmax)])
+                            print(
+                                "DATA",
+                                j,
+                                measure1[ndx_sample[i]],
+                                measure2[ndx_sample[i]],
+                                -math.log(PDF[node[0]][node[1]] / pmax),
+                            )
+
+                        data.append(
+                            [
+                                j,
+                                measure1[ndx_sample[i]],
+                                measure2[ndx_sample[i]],
+                                -math.log(PDF[node[0]][node[1]] / pmax),
+                            ]
+                        )
 
             # OUTPUT information for all basins
             for i in range(len(min_list)):
 
                 if print_results:
-                    print("MIN", i,
+                    print(
+                        "MIN",
+                        i,
                         xxs[min_list[i][0]],
-                        yys[min_list[i][1]], min_probs[i],
+                        yys[min_list[i][1]],
+                        min_probs[i],
                         PDF[min_list[i][0]][min_list[i][1]],
-                        -math.log(PDF[min_list[i][0]][min_list[i][1]]/pmax))
-                
-                mins.append([
-                    i,
-                    xxs[min_list[i][0]],
-                    yys[min_list[i][1]], min_probs[i],
-                    PDF[min_list[i][0]][min_list[i][1]],
-                    -math.log(PDF[min_list[i][0]][min_list[i][1]]/pmax)
-                ])
-                
+                        -math.log(PDF[min_list[i][0]][min_list[i][1]] / pmax),
+                    )
+
+                mins.append(
+                    [
+                        i,
+                        xxs[min_list[i][0]],
+                        yys[min_list[i][1]],
+                        min_probs[i],
+                        PDF[min_list[i][0]][min_list[i][1]],
+                        -math.log(PDF[min_list[i][0]][min_list[i][1]] / pmax),
+                    ]
+                )
+
         return lscape, data, mins
-        
-    result_ = get_dictionary_structure(self.measures[measures[0]].result, {'lscape' : [], 'data' : [], 'mins' : []})
-    #datas   = get_dictionary_structure(self.measures[measures[0]].result, [])
-    #mins    = get_dictionary_structure(self.measures[measures[0]].result, [])
+
+    result_ = get_dictionary_structure(
+        self.measures[measures[0]].result, {"lscape": [], "data": [], "mins": []}
+    )
+    # datas   = get_dictionary_structure(self.measures[measures[0]].result, [])
+    # mins    = get_dictionary_structure(self.measures[measures[0]].result, [])
 
     if merge_replicas:
         for variant in list(self.measures[measures[0]].result.keys()):
             measure1, measure2 = [], []
-            
+
             for replica in list(self.measures[measures[0]].result[variant].keys()):
                 measure1 += self.measures[measures[0]].result[variant][replica]
                 measure2 += self.measures[measures[1]].result[variant][replica]
 
             replica = "R1"
-            result_[variant][replica]['lscape'], result_[variant][replica]['data'], result_[variant][replica]['mins'] = run(
-                    measure1=measure1,
-                    measure2=measure2,
-                    bw_method='scott',
-                    get_basins=get_basins,
-                    num_of_points=num_of_points,
-                )
+            (
+                result_[variant][replica]["lscape"],
+                result_[variant][replica]["data"],
+                result_[variant][replica]["mins"],
+            ) = run(
+                measure1=measure1,
+                measure2=measure2,
+                bw_method="scott",
+                get_basins=get_basins,
+                num_of_points=num_of_points,
+            )
 
     elif not merge_replicas:
         for variant in list(self.measures[measures[0]].result.keys()):
             for replica in list(self.measures[measures[0]].result[variant].keys()):
-                result_[variant][replica]['lscape'], result_[variant][replica]['data'], result_[variant][replica]['mins'] = run(
+                (
+                    result_[variant][replica]["lscape"],
+                    result_[variant][replica]["data"],
+                    result_[variant][replica]["mins"],
+                ) = run(
                     measure1=self.measures[measures[0]].result[variant][replica],
                     measure2=self.measures[measures[1]].result[variant][replica],
-                    bw_method='scott',
+                    bw_method="scott",
                     get_basins=get_basins,
                     num_of_points=num_of_points,
                 )
@@ -705,65 +869,85 @@ def analyse_probability_density(self, name, measures, bw_method = 'scott', get_b
         type="pdf",
         measure_name=measures,
         result=result_,
-        options = {
-            "bw_method"         : bw_method,
-            "get_basins"        : get_basins,
-            "num_of_points"     : num_of_points,
-            "measure_types"     : [self.measures[measures[0]].type, self.measures[measures[1]].type],
-            "selection_names"   : [','.join(self.measures[measures[0]].sel), ','.join(self.measures[measures[1]].sel)],
-            "merge_replicas"    : merge_replicas
-        }
+        options={
+            "bw_method": bw_method,
+            "get_basins": get_basins,
+            "num_of_points": num_of_points,
+            "measure_types": [
+                self.measures[measures[0]].type,
+                self.measures[measures[1]].type,
+            ],
+            "selection_names": [
+                ",".join(self.measures[measures[0]].sel),
+                ",".join(self.measures[measures[1]].sel),
+            ],
+            "merge_replicas": merge_replicas,
+        },
     )
 
 
-
-
-def average(self, measure_name, round_decimals=3, std=3, return_data=False):
+def averager(self, measure_name, round_decimals=3, std=3, return_data=False):
 
     # Check if plotting as plotter or as class' method
     if measure_name == None:
         measure_obj = self
-    else :
+    else:
         measure_obj = self.measures[measure_name]
 
-    
-    if measure_obj.type not in ("distance", "angle", "dihedral", "RMSD", "planar_angle", "contacts_amount", "radius_of_gyration"):
+    if measure_obj.type not in (
+        "distance",
+        "angle",
+        "dihedral",
+        "RMSD",
+        "planar_angle",
+        "contacts_amount",
+        "radius_of_gyration",
+    ):
         raise NotCompatibleMeasureForAverageError
-    
+
     if return_data:
         data = get_dictionary_structure(measure_obj.result, [])
 
-
     for v_num, variant in enumerate(list(measure_obj.result.keys())):
         for r_num, replica in enumerate(list(measure_obj.result[variant].keys())):
-            if std :
+            if std:
                 print(
-                round(np.average(measure_obj.result[variant][replica]), round_decimals),
-                '±',
-                round(np.std(measure_obj.result[variant][replica]), round_decimals),
-                'Å'
+                    round(
+                        np.average(measure_obj.result[variant][replica]), round_decimals
+                    ),
+                    "±",
+                    round(np.std(measure_obj.result[variant][replica]), round_decimals),
+                    "Å",
                 )
-            
-            else :
+
+            else:
                 print(
-                    round(np.average(measure_obj.result[variant][replica]), round_decimals),
-                    'Å'
+                    round(
+                        np.average(measure_obj.result[variant][replica]), round_decimals
+                    ),
+                    "Å",
                 )
 
             if return_data:
                 if std:
                     data[variant][replica].append(
                         (
-                            round(np.average(measure_obj.result[variant][replica]), round_decimals),
-                            round(np.std(measure_obj.result[variant][replica]), round_decimals),
+                            round(
+                                np.average(measure_obj.result[variant][replica]),
+                                round_decimals,
+                            ),
+                            round(
+                                np.std(measure_obj.result[variant][replica]),
+                                round_decimals,
+                            ),
                         )
                     )
-                else :
+                else:
                     data[variant][replica].append(
-                            round(np.average(measure_obj.result[variant][replica]), round_decimals),
+                        round(
+                            np.average(measure_obj.result[variant][replica]),
+                            round_decimals,
+                        ),
                     )
 
-
-                
     return data
-
