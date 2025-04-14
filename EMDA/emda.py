@@ -295,6 +295,8 @@ class EMDA:
             axis_label_everywhere=False,
             combine_replicas=False,
             out_name=None,
+            xlims=None,
+            ylims=None,
         ):
             plot_measure(
                 self,
@@ -304,6 +306,8 @@ class EMDA:
                 axis_label_everywhere=axis_label_everywhere,
                 combine_replicas=combine_replicas,
                 out_name=out_name,
+                xlims=xlims,
+                ylims=ylims,
             )
 
         def average(
