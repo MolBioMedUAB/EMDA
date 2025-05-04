@@ -1013,7 +1013,7 @@ def averager(self, measure_name, round_decimals=3, std=3, print_labels=True, ret
             if max_value_length < max([len(v) for v in bodies[n_var][1:]]):
                 max_value_length = max([len(v) for v in bodies[n_var][1:]])
 
-            bodies.append('\n')
+            bodies[n_var].append('\n')
 
         for var in bodies:
             body += var[0]
