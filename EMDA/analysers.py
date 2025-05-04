@@ -989,10 +989,6 @@ def averager(self, measure_name, round_decimals=3, std=3, print_labels=True, ret
         max_value_length = 0
         for n_var, variant in enumerate(list(measure_obj.result.keys())):
             bodies.append(list())
-            print(bodies)
-            print(bodies[n_var])
-            print(type(bodies))
-            print(type(bodies[n_var]))
             #body += variant + ' ' * (max_variant_name_length - len(variant)) + ' | '
             bodies[n_var].append("{:<{w}}".format(variant, w=max_variant_name_length) + ' | ')
             for replica in list(measure_obj.result[variant].keys()):
@@ -1022,12 +1018,12 @@ def averager(self, measure_name, round_decimals=3, std=3, print_labels=True, ret
 
         if std :    
             #header  = 'Variant' + ' ' * (max_variant_name_length - 7) + ' | ' + ' '*(max_value_length-len('Average ± Std'))/2 + 'Average ± Std' ' '*' '*(max_value_length-len('Average ± Std'))/2 + ' | \n'
-            header  = "{:<{w}}".format("Variant", w=max_variant_name_length) + ' | ' + "{:^{w}}".format("Average ± Std", w=max_value_length*max_replica) + ' | \n'
+            header  = "{:<{w}}".format("Variant", w=max_variant_name_length) + ' |' + "{:^{w}}".format("Average ± Std", w=max_value_length*max_replica) + '| \n'
         else :
             header  = "{:<{w}}".format("Variant", w=max_variant_name_length) + ' | ' + "{:^{w}}".format("Average", w=max_value_length*max_replica) + ' | \n'
             #header = 'Variant' + ' ' * (max_variant_name_length - 7) + ' | ' + ' '*(max_value_length-len('Average'))/2 + 'Average' ' '*' '*(max_value_length-len('Average'))/2 + ' | \n'
         
-        header += ' '*max_variant_name_length + ' | ' + ' | '.join(["{:^{w}}".format(f'R{i+1}', w=max_value_length) for i in range(max_replica)]) + ' | '
+        header += ' '*max_variant_name_length + ' | ' + ' |'.join(["{:^{w}}".format(f'R{i+1}', w=max_value_length) for i in range(max_replica)]) + '| '
            
 
         print(header)
