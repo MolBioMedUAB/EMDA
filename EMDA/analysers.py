@@ -886,7 +886,7 @@ def analyse_probability_density(
     )
 
 
-def averager(self, measure_name, round_decimals=3, std=3, print_labels=True, return_data=False):
+def averager(self, measure_name, round_decimals=3, std=3, print_labels=True, return_data=False, format='list'):
 
     # Check if plotting as plotter or as class' method
     if measure_name == None:
@@ -910,43 +910,44 @@ def averager(self, measure_name, round_decimals=3, std=3, print_labels=True, ret
 
     for v_num, variant in enumerate(list(measure_obj.result.keys())):
         for r_num, replica in enumerate(list(measure_obj.result[variant].keys())):
-            if std and print_labels:
-                print(
-                    f'{variant} - {replica}:',
-                    round(
-                        np.average(measure_obj.result[variant][replica]), round_decimals
-                    ),
-                    "±",
-                    round(np.std(measure_obj.result[variant][replica]), round_decimals),
-                    "Å",
-                )
+            if format == 'list':
+                if std and print_labels:
+                    print(
+                        f'{variant} - {replica}:',
+                        round(
+                            np.average(measure_obj.result[variant][replica]), round_decimals
+                        ),
+                        "±",
+                        round(np.std(measure_obj.result[variant][replica]), round_decimals),
+                        "Å",
+                    )
 
-            elif std and not print_labels:
-                print(
-                    round(
-                        np.average(measure_obj.result[variant][replica]), round_decimals
-                    ),
-                    "±",
-                    round(np.std(measure_obj.result[variant][replica]), round_decimals),
-                    "Å",
-                )
+                elif std and not print_labels:
+                    print(
+                        round(
+                            np.average(measure_obj.result[variant][replica]), round_decimals
+                        ),
+                        "±",
+                        round(np.std(measure_obj.result[variant][replica]), round_decimals),
+                        "Å",
+                    )
 
-            elif not std and print_labels:
-                print(
-                    f'{variant} - {replica}:',
-                    round(
-                        np.average(measure_obj.result[variant][replica]), round_decimals
-                    ),
-                    "Å",
-                )
+                elif not std and print_labels:
+                    print(
+                        f'{variant} - {replica}:',
+                        round(
+                            np.average(measure_obj.result[variant][replica]), round_decimals
+                        ),
+                        "Å",
+                    )
 
-            elif not std and not print_labels:
-                print(
-                    round(
-                        np.average(measure_obj.result[variant][replica]), round_decimals
-                    ),
-                    "Å",
-                )
+                elif not std and not print_labels:
+                    print(
+                        round(
+                            np.average(measure_obj.result[variant][replica]), round_decimals
+                        ),
+                        "Å",
+                    )
 
             if return_data:
                 if std:
@@ -969,6 +970,38 @@ def averager(self, measure_name, round_decimals=3, std=3, print_labels=True, ret
                             round_decimals,
                         ),
                     )
+
+    if format == 'table':
+        
+        max_replica = max(
+            [len(list(self.measures[measure_name].result[variant].keys())) for variant in list(self.measures[measure_name].result.keys())]
+        )
+
+        max_variant_name_length = max(
+            [len(variant) for variant in list(self.measures[measure_name].result.keys())]
+        )
+
+
+
+        print('Variant' + ' ' * (max_variant_name_length - 7) + ' | Average ± Std')
+        print(' '*max_variant_name_length + ' | ' + ' | '.join([f'R{i+1}' for i in range(max_replica)]))
+
+        for variant in list(self.measures[measure_name].result.keys()):
+            print(variant + ' ' * (max_variant_name_length - len(variant)) + ' | ', end='')
+            for replica in list(self.measures[measure_name].result[variant].keys()):
+                if std:
+                    print(
+                        data[variant][replica],
+                        end=' | '
+                        #f'{round(np.average(self.measures[measure_name].result[variant][replica]), round_decimals)} ± {round(np.std(self.measures[measure_name].result[variant][replica]), round_decimals)}', end=' | '
+                    )
+                else:
+                    print(
+                        data[variant][replica],
+                        end=' | '
+                        f'{round(np.average(self.measures[measure_name].result[variant][replica]), round_decimals)}', end=' | '
+                    )
+            print()
 
     if return_data:
         return data
