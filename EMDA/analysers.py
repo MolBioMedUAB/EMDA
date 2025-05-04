@@ -992,8 +992,7 @@ def averager(self, measure_name, round_decimals=3, std=3, print_labels=True, ret
             print(type(bodies))
             print(type(bodies[n_var]))
             #body += variant + ' ' * (max_variant_name_length - len(variant)) + ' | '
-            t = "{:<max_variant_name_length}".format(variant) + ' | '
-            bodies[n_var].append(t)
+            bodies[n_var].append("{:<{max_variant_name_length}}".format(variant) + ' | ')
             for replica in list(measure_obj.result[variant].keys()):
                 if std:
                     #print(
@@ -1017,16 +1016,16 @@ def averager(self, measure_name, round_decimals=3, std=3, print_labels=True, ret
         for var in bodies:
             body += var[0]
             for val in var[1:]:
-                body += "{:>max_value_length}".format(val)
+                body += "{:>{max_value_length}}".format(val)
 
         if std :    
             #header  = 'Variant' + ' ' * (max_variant_name_length - 7) + ' | ' + ' '*(max_value_length-len('Average ± Std'))/2 + 'Average ± Std' ' '*' '*(max_value_length-len('Average ± Std'))/2 + ' | \n'
-            header  = "{:<max_variant_name_length}".format("Variant") + ' | ' + "{:^max_value_length*max_replica}".format("Average ± Std") + ' | \n'
+            header  = "{:<{max_variant_name_length}}".format("Variant") + ' | ' + "{:^{max_value_length}*max_replica}".format("Average ± Std") + ' | \n'
         else :
-            header  = "{:<max_variant_name_length}".format("Variant") + ' | ' + "{:^max_value_length*max_replica}".format("Average") + ' | \n'
+            header  = "{:<{max_variant_name_length}}".format("Variant") + ' | ' + "{:^{max_value_length}*max_replica}".format("Average") + ' | \n'
             #header = 'Variant' + ' ' * (max_variant_name_length - 7) + ' | ' + ' '*(max_value_length-len('Average'))/2 + 'Average' ' '*' '*(max_value_length-len('Average'))/2 + ' | \n'
         
-        header += ' '*max_variant_name_length + ' | ' + ' | '.join(["{:^max_value_length}".format(f'R{i+1}') for i in range(max_replica)]) + ' | '
+        header += ' '*{max_variant_name_length} + ' | ' + ' | '.join(["{:^{max_value_length}}".format(f'R{i+1}') for i in range(max_replica)]) + ' | '
            
 
         print(header)
