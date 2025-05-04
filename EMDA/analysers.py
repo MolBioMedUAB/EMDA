@@ -983,24 +983,48 @@ def averager(self, measure_name, round_decimals=3, std=3, print_labels=True, ret
 
 
 
-        header  = 'Variant' + ' ' * (max_variant_name_length - 7) + ' | Average ± Std' + ' | \n'
-        header += ' '*max_variant_name_length + ' | ' + ' | '.join([f'R{i+1}' for i in range(max_replica)]) + ' | '
-
+        
         body = ''
-        for variant in list(measure_obj.result.keys()):
-            body += variant + ' ' * (max_variant_name_length - len(variant)) + ' | '
+        bodies = []
+        max_value_length = 0
+        for n_var, variant in enumerate(list(measure_obj.result.keys())):
+            bodies.append([])
+            #body += variant + ' ' * (max_variant_name_length - len(variant)) + ' | '
+            bodies[n_var].append(variant + ' ' * (max_variant_name_length - len(variant)) + ' | ')
             for replica in list(measure_obj.result[variant].keys()):
                 if std:
                     #print(
                         #data[variant][replica] + ' | ',
-                    body += f'{round(np.average(measure_obj.result[variant][replica]), round_decimals)} ± {round(np.std(measure_obj.result[variant][replica]), round_decimals)}' + ' | '
+                    #body += f'{round(np.average(measure_obj.result[variant][replica]), round_decimals)} ± {round(np.std(measure_obj.result[variant][replica]), round_decimals)}' + ' | '
+                    bodies[n_var].append(f'{round(np.average(measure_obj.result[variant][replica]), round_decimals)} ± {round(np.std(measure_obj.result[variant][replica]), round_decimals)}' + ' | ')
                     #)
                 else:
                     #print(
                         #data[variant][replica] + ' | '
-                    body += f'{round(np.average(measure_obj.result[variant][replica]), round_decimals)}' + ' | '
+                    #body += f'{round(np.average(measure_obj.result[variant][replica]), round_decimals)}' + ' | '
+                    bodies[n_var].append(f'{round(np.average(measure_obj.result[variant][replica]), round_decimals)}' + ' | ')
                     #)
-            body += '\n'
+            #body += '\n'
+
+            if max_value_length < max(bodies[n_var][1:]):
+                max_value_length = max(bodies[n_var][1:])
+
+            bodies.append('\n')
+
+        for var in bodies:
+            body += var[0]
+            for val in var[1:]:
+                body += "{:>max_value_length}".format(val)
+
+        if std :    
+            #header  = 'Variant' + ' ' * (max_variant_name_length - 7) + ' | ' + ' '*(max_value_length-len('Average ± Std'))/2 + 'Average ± Std' ' '*' '*(max_value_length-len('Average ± Std'))/2 + ' | \n'
+            header  = "{:<max_variant_name_length}".format("Variant") + ' | ' + "{:^max_value_length*max_replica}".format("Average ± Std") + ' | \n'
+        else :
+            header  = "{:<max_variant_name_length}".format("Variant") + ' | ' + "{:^max_value_length*max_replica}".format("Average") + ' | \n'
+            #header = 'Variant' + ' ' * (max_variant_name_length - 7) + ' | ' + ' '*(max_value_length-len('Average'))/2 + 'Average' ' '*' '*(max_value_length-len('Average'))/2 + ' | \n'
+        
+        header += ' '*max_variant_name_length + ' | ' + ' | '.join(["{:^max_value_length}".format(f'R{i+1}') for i in range(max_replica)]) + ' | '
+           
 
         print(header)
         print(body)
