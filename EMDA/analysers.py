@@ -987,18 +987,16 @@ def averager(self, measure_name, round_decimals=3, std=3, print_labels=True, ret
         print(' '*max_variant_name_length + ' | ' + ' | '.join([f'R{i+1}' for i in range(max_replica)]))
 
         for variant in list(self.measures[measure_name].result.keys()):
-            print(variant + ' ' * (max_variant_name_length - len(variant)) + ' | ', end='')
+            print(variant + ' ' * (max_variant_name_length - len(variant)) + ' | ')
             for replica in list(self.measures[measure_name].result[variant].keys()):
                 if std:
                     print(
-                        data[variant][replica],
-                        end=' | '
+                        data[variant][replica] + ' | ',
                         #f'{round(np.average(self.measures[measure_name].result[variant][replica]), round_decimals)} ± {round(np.std(self.measures[measure_name].result[variant][replica]), round_decimals)}', end=' | '
                     )
                 else:
                     print(
-                        data[variant][replica],
-                        end=' | '
+                        data[variant][replica] + ' | '
                         f'{round(np.average(self.measures[measure_name].result[variant][replica]), round_decimals)}', end=' | '
                     )
             print()
