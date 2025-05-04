@@ -990,6 +990,7 @@ def averager(self, measure_name, round_decimals=3, std=3, print_labels=True, ret
         for n_var, variant in enumerate(list(measure_obj.result.keys())):
             bodies.append(list())
             print(bodies)
+            print(bodies[n_var])
             print(type(bodies))
             print(type(bodies[n_var]))
             #body += variant + ' ' * (max_variant_name_length - len(variant)) + ' | '
