@@ -983,23 +983,27 @@ def averager(self, measure_name, round_decimals=3, std=3, print_labels=True, ret
 
 
 
-        print('Variant' + ' ' * (max_variant_name_length - 7) + ' | Average ± Std')
-        print(' '*max_variant_name_length + ' | ' + ' | '.join([f'R{i+1}' for i in range(max_replica)]))
+        header  = 'Variant' + ' ' * (max_variant_name_length - 7) + ' | Average ± Std' + ' | \n'
+        header += ' '*max_variant_name_length + ' | ' + ' | '.join([f'R{i+1}' for i in range(max_replica)]) + ' | '
 
+        body = ''
         for variant in list(measure_obj.result.keys()):
-            print(variant + ' ' * (max_variant_name_length - len(variant)) + ' | ')
+            body += variant + ' ' * (max_variant_name_length - len(variant)) + ' | '
             for replica in list(measure_obj.result[variant].keys()):
                 if std:
-                    print(
+                    #print(
                         #data[variant][replica] + ' | ',
-                        f'{round(np.average(measure_obj.result[variant][replica]), round_decimals)} ± {round(np.std(measure_obj.result[variant][replica]), round_decimals)}', end=' | '
-                    )
+                    body += f'{round(np.average(measure_obj.result[variant][replica]), round_decimals)} ± {round(np.std(measure_obj.result[variant][replica]), round_decimals)}' + ' | '
+                    #)
                 else:
-                    print(
+                    #print(
                         #data[variant][replica] + ' | '
-                        f'{round(np.average(measure_obj.result[variant][replica]), round_decimals)}', end=' | '
-                    )
-            print()
+                    body += f'{round(np.average(measure_obj.result[variant][replica]), round_decimals)}' + ' | '
+                    #)
+            body += '\n'
+
+        print(header)
+        print(body)
 
     if return_data:
         return data
