@@ -991,13 +991,13 @@ def averager(self, measure_name, round_decimals=3, std=3, print_labels=True, ret
             for replica in list(measure_obj.result[variant].keys()):
                 if std:
                     print(
-                        data[variant][replica] + ' | ',
-                        #f'{round(np.average(self.measures[measure_name].result[variant][replica]), round_decimals)} ± {round(np.std(self.measures[measure_name].result[variant][replica]), round_decimals)}', end=' | '
+                        #data[variant][replica] + ' | ',
+                        f'{round(np.average(measure_obj.result[variant][replica]), round_decimals)} ± {round(np.std(measure_obj.result[variant][replica]), round_decimals)}', end=' | '
                     )
                 else:
                     print(
-                        data[variant][replica] + ' | '
-                        #f'{round(np.average(self.measures[measure_name].result[variant][replica]), round_decimals)}', end=' | '
+                        #data[variant][replica] + ' | '
+                        f'{round(np.average(measure_obj.result[variant][replica]), round_decimals)}', end=' | '
                     )
             print()
 
