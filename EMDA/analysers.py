@@ -1034,14 +1034,14 @@ def averager(self, measure_name, round_decimals=3, std=3, print_labels=True, ret
             print(body)
 
         elif format == 'csv':
-            header = ','.join([header_.rstrip().lstrip() for header_ in header.split(' | ')])
-            body = ','.join([body_.rstrip().lstrip() for body_ in body.split(' | ')])
+            header = ','.join([header_.strip(' ') for header_ in header.split('|')])
+            body = ','.join([body_.strip(' ') for body_ in body.split('|')])
             print(header)
             print(body)
         
         elif format == 'tsv':
-            header = '\t'.join([header_.rstrip().lstrip() for header_ in header.split(' | ')])
-            body = '\t'.join([body_.rstrip().lstrip() for body_ in body.split(' | ')])
+            header = '\t'.join([header_.strip(' ') for header_ in header.split('|')])
+            body = '\t'.join([body_.strip(' ') for body_ in body.split('|')])
             print(header)
             print(body)
 
