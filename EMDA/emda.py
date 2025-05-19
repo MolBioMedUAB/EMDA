@@ -297,6 +297,7 @@ class EMDA:
             out_name=None,
             xlims=None,
             ylims=None,
+            show = True
         ):
             plot_measure(
                 self,
@@ -308,6 +309,7 @@ class EMDA:
                 out_name=out_name,
                 xlims=xlims,
                 ylims=ylims,
+                show=show
             )
 
         def average(
