@@ -28,6 +28,7 @@ def plot_measure(
     out_name=False,
     xlims = None,
     ylims = None,
+    show = True,
 ):
     """
     DESCRIPTION:
@@ -215,7 +216,8 @@ def plot_measure(
 
         plt.savefig(out_name, dpi=300, bbox_inches="tight")
 
-    plt.show()
+    if show:
+        plt.show()
     plt.close()
 
 
