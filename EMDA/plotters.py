@@ -1122,10 +1122,10 @@ def ext_plot_contacts_frequencies_differences(
         return contacts_avg
 
     # calculate averages if more than one result is given as input
-    if isinstance(contacts_ref, list):
+    if isinstance(contacts_ref, (list, dict)):
         contacts_ref = calculate_average(contacts_ref)
 
-    if isinstance(contacts_tgt, list):
+    if isinstance(contacts_tgt, (list, dict)):
         contacts_tgt = calculate_average(contacts_tgt)
 
     max_contact = 0
