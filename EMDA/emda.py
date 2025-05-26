@@ -661,6 +661,7 @@ class EMDA:
         )
 
     # create method for running the measurements
+    run_progressbar_level = Literal['variants', 'replicas', 'all']
     def run(
         self,
         exclude=None,
@@ -671,6 +672,7 @@ class EMDA:
         end=-1,
         verbose=False,
         sleep_time=0,
+        progressbar_level : run_progressbar_level = 'all'
     ):
         """
         DESCRIPTION:
@@ -752,19 +754,30 @@ class EMDA:
                     )
 
         # define function for running measure depending on its type
-        def run_measures(self, measures, variant, replica):
+        def run_measures(self, measures, variant, replica, progressbar_level='all'):
 
             # trajectory cycle
             first_cycle = True
-            for ts in tqdm(
-                self.universe[variant][replica].trajectory[
-                    starts[variant][replica] : ends[variant][replica] : steps[variant][
-                        replica
-                    ]
-                ],
+            if progressbar_level == 'all':
+                cycle = tqdm(
+                    self.universe[variant][replica].trajectory[
+                        starts[variant][replica] : ends[variant][replica] : steps[variant][replica]],
                 desc=f"Measuring variant {variant}, replica {replica}",
-                unit=" frame",
-            ):
+                unit=" frame",)
+            else :
+                cycle = self.universe[variant][replica].trajectory[starts[variant][replica] : ends[variant][replica] : steps[variant][replica]]
+                
+
+            #for ts in tqdm(
+            #    self.universe[variant][replica].trajectory[
+            #        starts[variant][replica] : ends[variant][replica] : steps[variant][
+            #            replica
+            #        ]
+            #    ],
+            #    desc=f"Measuring variant {variant}, replica {replica}",
+            #    unit=" frame",
+            #):
+            for ts in cycle:
 
                 # measures cycle
                 for measure in measures[variant][replica]:
@@ -876,14 +889,20 @@ class EMDA:
             variant = list(self.universe.keys())[0]
             if len(self.universe[variant]) == 1:
                 replica = list(self.universe[variant].keys())[0]
-                run_measures(self, measures=measures, variant=variant, replica=replica)
+                run_measures(self, measures=measures, variant=variant, replica=replica, progressbar_level=progressbar_level)
             else:
                 print("single variant, multireplica")
-                for replica in tqdm(
-                    list(self.universe[variant].keys()), desc="Replica", unit=" repl"
-                ):
+                if progressbar_level in ('replica', 'all'):
+                    cycle = tqdm(list(self.universe[variant].keys()), desc="Replica", unit=" repl")
+                else :
+                    cycle = list(self.universe[variant].keys())
+                    
+                #for replica in tqdm(
+                #    list(self.universe[variant].keys()), desc="Replica", unit=" repl"
+                #):
+                for replica in cycle:
                     run_measures(
-                        self, measures=measures, variant=variant, replica=replica
+                        self, measures=measures, variant=variant, replica=replica, progressbar_level=progressbar_level
                     )
 
         else:
@@ -894,15 +913,20 @@ class EMDA:
                 if verbose:
                     print(f"Starting variant {variant} ")
                 # replicas cycle
-                r_num = 0
-                for replica in list(self.universe[variant].keys()):
-                    r_num += 1
+                #r_num = 0
+                if progressbar_level in ('replica', 'all'):
+                    cycle = tqdm(list(self.universe[variant].keys()), desc="Replica", unit=" repl")
+                else :
+                    cycle = list(self.universe[variant].keys())
+                #for replica in list(self.universe[variant].keys()):
+                for r_num, replica in enumerate(cycle):
+                    #r_num += 1
                     if verbose:
                         print(
                             f"Starting replica {replica} ({r_num} of {len(self.universe[variant].keys())})"
                         )
                     run_measures(
-                        self, measures=measures, variant=variant, replica=replica
+                        self, measures=measures, variant=variant, replica=replica, progressbar_level=progressbar_level
                     )
 
     save_format_types = Literal["json", "yaml", "yml", "pkl", "pickle"]
