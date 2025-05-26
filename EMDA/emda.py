@@ -450,7 +450,7 @@ class EMDA:
         self.universe[variant][replica].trajectory.add_transformations(transform)
 
     # create load_variant method
-    def load_variant(self, parameters, trajectory, variant_name=None):
+    def load_variant(self, parameters, trajectory, variant_name=None, quiet=False):
         """
         DESCRIPTION:
             Method that allows adding one new variant to the EMDA class. Its key in the EMDA's universe attr's dictionary is automatically given as "V" and the number of variant in __variants attr.
@@ -516,10 +516,11 @@ class EMDA:
         if self.__unwrap:
             self.unwrapping(variant=new_variant, replica="R1")
 
-        print(f"{new_variant} variant has been loaded!")
+        if not quiet:
+            print(f"{new_variant} variant has been loaded!")
 
     # create load_trajectory method
-    def load_replica(self, trajectory, parameters=None, variant_name="last"):
+    def load_replica(self, trajectory, parameters=None, variant_name="last", quiet=False):
         """
         DESCRIPTION:
             Method that allows adding one more replica to a pre-existing variant in th EMDA class.
@@ -562,7 +563,8 @@ class EMDA:
         if self.__unwrap:
             self.unwrapping(variant=variant_name, replica=f"R{new_replica}")
 
-        print(f"A new replica has been loaded to variant {variant_name}!")
+        if not quiet:
+            print(f"A new replica has been loaded to variant {variant_name}!")
 
     # function for creating selections (AtomGroups) as a dictionary inside EMDA class
     def select(
