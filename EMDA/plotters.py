@@ -29,6 +29,7 @@ def plot_measure(
     xlims = None,
     ylims = None,
     show = True,
+    n_variants = None,
 ):
     """
     DESCRIPTION:
@@ -40,17 +41,16 @@ def plot_measure(
         - same_y, same_x:           [bool]       shares the y and/or x among all plots in the same row/column, so plots have the same axis dimensions
         - axis_label_everywhere:    [bool]       Adds the x and y axis labels to all the subplots instead of only to the ones at the left and bottom
         - out_name:                 [pseudobool] False by default. If a string is given, the plot will be saved.
-        -
     """
 
     y_labels = {
-        "distance": "Distance (Å)",
-        "RMSD": "RMSD (Å)",
-        "angle": "Angle (°)",
-        "planar_angle": "Planar angle (°)",
-        "dihedral": "Dihedral angle (°)",
-        "contacts_amount": "Number of contacts",
-        "radius_of_gyration": "Radius of Gyration (Å)",
+        "distance"           : "Distance (Å)",
+        "RMSD"               : "RMSD (Å)",
+        "angle"              : "Angle (°)",
+        "planar_angle"       : "Planar angle (°)",
+        "dihedral"           : "Dihedral angle (°)",
+        "contacts_amount"    : "Number of contacts",
+        "radius_of_gyration" : "Radius of Gyration (Å)",
     }
 
     # Check if plotting as plotter or as class' method
@@ -74,28 +74,31 @@ def plot_measure(
     ):
         raise NotCompatibleMeasureForPlotterError
 
-    variants = len(measure_obj.result)
+    if n_variants == None:
+        n_variants = len(measure_obj.result)
+    elif n_variants > len(measure_obj.result):
+        n_variants = len(measure_obj.result)
 
     if combine_replicas:
         max_replicas = 1
     else:
         max_replicas = max(
-            [len(measure_obj.result[variant]) for variant in list(measure_obj.result)]
+            [len(measure_obj.result[variant]) for variant in list(measure_obj.result)[:n_variants]]
         )
 
     # fig, axs = plt.subplots(ncols=variants, nrows=max_replicas, sharey=same_y, sharex=same_x) --> axs[r_num, v_num]
     # plotting replicas in X axis and variant in Y axis
     fig, axs = plt.subplots(
         ncols=max_replicas,
-        nrows=variants,
+        nrows=n_variants,
         sharey=same_y,
         sharex=same_x,
-        figsize=(max_replicas * width_per_replica, variants * height_per_variant),
+        figsize=(max_replicas * width_per_replica, n_variants * height_per_variant),
     )
 
     # Check if only one variant
 
-    if variants == 1 and max_replicas == 1:
+    if n_variants == 1 and max_replicas == 1:
         variant = list(measure_obj.result.keys())[0]
         replica = list(measure_obj.result[variant].keys())[0]
 
@@ -119,7 +122,7 @@ def plot_measure(
         if max_replicas == 1:
             combine_replicas = True
 
-        for v_num, variant in enumerate(list(measure_obj.result.keys())):
+        for v_num, variant in enumerate(list(measure_obj.result.keys())[:n_variants]):
             for r_num, replica in enumerate(list(measure_obj.result[variant].keys())):
 
                 if combine_replicas:
@@ -133,7 +136,7 @@ def plot_measure(
                     if r_num == 0 or axis_label_everywhere:
                         axs[v_num].set_ylabel(y_labels[measure_obj.type])
 
-                    if v_num == variants - 1 or axis_label_everywhere:
+                    if v_num == n_variants - 1 or axis_label_everywhere:
                         axs[v_num].set_xlabel("Frame")
 
                     axs[v_num].set_title(
@@ -145,7 +148,7 @@ def plot_measure(
                     if ylims != None:
                         axs[v_num].set_ylim(ylims)
 
-                elif variants == 1:
+                elif n_variants == 1:
                     axs[r_num].plot(
                         range(1, len(measure_obj.result[variant][replica]) + 1),
                         measure_obj.result[variant][replica],
@@ -156,7 +159,7 @@ def plot_measure(
                     if r_num == 0 or axis_label_everywhere:
                         axs[r_num].set_ylabel(y_labels[measure_obj.type])
 
-                    if v_num == variants - 1 or axis_label_everywhere:
+                    if v_num == n_variants - 1 or axis_label_everywhere:
                         axs[r_num].set_xlabel("Frame")
 
                     if xlims != None:
@@ -176,7 +179,7 @@ def plot_measure(
                     if r_num == 0 or axis_label_everywhere:
                         axs[v_num, r_num].set_ylabel(y_labels[measure_obj.type])
 
-                    if v_num == variants - 1 or axis_label_everywhere:
+                    if v_num == n_variants - 1 or axis_label_everywhere:
                         axs[v_num, r_num].set_xlabel("Frame")
 
                     if xlims != None:
@@ -188,7 +191,7 @@ def plot_measure(
 
             if r_num != max_replicas - 1:
                 for r_num_ in range(r_num, max_replicas):
-                    if v_num == variants - 1 or axis_label_everywhere:
+                    if v_num == n_variants - 1 or axis_label_everywhere:
                         axs[v_num, r_num_].plot()
                         axs[v_num, r_num_].set_xlabel("Frame")
 
