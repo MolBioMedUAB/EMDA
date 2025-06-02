@@ -297,7 +297,8 @@ class EMDA:
             out_name=None,
             xlims=None,
             ylims=None,
-            show = True
+            show = True,
+            n_variants=None,
         ):
             plot_measure(
                 self,
@@ -387,6 +388,7 @@ class EMDA:
             same_x=True,
             axis_label_everywhere=False,
             out_name=False,
+            #n_variants=None
         ):
             if self.type in ("value", "NACs"):
                 if bar_width == None:
