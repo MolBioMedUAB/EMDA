@@ -426,8 +426,7 @@ def analyse_contacts_presence(
 
 
 # def analyse_NACs(self, name, analyses : list, merge_replicas : bool = False, invert : list = False):
-modes = Literal('and', 'or')
-def analyse_NACs(self, name, analyses: list, invert: list = False, mode : modes ='and'):
+def analyse_NACs(self, name, analyses: list, invert: list = False, mode : Literal['and', 'or'] ='and'):
     """
     DESCRIPTION:
         Metaanalyser (analyses two or more analyses) for combining boolean-output Analysis. It reads the boolean value corresponding to each analysis and returns True if all are True.
