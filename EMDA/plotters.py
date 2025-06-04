@@ -257,8 +257,11 @@ def plot_NACs(
 
     # Check width
     if width == None:
-        fig.set_figwidth(10 * bar_width * len(analysis_obj.result))
-    elif isinstance(width, (float, int)):
+        width = 10 * bar_width * len(analysis_obj.result)
+        #fig.set_figwidth(10 * bar_width * len(analysis_obj.result))
+    #elif isinstance(width, (float, int)):
+        #fig.set_figwidth(width)
+    if width.lower() not in ("auto", "automatic"):
         fig.set_figwidth(width)
     elif width.lower() in ("auto", "automatic"):
         pass
