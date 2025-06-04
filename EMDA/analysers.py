@@ -31,11 +31,8 @@ AVAILABLE ANALYSERS:
     - analyse_probability_density: 
 """
 
-__analyse_value_types = Literal["thres", "threshold", "tol", "tolerance"]
-
-
 def analyse_value(
-    self, name, measure, val1, val2=0, mode: __analyse_value_types = "thres"
+    self, name, measure, val1, val2=0, mode: Literal["thres", "threshold", "tol", "tolerance"] = "thres"
 ):
     """
     DESCRIPTION:
@@ -443,7 +440,7 @@ def analyse_NACs(self, name, analyses: list, invert: list = False, mode : Litera
         raise NotEnoughDataError(2)
 
     for analysis in analyses:
-        if self.analyses[analysis].type not in ("value", "contacts_presence"):
+        if self.analyses[analysis].type not in ("value", "contacts_presence", "NACs"):
             raise NotCompatibleAnalysisForAnalysisError
 
     if invert != False:
