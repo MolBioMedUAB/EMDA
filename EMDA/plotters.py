@@ -260,11 +260,14 @@ def plot_NACs(
         width = 10 * bar_width * len(analysis_obj.result)
         #fig.set_figwidth(10 * bar_width * len(analysis_obj.result))
     #elif isinstance(width, (float, int)):
-        #fig.set_figwidth(width)
-    if width.lower() not in ("auto", "automatic"):
         fig.set_figwidth(width)
-    elif width.lower() in ("auto", "automatic"):
-        pass
+    elif isinstance(width, str):
+        if width.lower() in ("auto", "automatic"):
+            pass
+        else :
+            print("width value ({width}) cannot be understood, using default value.")
+    elif isinstance(width, (int, float)):
+        fig.set_figwidth(width)
     else:
         print("width value ({width}) cannot be understood, using default value.")
 
