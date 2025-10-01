@@ -907,7 +907,7 @@ def analyse_probability_density(
 
 def averager(self, measure_name, round_decimals=3, std=3, print_labels=True, return_data=False, format : Literal['list', 'table', 'csv', 'tsv', 'none'] = 'list'):
 
-    if format not in ('list', 'table', 'csv', 'tsv'):
+    if format not in ('list', 'table', 'csv', 'tsv', 'none'):
         raise NotAvailableOptionError('Only list, table, csv and tsv formats are available')
 
     # Check if plotting as plotter or as class' method
