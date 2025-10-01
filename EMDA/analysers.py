@@ -36,11 +36,8 @@ AVAILABLE ANALYSERS:
     - analyse_probability_density: 
 """
 
-__analyse_value_types = Literal["thres", "threshold", "tol", "tolerance"]
-
-
 def analyse_value(
-    self, name, measure, val1, val2=0, mode: __analyse_value_types = "thres"
+    self, name, measure, val1, val2=0, mode: Literal["thres", "threshold", "tol", "tolerance"] = "thres"
 ):
     """
     DESCRIPTION:
@@ -431,7 +428,7 @@ def analyse_contacts_presence(
 
 
 # def analyse_NACs(self, name, analyses : list, merge_replicas : bool = False, invert : list = False):
-def analyse_NACs(self, name, analyses: list, invert: list = False):
+def analyse_NACs(self, name, analyses: list, invert: list = False, mode : Literal['and', 'or'] ='and'):
     """
     DESCRIPTION:
         Metaanalyser (analyses two or more analyses) for combining boolean-output Analysis. It reads the boolean value corresponding to each analysis and returns True if all are True.
@@ -448,7 +445,7 @@ def analyse_NACs(self, name, analyses: list, invert: list = False):
         raise NotEnoughDataError(2)
 
     for analysis in analyses:
-        if self.analyses[analysis].type not in ("value", "contacts_presence"):
+        if self.analyses[analysis].type not in ("value", "contacts_presence", "NACs"):
             raise NotCompatibleAnalysisForAnalysisError
 
     if invert != False:
@@ -490,31 +487,48 @@ def analyse_NACs(self, name, analyses: list, invert: list = False):
             for frame in range(
                 len(self.analyses[analyses[0]].result[variant][replica])
             ):
-                result_ = True
+                if mode == 'and':
+                    result_ = True
+                elif mode == 'or':
+                    result_ = False
                 for analysis in analyses:
                     # check if analysis name is false or different
-                    if invert == False:
-                        result_ = (
-                            result_
-                            and self.analyses[analysis].result[variant][replica][frame]
-                        )
-
+                    if not invert:
+                        if mode == 'and':
+                            result_ = (
+                                result_
+                                and self.analyses[analysis].result[variant][replica][frame]
+                            )
+                        elif mode == 'or':
+                            result_ = (
+                                result_
+                                or self.analyses[analysis].result[variant][replica][frame]
+                            )
+                            
                     else:
                         # check if analysis name is in invert or not
                         if analysis not in invert:
-                            result_ = (
-                                result_
-                                and self.analyses[analysis].result[variant][replica][
-                                    frame
-                                ]
-                            )
+                            if mode == 'and':
+                                result_ = (
+                                    result_
+                                    and self.analyses[analysis].result[variant][replica][frame]
+                                )
+                            elif mode == 'or':
+                                result_ = (
+                                    result_
+                                    or self.analyses[analysis].result[variant][replica][frame]
+                                )
                         elif analysis in invert:
-                            result_ = (
-                                result_
-                                and not self.analyses[analysis].result[variant][
-                                    replica
-                                ][frame]
-                            )
+                            if mode == 'and':
+                                result_ = (
+                                    result_
+                                    and not self.analyses[analysis].result[variant][replica][frame]
+                                )
+                            elif mode == 'or':
+                                result_ = (
+                                    result_
+                                    or not self.analyses[analysis].result[variant][replica][frame]
+                                )
 
                 results[variant][replica].append(result_)
 

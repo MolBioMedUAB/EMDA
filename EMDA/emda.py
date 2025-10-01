@@ -297,6 +297,8 @@ class EMDA:
             out_name=None,
             xlims=None,
             ylims=None,
+            show = True,
+            n_variants=None,
         ):
             plot_measure(
                 self,
@@ -308,6 +310,7 @@ class EMDA:
                 out_name=out_name,
                 xlims=xlims,
                 ylims=ylims,
+                show=show
             )
 
         def average(
@@ -345,13 +348,12 @@ class EMDA:
                     format='none'
                 )
 
-                if plot:
-                    plot_averager(
-                        avg_data=avg_data,
-                        bar_width=bar_width,
-                        fig_width=fig_width, 
-                        error_bar=error_bar,
-                        out_name=None,
+                plot_averager(
+                    avg_data=avg_data,
+                    bar_width=bar_width,
+                    fig_width=fig_width, 
+                    error_bar=error_bar,
+                    out_name=None,
                     )
 
             
@@ -425,6 +427,7 @@ class EMDA:
             same_x=True,
             axis_label_everywhere=False,
             out_name=False,
+            #n_variants=None
         ):
             if self.type in ("value", "NACs"):
                 if bar_width == None:
@@ -488,7 +491,7 @@ class EMDA:
         self.universe[variant][replica].trajectory.add_transformations(transform)
 
     # create load_variant method
-    def load_variant(self, parameters, trajectory, variant_name=None):
+    def load_variant(self, parameters, trajectory, variant_name=None, quiet=False):
         """
         DESCRIPTION:
             Method that allows adding one new variant to the EMDA class. Its key in the EMDA's universe attr's dictionary is automatically given as "V" and the number of variant in __variants attr.
@@ -554,10 +557,11 @@ class EMDA:
         if self.__unwrap:
             self.unwrapping(variant=new_variant, replica="R1")
 
-        print(f"{new_variant} variant has been loaded!")
+        if not quiet:
+            print(f"{new_variant} variant has been loaded!")
 
     # create load_trajectory method
-    def load_replica(self, trajectory, parameters=None, variant_name="last"):
+    def load_replica(self, trajectory, parameters=None, variant_name="last", quiet=False):
         """
         DESCRIPTION:
             Method that allows adding one more replica to a pre-existing variant in th EMDA class.
@@ -600,7 +604,8 @@ class EMDA:
         if self.__unwrap:
             self.unwrapping(variant=variant_name, replica=f"R{new_replica}")
 
-        print(f"A new replica has been loaded to variant {variant_name}!")
+        if not quiet:
+            print(f"A new replica has been loaded to variant {variant_name}!")
 
     # function for creating selections (AtomGroups) as a dictionary inside EMDA class
     def select(
@@ -697,6 +702,7 @@ class EMDA:
         )
 
     # create method for running the measurements
+    run_progressbar_level = Literal['variants', 'replicas', 'all']
     def run(
         self,
         exclude=None,
@@ -707,6 +713,7 @@ class EMDA:
         end=-1,
         verbose=False,
         sleep_time=0,
+        progressbar_level : run_progressbar_level = 'all'
     ):
         """
         DESCRIPTION:
@@ -788,19 +795,30 @@ class EMDA:
                     )
 
         # define function for running measure depending on its type
-        def run_measures(self, measures, variant, replica):
+        def run_measures(self, measures, variant, replica, progressbar_level='all'):
 
             # trajectory cycle
             first_cycle = True
-            for ts in tqdm(
-                self.universe[variant][replica].trajectory[
-                    starts[variant][replica] : ends[variant][replica] : steps[variant][
-                        replica
-                    ]
-                ],
+            if progressbar_level == 'all':
+                cycle = tqdm(
+                    self.universe[variant][replica].trajectory[
+                        starts[variant][replica] : ends[variant][replica] : steps[variant][replica]],
                 desc=f"Measuring variant {variant}, replica {replica}",
-                unit=" frame",
-            ):
+                unit=" frame",)
+            else :
+                cycle = self.universe[variant][replica].trajectory[starts[variant][replica] : ends[variant][replica] : steps[variant][replica]]
+                
+
+            #for ts in tqdm(
+            #    self.universe[variant][replica].trajectory[
+            #        starts[variant][replica] : ends[variant][replica] : steps[variant][
+            #            replica
+            #        ]
+            #    ],
+            #    desc=f"Measuring variant {variant}, replica {replica}",
+            #    unit=" frame",
+            #):
+            for ts in cycle:
 
                 # measures cycle
                 for measure in measures[variant][replica]:
@@ -912,14 +930,20 @@ class EMDA:
             variant = list(self.universe.keys())[0]
             if len(self.universe[variant]) == 1:
                 replica = list(self.universe[variant].keys())[0]
-                run_measures(self, measures=measures, variant=variant, replica=replica)
+                run_measures(self, measures=measures, variant=variant, replica=replica, progressbar_level=progressbar_level)
             else:
                 print("single variant, multireplica")
-                for replica in tqdm(
-                    list(self.universe[variant].keys()), desc="Replica", unit=" repl"
-                ):
+                if progressbar_level in ('replica', 'all'):
+                    cycle = tqdm(list(self.universe[variant].keys()), desc="Replica", unit=" repl")
+                else :
+                    cycle = list(self.universe[variant].keys())
+                    
+                #for replica in tqdm(
+                #    list(self.universe[variant].keys()), desc="Replica", unit=" repl"
+                #):
+                for replica in cycle:
                     run_measures(
-                        self, measures=measures, variant=variant, replica=replica
+                        self, measures=measures, variant=variant, replica=replica, progressbar_level=progressbar_level
                     )
 
         else:
@@ -930,15 +954,20 @@ class EMDA:
                 if verbose:
                     print(f"Starting variant {variant} ")
                 # replicas cycle
-                r_num = 0
-                for replica in list(self.universe[variant].keys()):
-                    r_num += 1
+                #r_num = 0
+                if progressbar_level in ('replica', 'all'):
+                    cycle = tqdm(list(self.universe[variant].keys()), desc="Replica", unit=" repl")
+                else :
+                    cycle = list(self.universe[variant].keys())
+                #for replica in list(self.universe[variant].keys()):
+                for r_num, replica in enumerate(cycle):
+                    #r_num += 1
                     if verbose:
                         print(
                             f"Starting replica {replica} ({r_num} of {len(self.universe[variant].keys())})"
                         )
                     run_measures(
-                        self, measures=measures, variant=variant, replica=replica
+                        self, measures=measures, variant=variant, replica=replica, progressbar_level=progressbar_level
                     )
 
     save_format_types = Literal["json", "yaml", "yml", "pkl", "pickle"]
