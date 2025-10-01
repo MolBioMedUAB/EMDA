@@ -321,15 +321,29 @@ class EMDA:
                 Calculates the average of the measure's results. It is not implemented yet.
             """
 
-            averager(
-                self,
-                measure_name=None,
-                round_decimals=round_decimals,
-                std=std,
-                print_labels=print_labels,
-                return_data=return_data,
-                format=format
-            )
+            if return_data:
+                data = averager(
+                    self,
+                    measure_name=None,
+                    round_decimals=round_decimals,
+                    std=std,
+                    print_labels=print_labels,
+                    return_data=return_data,
+                    format=format
+                )
+
+                return data
+                
+            else:
+                averager(
+                        self,
+                        measure_name=None,
+                        round_decimals=round_decimals,
+                        std=std,
+                        print_labels=print_labels,
+                        return_data=return_data,
+                        format=format
+                    )
 
     # create Analysis dataclass
     @dataclass
