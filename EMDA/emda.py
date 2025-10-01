@@ -311,22 +311,62 @@ class EMDA:
             )
 
         def average(
-            self, round_decimals=3, std=True, print_labels=True, return_data=False, format='list'
+            self, 
+            round_decimals=3, 
+            std=True, print_labels=True, return_data=False, format : Literal['list', 'table', 'csv', 'tsv', 'none'] ='list', plot=False,
+            error_bar=True, fig_width=10, bar_width=None,
+
+
         ):
             """
             DESCRIPTION:
-                Calculates the average of the measure's results. It is not implemented yet.
+                Calculates the average of the measure's results. 
             """
 
-            averager(
-                self,
-                measure_name=None,
-                round_decimals=round_decimals,
-                std=std,
-                print_labels=print_labels,
-                return_data=return_data,
-                format=format
-            )
+            
+            if return_data:
+                avg_data = averager(
+                    self,
+                    measure_name=None,
+                    round_decimals=round_decimals,
+                    std=std,
+                    print_labels=print_labels,
+                    return_data=return_data,
+                    format=format
+                )
+            elif plot:
+                avg_data = averager(
+                    self,
+                    measure_name=None,
+                    round_decimals=round_decimals,
+                    std=std,
+                    print_labels=print_labels,
+                    return_data=return_data,
+                    format='none'
+                )
+
+                if plot:
+                    plot_averager(
+                        avg_data=avg_data,
+                        bar_width=bar_width,
+                        fig_width=fig_width, 
+                        error_bar=error_bar,
+                        out_name=None,
+                    )
+
+            
+            else :
+                averager(
+                    self,
+                    measure_name=None,
+                    round_decimals=round_decimals,
+                    std=std,
+                    print_labels=print_labels,
+                    return_data=return_data,
+                    format=format
+                )
+
+        
 
     # create Analysis dataclass
     @dataclass

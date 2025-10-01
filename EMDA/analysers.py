@@ -18,7 +18,12 @@ from typing import Literal
 
 import math
 from scipy.stats import gaussian_kde
+
+
 import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
 import random
 
 """
@@ -886,7 +891,7 @@ def analyse_probability_density(
     )
 
 
-def averager(self, measure_name, round_decimals=3, std=3, print_labels=True, return_data=False, format='list'):
+def averager(self, measure_name, round_decimals=3, std=3, print_labels=True, return_data=False, format : Literal['list', 'table', 'csv', 'tsv', 'none'] = 'list'):
 
     if format not in ('list', 'table', 'csv', 'tsv'):
         raise NotAvailableOptionError('Only list, table, csv and tsv formats are available')
@@ -974,6 +979,7 @@ def averager(self, measure_name, round_decimals=3, std=3, print_labels=True, ret
                         ),
                     )
 
+
     if format in ('table', 'csv', 'tsv'):
         
         max_replica = max(
@@ -1047,3 +1053,84 @@ def averager(self, measure_name, round_decimals=3, std=3, print_labels=True, ret
 
     if return_data:
         return data
+
+
+#def plot_averager(
+#        self, measure_name, round_decimals=3, std=3, print_data=False
+#):
+#    
+#    if print_data :
+#        avg_data = averager(measure_name=measure_name, round_decimals=round_decimals, std=std, format='table', return_data=True)
+#    else :
+#        avg_data = averager(measure_name=measure_name, round_decimals=round_decimals, std=std, format='table', return_data=True)
+#
+#    
+#    data = []
+#    for variant, metrics in avg_data.items():
+#        for replica, values_list in metrics.items():
+#            # values_list is expected to be [(Average, Std)]
+#            avg, std = values_list[0]
+#            data.append({
+#                'Variant': variant,
+#                'Replica': replica,
+#                'Average': avg,
+#                'Std': std
+#            })
+#
+#    df = pd.DataFrame(data)
+#
+#    # Extract unique replica names and variants
+#    replicas = df['Replica'].unique()
+#    variants = df['Variant'].unique()
+#    num_replicas = len(replicas)
+#    num_variants = len(variants)
+#
+#    # 3. PLOTTING SETUP
+#    bar_width = 0.8 / num_replicas  # Adjust bar width based on number of replicas
+#    total_group_width = bar_width * num_replicas
+#    ind = np.arange(num_variants)
+#
+#    # Define a color map for the replicas
+#    colors = plt.cm.get_cmap('Set1', num_replicas)
+#
+#    # 4. CREATE THE PLOT
+#    plt.figure(figsize=(12, 6))
+#
+#    for i, replica in enumerate(replicas):
+#        # Filter data for the current replica
+#        subset = df[df['Replica'] == replica]
+#        
+#        # Calculate the position for the current replica's bars
+#        # This centers the group and then shifts each bar sequentially
+#        # Example for 3 replicas: -bar_width, 0, +bar_width
+#        # General shift: (i - (num_replicas - 1) / 2) * bar_width
+#        offset = (i - (num_replicas - 1) / 2) * bar_width
+#        bar_pos = ind + offset
+#        
+#        # Plot the bars with error bars
+#        plt.bar(
+#            bar_pos,
+#            subset['Average'],
+#            bar_width,
+#            yerr=subset['Std'],
+#            label=replica,
+#            capsize=5,
+#            color=colors(i),
+#            edgecolor='black'
+#        )
+#
+#    # Set the x-ticks in the center of the grouped bars
+#    plt.xticks(ind, variants, fontsize=12)
+#
+#    # Add descriptive elements
+#    plt.xlabel('Variant', fontsize=14)
+#    plt.ylabel('Average Value', fontsize=14)
+#    plt.title(f'Average Values Across {num_replicas} Replicas per Variant', fontsize=16)
+#    plt.legend(title='Replicate', bbox_to_anchor=(1.05, 1), loc='upper left')
+#    plt.grid(axis='y', linestyle='--', alpha=0.7)
+#
+#    # Adjust layout to fit the legend outside
+#    plt.tight_layout()
+#    plt.show()
+#
+    
