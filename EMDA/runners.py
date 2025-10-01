@@ -120,7 +120,7 @@ def run_per_residue_contacts(self, Measure, variant, replica):
             interactions=Measure.options["interactions"],
             measure_distances=Measure.options["measure_dists"],
             #include_WAT=Measure.options["include_WAT"],
-            within_selection=Measure.options["within_selection"]
+            #within_selection=Measure.options["within_selection"]
         )
     )
 
