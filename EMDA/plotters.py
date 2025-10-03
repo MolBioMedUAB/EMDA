@@ -1086,9 +1086,10 @@ def plot_averager(
     #self, measure_name, round_decimals=3, std=3, print_data=False,
     avg_data,
     bar_width=None,
-    fig_width=10, 
+    fig_width=10, fig_height=10,
     error_bar = True,
     out_name=False,
+    title=None
 ):
     
     #if print_data :
@@ -1128,7 +1129,7 @@ def plot_averager(
     colors = plt.cm.get_cmap('Set1', num_replicas)
 
     # 4. CREATE THE PLOT
-    plt.figure(figsize=(fig_width, 6))
+    plt.figure(figsize=(fig_width, fig_height))
 
     for i, replica in enumerate(replicas):
         # Filter data for the current replica
@@ -1169,7 +1170,8 @@ def plot_averager(
     # Add descriptive elements
     plt.xlabel('Variant', fontsize=14)
     plt.ylabel('Average Value', fontsize=14)
-    plt.title(f'Average Values Across {num_replicas} Replicas per Variant', fontsize=16)
+    if title != None:
+        plt.title(f'{title}\nAverage Values Across {num_replicas} replicas per Variant', fontsize=16)
     plt.legend(title='Replicate', bbox_to_anchor=(1.05, 1), loc='upper left')
     plt.grid(axis='y', linestyle='--', alpha=0.7)
 

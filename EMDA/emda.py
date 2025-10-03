@@ -317,7 +317,7 @@ class EMDA:
             self, 
             round_decimals=3, 
             std=True, print_labels=True, return_data=False, format : Literal['list', 'table', 'csv', 'tsv', 'none'] ='list', plot=False,
-            error_bar=True, fig_width=10, bar_width=None,
+            error_bar=True, fig_width=10, fig_height=10, bar_width=None, plot_title=None
 
 
         ):
@@ -352,8 +352,10 @@ class EMDA:
                     avg_data=avg_data,
                     bar_width=bar_width,
                     fig_width=fig_width, 
+                    fig_height=fig_height, 
                     error_bar=error_bar,
                     out_name=None,
+                    title=None
                     )
 
             
