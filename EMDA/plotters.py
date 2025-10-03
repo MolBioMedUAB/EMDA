@@ -1183,6 +1183,7 @@ def plot_averager(
         plt.savefig(out_name, dpi=300, bbox_inches="tight")
 
     plt.show()
+    plt.close()
 
     
 

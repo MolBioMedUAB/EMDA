@@ -327,7 +327,7 @@ class EMDA:
             """
 
             
-            if return_data:
+            if return_data and not plot:
                 avg_data = averager(
                     self,
                     measure_name=None,
