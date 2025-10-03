@@ -355,7 +355,7 @@ class EMDA:
                     fig_height=fig_height, 
                     error_bar=error_bar,
                     out_name=None,
-                    title=None
+                    title=plot_title
                     )
 
             
