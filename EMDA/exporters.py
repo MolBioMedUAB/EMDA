@@ -134,7 +134,7 @@ def export_frames_by_analysis(self, variant, replica, analysis_name, out_name=No
     if atom_selection in list(self.selections):
         atom_selection = self.selections[atom_selection]
 
-    if n_frame_selection == None:
+    if n_frame_selection_per_bin == None:
         for frame, result in enumerate(self.analyses[analysis_name].result[variant][replica]):
             if result:
                 universe.trajectory[frame]
