@@ -5,7 +5,7 @@ from tqdm.autonotebook import tqdm
 from .exceptions import *
 
 from .tools import check_folder
-from random import choice
+import random
 
 
 def export_frames_by_analysis(self, variant, replica, analysis_name, out_name=None, format='pdb', folder=None, atom_selection = 'all', n_frame_selection_per_bin=None, frame_selection_bins=1):
