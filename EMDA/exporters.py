@@ -147,7 +147,7 @@ def export_frames_by_analysis(self, variant, replica, analysis_name, out_name=No
             if result:
                 selected_frames.append(frame)
         
-        selected = select_from_bins(li=selected_frames, rn=tuple(range(len(universe.trajectory))), ns=n_frame_selection_per_bin, nb=frame_selection_bins)
+        selected = select_from_bins(li=selected_frames, rn=(0, len(universe.trajectory)), ns=n_frame_selection_per_bin, nb=frame_selection_bins)
 
         for frame in selected:
             universe.trajectory[frame]
