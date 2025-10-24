@@ -369,11 +369,11 @@ def analyse_contacts_amount(self, name, measure):
     )
 
 
-__analyse_contacts_presence_mode_types = Literal["all", "any"]
+#__analyse_contacts_presence_mode_types = Literal["all", "any"]
 
 
 def analyse_contacts_presence(
-    self, name, measure, contact, mode: __analyse_contacts_presence_mode_types = "all"
+    self, name, measure, contact, mode: Literal["all", "any"] = "all"
 ):
     """
     DESCRIPTION:
@@ -550,6 +550,7 @@ def analyse_probability_density(
     num_of_points=None,
     merge_replicas: bool = True,
     print_results: bool = False,
+    step=1
 ):
     """
     DESCRIPTION:
@@ -724,6 +725,7 @@ def analyse_probability_density(
         bw_method=bw_method,
         get_basins=get_basins,
         num_of_points=None,
+        #step=step
     ):
         """
         DESCRIPTION:
@@ -852,8 +854,8 @@ def analyse_probability_density(
             measure1, measure2 = [], []
 
             for replica in list(self.measures[measures[0]].result[variant].keys()):
-                measure1 += self.measures[measures[0]].result[variant][replica]
-                measure2 += self.measures[measures[1]].result[variant][replica]
+                measure1 += self.measures[measures[0]].result[variant][replica][::step]
+                measure2 += self.measures[measures[1]].result[variant][replica][::step]
 
             replica = "R1"
             (
@@ -876,8 +878,8 @@ def analyse_probability_density(
                     result_[variant][replica]["data"],
                     result_[variant][replica]["mins"],
                 ) = run(
-                    measure1=self.measures[measures[0]].result[variant][replica],
-                    measure2=self.measures[measures[1]].result[variant][replica],
+                    measure1=self.measures[measures[0]].result[variant][replica][::step],
+                    measure2=self.measures[measures[1]].result[variant][replica][::step],
                     bw_method="scott",
                     get_basins=get_basins,
                     num_of_points=num_of_points,
