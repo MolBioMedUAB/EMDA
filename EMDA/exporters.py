@@ -131,14 +131,14 @@ def export_frames_by_analysis(self, variant, replica, analysis_name, out_name=No
         check_folder(folder)
 
 
-    if selection in list(self.selections):
-        selection = self.selections[selection]
+    if atom_selection in list(self.selections):
+        atom_selection = self.selections[atom_selection]
 
     if n_frame_selection == None:
         for frame, result in enumerate(self.analyses[analysis_name].result[variant][replica]):
             if result:
                 universe.trajectory[frame]
-                to_write = universe.select_atoms(selection)
+                to_write = universe.select_atoms(atom_selection)
                 to_write.write(out_name.replace('*', str(frame+1)))
 
     else :
@@ -151,7 +151,7 @@ def export_frames_by_analysis(self, variant, replica, analysis_name, out_name=No
 
         for frame in selected:
             universe.trajectory[frame]
-            to_write = universe.select_atoms(selection)
+            to_write = universe.select_atoms(atom_selection)
             to_write.write(out_name.replace('*', str(frame+1)))
              
             
