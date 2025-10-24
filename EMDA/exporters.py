@@ -5,19 +5,23 @@ from tqdm.autonotebook import tqdm
 from .exceptions import *
 
 from .tools import check_folder
+from random import choice
 
 
-def export_frames_by_analysis(self, variant, replica, analysis_name, out_name=None, format='pdb', folder=None, selection = 'all'):
+def export_frames_by_analysis(self, variant, replica, analysis_name, out_name=None, format='pdb', folder=None, atom_selection = 'all', n_frame_selection_per_bin=None, frame_selection_bins=1):
     """
     DESCRIPTION:
         Function for exporting trajectories. Useful for exporting trajectories with transformations applied (such as wrap, unwrap or no jump).
 
     ARGUMENTS:
-        - variant :     variant name to export
-        - replica :     replica to export
-        - out_name:     name for the output file. Use * in the out_name to specify the position of the frame. If not present, it will be located before the extension.
-        - format:       only pdb is available
-        - folder:       subfolder where exported frames are saved
+        - variant :                      variant name to export
+        - replica :                      replica to export
+        - out_name:                      name for the output file. Use * in the out_name to specify the position of the frame. If not present, it will be located before the extension.
+        - format:                        only pdb is available
+        - folder:                        subfolder where exported frames are saved
+        - atom_selection:                atomic selection to export
+        - n_frame_selection_per_bin:     Number of frames to randomly select per bin and extract. If None, all frames will be extracted. Else, n_frame_selection_per_bin*frame_selection_bins frames will be exported.
+        - frame_selection_bins:          Number of bins in wich the trajectory will be splitted so random selection is distributed across the whole traj. n_frame_selection must be equal or larger than frame_selection_bins.
 
     TODO:
         - [ ] Add more formats
@@ -25,6 +29,73 @@ def export_frames_by_analysis(self, variant, replica, analysis_name, out_name=No
     
     #compatible_formats = ['dcd', 'xtc', 'trr', 'xyz', 'nc', 'pdb', 'crd', 'trz', 'mol2', 'coor', 'namdbin', 'in']
     compatible_formats = ['pdb']
+
+    def select_from_bins(li, rn, ns, nb):
+        """
+        Divides a range into bins and randomly selects items from a list 
+        that fall into those bins.
+    
+        Args:
+            li (list): The list of numbers (or "indices" as values) to
+                       bin and select from.
+            rn (tuple): A (start, end) tuple defining the total range.
+            ns (int):   The desired number of items to select from each bin.
+            nb (int):   The number of bins to divide the range into.
+    
+        Returns:
+            list: A list of lists. Each inner list contains the
+                  randomly selected items for the corresponding bin.
+        """
+        
+        # Get the start and end of the full range
+        start, end = rn
+        
+        # Make sure number of bins is valid
+        if nb <= 0:
+            print("Error: Number of bins (nb) must be positive.")
+            return []
+    
+        # Calculate the width of each bin
+        # We check for a zero-width range to avoid division by zero
+        if end == start:
+            bin_width = 0
+        else:
+            bin_width = (end - start) / nb
+    
+        all_selections = []
+    
+        # Loop through each bin number
+        for i in range(nb):
+            # Calculate the start and end boundaries for the current bin
+            bin_start = start + i * bin_width
+            
+            # The end boundary is special for the last bin
+            if i == nb - 1:
+                # The last bin must include the 'end' value
+                bin_end = end
+                # Filter items in the last bin: [bin_start, bin_end] (inclusive)
+                items_in_bin = [item for item in li if bin_start <= item <= bin_end]
+            else:
+                # All other bins are [bin_start, bin_end) (inclusive start, exclusive end)
+                bin_end = start + (i + 1) * bin_width
+                items_in_bin = [item for item in li if bin_start <= item < bin_end]
+    
+            # Determine how many items to actually select
+            # We can't select more items than are in the bin
+            num_to_select = min(ns, len(items_in_bin))
+            
+            # Perform the random selection (without replacement)
+            selected_items = random.sample(items_in_bin, num_to_select)
+            
+            all_selections.append(selected_items)
+            
+        all_selections_return = []
+        for sel in all_selections:
+            for sel_ in sel:
+                all_selections_return.append(sel_)
+    
+        return all_selections_return
+
 
 
     # Check that variant and replica exist
@@ -63,12 +134,26 @@ def export_frames_by_analysis(self, variant, replica, analysis_name, out_name=No
     if selection in list(self.selections):
         selection = self.selections[selection]
 
-    for frame, result in enumerate(self.analyses[analysis_name].result[variant][replica]):
+    if n_frame_selection == None:
+        for frame, result in enumerate(self.analyses[analysis_name].result[variant][replica]):
+            if result:
+                universe.trajectory[frame]
+                to_write = universe.select_atoms(selection)
+                to_write.write(out_name.replace('*', str(frame+1)))
 
-        if result:
+    else :
+        selected_frames = []
+        for frame, result in enumerate(self.analyses[analysis_name].result[variant][replica]):
+            if result:
+                selected_frames.append(frame)
+        
+         selected = select_from_bins(li=selected_frames, rn=tuple(range(len(universe.trajectory))), ns=n_frames_selection_per_bin, nb=frame_selection_bins)
+
+        for frame in selected:
             universe.trajectory[frame]
             to_write = universe.select_atoms(selection)
             to_write.write(out_name.replace('*', str(frame+1)))
+             
             
 
 
