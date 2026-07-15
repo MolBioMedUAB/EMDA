@@ -166,6 +166,7 @@ def calc_angle(sel1, sel2, sel3, units, domain):  # [ rad | deg ]  # [ 180 | 360
     """
 
     a = mdadist.calc_angles(sel1, sel2, sel3, backend="OpenMP")
+    a = a[0]
 
     if units in ("rad", "radian", "radians", "pi"):
         from math import pi
